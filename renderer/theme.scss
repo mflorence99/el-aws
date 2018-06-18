@@ -1,0 +1,46 @@
+@import '~@angular/material/theming';
+@include mat-core();
+ 
+//  Custom Angular Material theme
+
+$custom-primary: mat-palette($mat-blue, 400, 200, 600);
+$custom-accent:  mat-palette($mat-amber, 400, 200, 600);
+$custom-warn:  mat-palette($mat-red, 400, 200, 600);
+$custom-theme: mat-dark-theme($custom-primary, $custom-accent, $custom-warn);
+
+@include angular-material-theme($custom-theme);
+
+// Bridge from Angular Material variables to CSS variables
+
+@import '~ellib/css/colors.scss';
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+:root {
+
+  --primary-color: var(--mat-blue-400);
+  --accent-color: var(--mat-amber-300);
+  --warn-color: var(--mat-red-400);
+
+  --text-color: var(--mat-grey-100);
+  --disabled-color: var(--mat-grey-500);
+  --background-color: var(--mat-grey-900);
+
+  --lu3270-color: var(--mat-green-300);
+  --lu3270-highlight-color: var(--mat-green-400);
+
+  --lu3270-cols: 80;
+  --lu3270-rows: 12;
+
+} 
+
+// Basic styling
+
+@import '~ellib/css/theme.scss';
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
