@@ -1,0 +1,36 @@
+:host {
+  background-color: var(--mat-grey-800);
+  border-top: 1px dotted var(--mat-grey-700);
+  display: block;
+  padding: 0 8px;
+}
+
+footer {
+  align-content: center;
+  display: grid;
+  font-size: 0.66rem;
+  grid-gap: 16px;
+  grid-template-columns: 1fr;
+  height: 100%;
+
+  .error,
+  .info,
+  .warning {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .error {
+    color: var(--error-color);
+  }
+
+  .info {
+    color: var(--info-color);
+  }
+
+  .warning {
+    color: var(--warning-color);
+  }
+
+}

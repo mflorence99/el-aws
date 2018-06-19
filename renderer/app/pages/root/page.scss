@@ -2,3 +2,52 @@
   display: block;
   height: 100%;
 }
+
+lib-drawer-container {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  width: 100%;
+
+  --elaws-statusbar-height: 24px;
+  --elaws-tabs-height: 48px;
+  --elaws-toolbar-height: 48px;
+
+  .content {
+    display: block;
+    height: calc(100% - var(--elaws-statusbar-height) - var(--elaws-tabs-height) - var(--elaws-toolbar-height));
+    position: absolute;
+    top: calc(var(--elaws-toolbar-height) + var(--elaws-tabs-height));
+    width: 100%;
+  }
+
+  elaws-statusbar {
+    bottom: 0;
+    display: block;
+    height: var(--elaws-statusbar-height);
+    position: absolute;
+    width: 100%;
+  }
+
+  elaws-tabs {
+    display: block;
+    height: var(--elaws-tabs-height);
+    position: absolute;
+    top: var(--elaws-toolbar-height);
+    width: 100%;
+  }
+
+  elaws-toolbar {
+    display: block;
+    height: var(--elaws-toolbar-height);
+    position: absolute;
+    top: 0;
+    width: 100%;
+  }
+
+  lib-drawer-panel {
+    background-color: var(--background-color);
+    width: 300px;
+  }
+
+}

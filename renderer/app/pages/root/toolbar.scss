@@ -1,0 +1,11 @@
+:host {
+  display: block;
+}
+
+header {
+  align-items: center;
+  display: grid;
+  grid-template-columns: auto auto auto;
+  justify-content: end;
+  padding: 4px;
+}

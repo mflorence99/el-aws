@@ -1,0 +1,33 @@
+<header>
+
+  <button 
+    (click)="reload()"
+    matTooltip="Reload app"
+    mat-icon-button>
+    <fa-icon 
+      [icon]="['fas', 'sync']"
+      size="lg">
+    </fa-icon>
+  </button>
+
+  <button 
+    (click)="devTools()"
+    matTooltip="Open dev tools"
+    mat-icon-button>
+    <fa-icon 
+      [icon]="['fas', 'bug']"
+      size="lg">
+    </fa-icon>
+  </button>
+
+  <button 
+    (click)="openPrefs.emit()"
+    matTooltip="Edit preferences"
+    mat-icon-button>
+    <fa-icon 
+      [icon]="['fas', 'cog']"
+      size="lg">
+    </fa-icon>
+  </button>
+
+</header>

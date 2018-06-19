@@ -1,0 +1,18 @@
+:host {
+  background-color: var(--mat-grey-850);
+  display: block;
+}
+
+nav {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+
+  .label {
+    display: grid;
+    grid-gap: 8px;
+    grid-template-columns: auto auto;
+  }
+
+}

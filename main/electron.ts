@@ -10,7 +10,6 @@ const isDev = process.env['DEV_MODE'] === '1';
 let theWindow = null;
 
 app.on('ready', () => {
-  require('electron-capture');
   theWindow = new BrowserWindow({
     width: 800,
     height: 600,

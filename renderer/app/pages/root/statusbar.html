@@ -1,0 +1,23 @@
+<footer>
+
+  <div
+    [ngClass]="status.message.level"
+    [ngStyle]="{visibility: status.message.text? 'visible' : 'hidden'}">
+
+    <fa-icon
+      [fixedWidth]="true"
+      [icon]="['fas', (status.message.level !== 'info')? 'exclamation-triangle' : 'info-circle']">
+    </fa-icon>
+
+    <span class="message">
+      {{ status.message.text }}
+    </span>
+
+  </div>
+
+</footer>
+
+<audio
+  #ding
+  src="http://blender.freemovies.co.uk/blenderfiles/car/bell.wav">
+</audio>

@@ -3,6 +3,8 @@
  */
 
 export class Config {
+  
+  setBoundsThrottle = 250;
 
 }
 

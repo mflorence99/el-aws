@@ -1,1 +1,36 @@
-<!-- Root -->
+<lib-drawer-container>
+
+  <elaws-toolbar
+    (openPrefs)=prefsDrawer.open()>
+  </elaws-toolbar> 
+
+  <elaws-tabs
+    [router]="ctrl.router$ | async"
+    [tabs]="tabs">
+  </elaws-tabs> 
+
+  <lib-animated-router-outlet
+    class="content">  
+  </lib-animated-router-outlet> 
+
+  <elaws-statusbar
+    [status]="ctrl.status$ | async">
+  </elaws-statusbar> 
+
+  <lib-drawer-panel
+    #prefsDrawer
+    position="right"> 
+
+    <elaws-prefs
+      [prefs]="ctrl.prefs$ | async"
+      #prefs>
+    </elaws-prefs>  
+
+  </lib-drawer-panel>
+
+</lib-drawer-container> 
+
+<elaws-root-ctrl
+  [prefsForm]="prefs.prefsForm.valueChanges | async"
+  #ctrl>
+</elaws-root-ctrl> 
