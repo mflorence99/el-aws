@@ -6,7 +6,7 @@
 
   <elaws-tabs
     [router]="ctrl.router$ | async"
-    [tabs]="tabs">
+    [tabs]="ctrl.tabs$ | async">
   </elaws-tabs> 
 
   <lib-animated-router-outlet

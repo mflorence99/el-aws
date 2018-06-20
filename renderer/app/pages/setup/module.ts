@@ -1,13 +1,17 @@
 import { BarrelModule } from '../../barrel';
 import { NgModule } from '@angular/core';
-import { NoopPageComponent } from './page';
+import { SetupComponent } from './setup';
+import { SetupCtrlComponent } from './ctrl';
+import { SetupPageComponent } from './page';
 
 /**
- * Noop page module
+ * Setup page module
  */
 
 const COMPONENTS = [
-  NoopPageComponent
+  SetupComponent,
+  SetupCtrlComponent,
+  SetupPageComponent
 ];
 
 const MODULES = [
@@ -21,7 +25,7 @@ const MODULES = [
   ],
 
   exports: [
-    NoopPageComponent
+    SetupPageComponent
   ],
 
   imports: [
@@ -30,4 +34,4 @@ const MODULES = [
 
 })
 
-export class NoopPageModule { }
+export class SetupPageModule { }

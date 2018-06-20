@@ -32,7 +32,9 @@ export interface WindowStateModel {
 
 @State<WindowStateModel>({
   name: 'window',
-  defaults: { }
+  defaults: { 
+    route: '/setup'
+  }
 }) export class WindowState {
 
   /** ctor */

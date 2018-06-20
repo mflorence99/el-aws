@@ -1,0 +1,17 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+main {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  height: 100%;
+
+  elaws-setup {
+    width: 300px;
+  }
+
+}

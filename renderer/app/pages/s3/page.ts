@@ -5,7 +5,7 @@ import { Component } from '@angular/core';
  */
 
 @Component({
-  selector: 'elaws-s3',
+  selector: 'elaws-s3-page',
   styleUrls: ['page.scss'],
   templateUrl: 'page.html'
 })

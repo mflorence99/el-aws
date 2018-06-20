@@ -5,7 +5,7 @@ import { Component } from '@angular/core';
  */
 
 @Component({
-  selector: 'elaws-ddb',
+  selector: 'elaws-ddb-page',
   styleUrls: ['page.scss'],
   templateUrl: 'page.html'
 })

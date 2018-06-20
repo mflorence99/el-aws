@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 
 /**
- * Noop page
+ * One-time setup page
  */
 
 @Component({
-  selector: 'elaws-noop',
+  selector: 'elaws-setup-page',
   styleUrls: ['page.scss'],
   templateUrl: 'page.html'
 })
 
-export class NoopPageComponent { }
+export class SetupPageComponent { }

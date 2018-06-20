@@ -5,7 +5,7 @@ import { Component } from '@angular/core';
  */
 
 @Component({
-  selector: 'elaws-ec2',
+  selector: 'elaws-ec2-page',
   styleUrls: ['page.scss'],
   templateUrl: 'page.html'
 })

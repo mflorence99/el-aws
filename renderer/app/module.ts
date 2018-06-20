@@ -10,8 +10,6 @@ import { NgxsModule } from '@ngxs/store';
 import { NgxsReduxDevtoolsPluginModule } from '@ngxs/devtools-plugin';
 import { NgxsRouterPluginModule } from '@ngxs/router-plugin';
 import { NgxsStoragePluginModule } from '@ngxs/storage-plugin';
-import { NoopPageComponent } from './pages/noop/page';
-import { NoopPageModule } from './pages/noop/module';
 import { RootPageComponent } from './pages/root/page';
 import { RootPageModule } from './pages/root/module';
 import { RouterModule } from '@angular/router';
@@ -19,6 +17,8 @@ import { Routes } from '@angular/router';
 import { S3Guard } from './guards/s3';
 import { S3PageComponent } from './pages/s3/page';
 import { S3PageModule } from './pages/s3/module';
+import { SetupPageComponent } from './pages/setup/page';
+import { SetupPageModule } from './pages/setup/module';
 import { StorageOption } from '@ngxs/storage-plugin';
 
 import { states } from './state/app';
@@ -33,17 +33,16 @@ const MODULES = [
   BarrelModule,
   DDBPageModule,
   EC2PageModule,
-  NoopPageModule,
   RootPageModule,
-  S3PageModule
+  S3PageModule,
+  SetupPageModule
 ];
 
 const ROUTES: Routes = [
-  {path: '',       component: NoopPageComponent},
   {path: 'ddb',    component: DDBPageComponent, canActivate: [DDBGuard]},
   {path: 'ec2',    component: EC2PageComponent},
   {path: 's3',     component: S3PageComponent, canActivate: [S3Guard]},
-  {path: '**',     component: NoopPageComponent}
+  {path: 'setup',  component: SetupPageComponent}
 ];
 
 const SERVICES = [

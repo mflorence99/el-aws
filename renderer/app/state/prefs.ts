@@ -16,6 +16,7 @@ export type SortOrder = 'alpha' | 'first' | 'last';
 export type TimeFmt = 'none' | 'shortTime' | 'mediumTime' | 'longTime' | 'fullTime';
 
 export interface PrefsStateModel {
+  configured?: boolean;
   dateFormat?: DateFmt;
   endpoints?: {
     ddb: string;
@@ -31,6 +32,7 @@ export interface PrefsStateModel {
 @State<PrefsStateModel>({
   name: 'prefs',
   defaults: {
+    configured: false,
     dateFormat: 'mediumDate',
     endpoints: {
       ddb: '',

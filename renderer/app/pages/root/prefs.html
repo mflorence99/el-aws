@@ -21,6 +21,28 @@
   [libRxfSubmit]="prefsForm"
   novalidate>
 
+  <div
+    class="group"
+    formGroupName="endpoints">
+    
+    <mat-form-field>
+      <input
+        formControlName="ddb"
+        matInput
+        placeholder="DDB endpoint"
+        type="text">
+    </mat-form-field>
+    
+    <mat-form-field>
+      <input
+        formControlName="s3"
+        matInput
+        placeholder="S3 endpoint"
+        type="text">
+    </mat-form-field>
+
+  </div>
+
   <mat-checkbox
     formControlName="showGridLines">
     Show grid lines
@@ -113,30 +135,6 @@
     </mat-radio-button>
 
   </mat-radio-group>
-
-  <div
-    class="group"
-    formGroupName="endpoints">
-    
-    <mat-form-field
-      *ngIf="window.route === '/ddb'">
-      <input
-        formControlName="ddb"
-        matInput
-        placeholder="DDB endpoint"
-        type="text">
-    </mat-form-field>
-    
-    <mat-form-field
-      *ngIf="window.route === '/s3'">
-      <input
-        formControlName="s3"
-        matInput
-        placeholder="S3 endpoint"
-        type="text">
-    </mat-form-field>
-
-  </div>
 
   <div class="okAndCancel">
 

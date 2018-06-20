@@ -1,0 +1,62 @@
+<h3 class="drawer-header">
+
+  <div class="icon">
+
+    <fa-icon 
+      [icon]="['fas', 'cog']"
+      size="lg">
+    </fa-icon>
+
+  </div>
+
+  <div class="title">
+    Initial Setup
+  </div>
+
+</h3>
+
+<p>
+  You can update this setup later and make additional settings by clicking
+  on <fa-icon [icon]="['fas', 'cog']"></fa-icon> to open the <b>Preferences</b> sidebar.
+</p>
+
+<form 
+  [formGroup]="prefsForm"
+  [libRxfSubmit]="prefsForm"
+  novalidate>
+
+  <div
+    class="group"
+    formGroupName="endpoints">
+    
+    <mat-form-field>
+      <input
+        formControlName="ddb"
+        matInput
+        placeholder="DDB endpoint"
+        type="text">
+    </mat-form-field>
+    
+    <mat-form-field>
+      <input
+        formControlName="s3"
+        matInput
+        placeholder="S3 endpoint"
+        type="text">
+    </mat-form-field>
+
+  </div>
+
+  <div class="buttons">
+
+    <button 
+      [disabled]="prefsForm.invalid"
+      color="primary"
+      mat-raised-button
+      type="submit">
+      OK
+    </button>
+
+  </div>
+
+</form>

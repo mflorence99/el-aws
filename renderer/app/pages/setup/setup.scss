@@ -1,0 +1,25 @@
+:host {
+  display: block;
+  overflow: auto;
+  padding: 16px;
+}
+
+form {
+  display: grid;
+  grid-gap: 16px;
+  grid-template-columns: 1fr;
+
+  .buttons {
+    display: grid;
+    grid-gap: 16px;
+    grid-template-columns: auto;
+    justify-content: right;
+  }
+
+  .group {
+    display: grid;
+    grid-gap: 8px;
+    grid-template-columns: auto;
+  }
+
+}

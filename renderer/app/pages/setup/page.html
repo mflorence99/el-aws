@@ -1,0 +1,13 @@
+<main>
+
+  <elaws-setup
+    [prefs]="ctrl.prefs$ | async"
+    #setup>
+  </elaws-setup>  
+  
+</main>
+
+<elaws-setup-ctrl
+  [prefsForm]="setup.prefsForm.valueChanges | async"
+  #ctrl>
+</elaws-setup-ctrl> 
