@@ -1,8 +1,19 @@
 import { Action } from '@ngxs/store';
+import { ElectronService } from 'ngx-electron';
 import { State } from '@ngxs/store';
 import { StateContext } from '@ngxs/store';
 
 /** NOTE: actions must come first because of AST */
+
+export class DevTools {
+  static readonly type = '[Window] dev tools';
+  constructor(public readonly payload?: any) { }
+}
+
+export class Reload {
+  static readonly type = '[Window] reload';
+  constructor(public readonly payload?: any) { }
+}
 
 export class SetBounds {
   static readonly type = '[Window] set bounds';
@@ -23,6 +34,21 @@ export interface WindowStateModel {
   name: 'window',
   defaults: { }
 }) export class WindowState {
+
+  /** ctor */
+  constructor(private electron: ElectronService) { }
+
+  @Action(DevTools)
+  devtools() {
+    const win = this.electron.remote.getCurrentWindow();
+    win.webContents.openDevTools();
+  }
+
+  @Action(Reload)
+  reload() {
+    const win = this.electron.remote.getCurrentWindow();
+    win.webContents.reload();
+  }
 
   @Action(SetBounds)
   setBounds({ patchState }: StateContext<WindowStateModel>,

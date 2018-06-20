@@ -1,8 +1,10 @@
 import { ChangeDetectionStrategy } from '@angular/core';
 import { Component } from '@angular/core';
-import { ElectronService } from 'ngx-electron';
+import { DevTools } from '../../state/window';
 import { EventEmitter } from '@angular/core';
 import { Output } from '@angular/core';
+import { Reload } from '../../state/window';
+import { Store } from '@ngxs/store';
 
 /**
  * Toolbar page
@@ -20,18 +22,16 @@ export class ToolbarComponent {
   @Output() openPrefs = new EventEmitter<any>();
 
   /** ctor */
-  constructor(private electron: ElectronService) { }
+  constructor(private store: Store) { }
 
   /** Open dev tools */
   devTools() {
-    const win = this.electron.remote.getCurrentWindow();
-    win.webContents.openDevTools();
+    this.store.dispatch(new DevTools());
   }
 
   /** Reload app */
   reload() {
-    const win = this.electron.remote.getCurrentWindow();
-    win.webContents.reload();
+    this.store.dispatch(new Reload());
   }
 
 }

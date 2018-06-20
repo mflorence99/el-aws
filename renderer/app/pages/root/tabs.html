@@ -4,19 +4,27 @@
     (selectedIndexChange)="onTabSelect($event)">
 
     <mat-tab
+      [disabled]="!(canNavigate$(tab) | async)"
       *ngFor="let tab of tabs">
+
       <ng-template
         mat-tab-label>
+
         <div class="label">
+
           <fa-icon
             [icon]="tab.icon"
             [ngStyle]="{color: tab.color}">
           </fa-icon>
+
           <div>
             {{ tab.title }}
           </div>
+
         </div>
+
       </ng-template>
+
     </mat-tab>
 
   </mat-tab-group>

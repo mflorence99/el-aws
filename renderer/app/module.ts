@@ -1,4 +1,5 @@
 import { BarrelModule } from './barrel';
+import { DDBGuard } from './guards/ddb';
 import { DDBPageComponent } from './pages/ddb/page';
 import { DDBPageModule } from './pages/ddb/module';
 import { EC2PageComponent } from './pages/ec2/page';
@@ -15,6 +16,7 @@ import { RootPageComponent } from './pages/root/page';
 import { RootPageModule } from './pages/root/module';
 import { RouterModule } from '@angular/router';
 import { Routes } from '@angular/router';
+import { S3Guard } from './guards/s3';
 import { S3PageComponent } from './pages/s3/page';
 import { S3PageModule } from './pages/s3/module';
 import { StorageOption } from '@ngxs/storage-plugin';
@@ -38,13 +40,15 @@ const MODULES = [
 
 const ROUTES: Routes = [
   {path: '',       component: NoopPageComponent},
-  {path: 'ddb',    component: DDBPageComponent},
+  {path: 'ddb',    component: DDBPageComponent, canActivate: [DDBGuard]},
   {path: 'ec2',    component: EC2PageComponent},
-  {path: 's3',     component: S3PageComponent},
+  {path: 's3',     component: S3PageComponent, canActivate: [S3Guard]},
   {path: '**',     component: NoopPageComponent}
 ];
 
 const SERVICES = [
+  DDBGuard,
+  S3Guard
 ];
 
 @NgModule({

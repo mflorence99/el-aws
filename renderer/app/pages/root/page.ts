@@ -1,4 +1,7 @@
 import { Component } from '@angular/core';
+import { DDBGuard } from '../../guards/ddb';
+import { Observable } from 'rxjs';
+import { S3Guard } from '../../guards/s3';
 
 /**
  * Root page
@@ -14,20 +17,28 @@ export class RootPageComponent {
 
   tabs = [
 
-    { color: 'var(--mat-yellow-a400)', 
+    { 
+      canNavigate: [S3Guard],
+      color: 'var(--mat-yellow-a400)', 
       icon: ['fas', 'archive'], 
       route: '/s3', 
-      title: 'S3' },
+      title: 'S3' 
+    },
 
-    { color: 'var(--mat-amber-a400)', 
+    { 
+      canNavigate: [DDBGuard],
+      color: 'var(--mat-amber-a400)', 
       icon: ['fas', 'database'], 
       route: '/ddb', 
-      title: 'DDB' },
+      title: 'DDB' 
+    },
 
-    { color: 'var(--mat-orange-a400)', 
+    { 
+      color: 'var(--mat-orange-a400)', 
       icon: ['fas', 'server'], 
       route: '/ec2', 
-      title: 'EC2' }
+      title: 'EC2' 
+    }
 
   ];
 
@@ -38,8 +49,13 @@ export class RootPageComponent {
  */
 
 export interface RoutePresentation {
+  canNavigate?: CanNavigate[];
   color: string;
   icon: string[];
   route: string;
   title: string;
+}
+
+export interface CanNavigate {
+  canNavigate: () => Observable<boolean>;
 }

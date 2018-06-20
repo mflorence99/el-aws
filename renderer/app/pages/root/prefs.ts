@@ -7,6 +7,10 @@ import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { OnChange } from 'ellib';
 import { PrefsStateModel } from '../../state/prefs';
+import { Validators } from '@angular/forms';
+import { WindowStateModel } from '../../state/window';
+
+import { config } from '../../config';
 
 /**
  * Prefs page
@@ -22,16 +26,28 @@ import { PrefsStateModel } from '../../state/prefs';
 export class PrefsComponent extends LifecycleComponent { 
 
   @Input() prefs = {} as PrefsStateModel;
+  @Input() window = {} as WindowStateModel;
 
   prefsForm: FormGroup;
 
+  size = 259673;
+  today = Date.now();
+
   /** ctor */
   constructor(private drawerPanel: DrawerPanelComponent,
-    private formBuilder: FormBuilder) {
+              private formBuilder: FormBuilder) {
     super();
     // create prefs form controls
     this.prefsForm = this.formBuilder.group({
-      // NOTE: later
+      dateFormat: '',
+      endpoints: this.formBuilder.group({
+        ddb: ['', [Validators.required, Validators.pattern(config.urlValidationPattern)]],
+        s3: ['', [Validators.required, Validators.pattern(config.urlValidationPattern)]]
+      }),
+      quantityFormat: '',
+      showGridLines: false,
+      sortDirectories: '',
+      timeFormat: ''
     });
   }
 

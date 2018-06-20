@@ -1,4 +1,5 @@
 import { Action } from '@ngxs/store';
+import { Reload } from './window';
 import { State } from '@ngxs/store';
 import { StateContext } from '@ngxs/store';
 
@@ -6,22 +7,55 @@ import { StateContext } from '@ngxs/store';
 
 export class UpdatePrefs {
   static readonly type = '[Prefs] update prefs';
-  constructor(public readonly payload: PrefsStateModel) { }
+  constructor(public readonly prefs: PrefsStateModel) { }
 }
 
+export type DateFmt = 'ago' | 'shortDate' | 'mediumDate' | 'longDate' | 'fullDate';
+export type QuantityFmt = 'abbrev' | 'bytes' | 'number';
+export type SortOrder = 'alpha' | 'first' | 'last';
+export type TimeFmt = 'none' | 'shortTime' | 'mediumTime' | 'longTime' | 'fullTime';
+
 export interface PrefsStateModel {
+  dateFormat?: DateFmt;
+  endpoints?: {
+    ddb: string;
+    s3: string;
+  };
+  quantityFormat?: QuantityFmt;
+  showGridLines?: boolean;
+  sortDirectories?: SortOrder;
   submitted?: boolean;
+  timeFormat?: TimeFmt;
 }
 
 @State<PrefsStateModel>({
   name: 'prefs',
-  defaults: { }
+  defaults: {
+    dateFormat: 'mediumDate',
+    endpoints: {
+      ddb: '',
+      s3: ''
+    },
+    quantityFormat: 'bytes',
+    showGridLines: true,
+    sortDirectories: 'first',
+    timeFormat: 'none'
+  }
 }) export class PrefsState {
 
   @Action(UpdatePrefs)
-  updatePrefs({ patchState }: StateContext<PrefsStateModel>,
-              { payload }: UpdatePrefs) {
-    patchState(payload);   
+  updatePrefs({ dispatch, getState, patchState }: StateContext<PrefsStateModel>,
+              { prefs }: UpdatePrefs) {
+    const state = getState();
+    patchState({ ...prefs });
+    // NOTE: new endpoints and we start over
+    if (prefs.endpoints) {
+      const delta = Object.keys(prefs.endpoints).reduce((acc, key) => {
+        return acc || (prefs.endpoints[key] !== state.endpoints[key]);
+      }, false);
+      if (delta)
+        dispatch(new Reload()); 
+    }   
   }
 
 }
