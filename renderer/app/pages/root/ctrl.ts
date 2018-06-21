@@ -31,7 +31,6 @@ import { map } from 'rxjs/operators';
 import { nextTick } from 'ellib';
 import { of } from 'rxjs';
 import { take } from 'rxjs/operators';
-import { tap } from 'rxjs/operators';
 
 /**
  * Root controller
@@ -98,16 +97,12 @@ export class RootCtrlComponent extends LifecycleComponent {
     // setup the tabs depending on what is available
     this.tabs$ = combineLatest(this.navigator.map(tab => combineLatest(of(tab), ...this.canNavigate(tab))))
       .pipe(
-        map(items => {
-          return items.reduce((acc, item: any[]) => {
-            const tab = item[0];
-            const flags = item.slice(1);
-            if (flags.every(can => can))
-              acc.push(tab);
-            return acc;
-          }, []);
-        }),
-        tap(tabs => console.log(tabs))
+        map((combined: any[][]) => {
+          return combined
+            .map((item: any[]) => ({ tab: item[0], flags: item.slice(1) }))
+            .filter((item: { tab, flags }) => item.flags.every(can => can))
+            .map((item: { tab, flags }) => item.tab);
+        })
       );
     // set the initial bounds
     this.window$.pipe(take(1))
