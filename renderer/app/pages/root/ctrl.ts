@@ -27,9 +27,11 @@ import { WindowStateModel } from '../../state/window';
 import { combineLatest } from 'rxjs';
 import { config } from '../../config';
 import { debounce } from 'ellib';
+import { map } from 'rxjs/operators';
 import { nextTick } from 'ellib';
 import { of } from 'rxjs';
 import { take } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 
 /**
  * Root controller
@@ -94,9 +96,19 @@ export class RootCtrlComponent extends LifecycleComponent {
               private store: Store) {
     super();
     // setup the tabs depending on what is available
-    this.tabs$ = combineLatest(this.navigator
-      .filter(tab => this.canNavigate(tab).every(can => can))
-      .map(tab => of(tab)));
+    this.tabs$ = combineLatest(this.navigator.map(tab => combineLatest(of(tab), ...this.canNavigate(tab))))
+      .pipe(
+        map(items => {
+          return items.reduce((acc, item: any[]) => {
+            const tab = item[0];
+            const flags = item.slice(1);
+            if (flags.every(can => can))
+              acc.push(tab);
+            return acc;
+          }, []);
+        }),
+        tap(tabs => console.log(tabs))
+      );
     // set the initial bounds
     this.window$.pipe(take(1))
       .subscribe((window: WindowStateModel) => {
@@ -126,12 +138,12 @@ export class RootCtrlComponent extends LifecycleComponent {
 
   // private methods
 
-  private canNavigate(tab: Navigator): boolean[] {
+  private canNavigate(tab: Navigator): Observable<boolean>[] {
     if (!tab.canNavigate)
-      return [true];
+      return [of(true)];
     else return tab.canNavigate.map(clazz => {
       const guard = this.injector.get(clazz);
-      return guard.canNavigate();
+      return guard.canActivate();
     });
   }
 

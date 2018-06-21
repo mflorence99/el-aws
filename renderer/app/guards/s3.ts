@@ -1,13 +1,10 @@
-import { AppState } from '../state/app';
 import { CanActivate } from '@angular/router';
 import { CanActivateChild } from '@angular/router';
-import { CanNavigate } from '../components/navigator';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { PrefsState } from '../state/prefs';
 import { PrefsStateModel } from '../state/prefs';
 import { Select } from '@ngxs/store';
-import { Store } from '@ngxs/store';
 
 import { map } from 'rxjs/operators';
 
@@ -16,12 +13,9 @@ import { map } from 'rxjs/operators';
  */
 
 @Injectable()
-export class S3Guard implements CanActivate, CanActivateChild, CanNavigate {
+export class S3Guard implements CanActivate, CanActivateChild {
 
   @Select(PrefsState) prefs$: Observable<PrefsStateModel>;
-
-  /** ctor */
-  constructor(private store: Store) { }
 
   /** Guard routes that need S3 */
   canActivate(): Observable<boolean> {
@@ -31,11 +25,6 @@ export class S3Guard implements CanActivate, CanActivateChild, CanNavigate {
   /** Guard routes that need S3 */
   canActivateChild(): Observable<boolean> {
     return this._canActivate();
-  }
-
-  /** Guard for navigability */
-  canNavigate(): boolean {
-    return this.store.selectSnapshot((state: AppState) => !!state.prefs.endpoints.s3);
   }
 
   // private methods
