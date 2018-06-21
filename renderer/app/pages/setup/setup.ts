@@ -32,6 +32,7 @@ export class SetupComponent extends LifecycleComponent {
     super();
     // create prefs form controls
     this.prefsForm = this.formBuilder.group({
+      configured: '',
       endpoints: this.formBuilder.group({
         ddb: ['', [Validators.pattern(config.urlValidationPattern)]],
         s3: ['', [Validators.pattern(config.urlValidationPattern)]]

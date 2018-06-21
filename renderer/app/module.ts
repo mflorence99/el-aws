@@ -17,6 +17,7 @@ import { Routes } from '@angular/router';
 import { S3Guard } from './guards/s3';
 import { S3PageComponent } from './pages/s3/page';
 import { S3PageModule } from './pages/s3/module';
+import { SetupGuard } from './guards/setup';
 import { SetupPageComponent } from './pages/setup/page';
 import { SetupPageModule } from './pages/setup/module';
 import { StorageOption } from '@ngxs/storage-plugin';
@@ -39,15 +40,16 @@ const MODULES = [
 ];
 
 const ROUTES: Routes = [
-  {path: 'ddb',    component: DDBPageComponent, canActivate: [DDBGuard]},
+  {path: 'ddb',    component: DDBPageComponent,   canActivate: [DDBGuard]},
   {path: 'ec2',    component: EC2PageComponent},
-  {path: 's3',     component: S3PageComponent, canActivate: [S3Guard]},
-  {path: 'setup',  component: SetupPageComponent}
+  {path: 's3',     component: S3PageComponent,    canActivate: [S3Guard]},
+  {path: 'setup',  component: SetupPageComponent, canActivate: [SetupGuard]}
 ];
 
 const SERVICES = [
   DDBGuard,
-  S3Guard
+  S3Guard,
+  SetupGuard
 ];
 
 @NgModule({

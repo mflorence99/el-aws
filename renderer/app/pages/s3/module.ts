@@ -1,6 +1,7 @@
 import { BarrelModule } from '../../barrel';
 import { NgModule } from '@angular/core';
 import { S3PageComponent } from './page';
+import { S3Service } from './services/s3';
 
 /**
  * S3 page module
@@ -12,6 +13,10 @@ const COMPONENTS = [
 
 const MODULES = [
   BarrelModule
+];
+
+const SERVICES = [
+  S3Service
 ];
 
 @NgModule({
@@ -26,6 +31,10 @@ const MODULES = [
 
   imports: [
     ...MODULES
+  ],
+
+  providers: [
+    ...SERVICES
   ]
 
 })

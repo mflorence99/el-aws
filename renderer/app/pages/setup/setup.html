@@ -16,7 +16,7 @@
 </h3>
 
 <p>
-  You can update this setup later and make additional settings by clicking
+  You can update this setup and make additional settings later by clicking
   on <fa-icon [icon]="['fas', 'cog']"></fa-icon> to open the <b>Preferences</b> sidebar.
 </p>
 
@@ -48,6 +48,11 @@
   </div>
 
   <div class="buttons">
+
+    <mat-checkbox
+      formControlName="configured">
+      Got it
+    </mat-checkbox>
 
     <button 
       [disabled]="prefsForm.invalid"

@@ -16,6 +16,7 @@ import { RouterStateModel } from '@ngxs/router-plugin';
 import { S3Guard } from '../../guards/s3';
 import { Select } from '@ngxs/store';
 import { SetBounds } from '../../state/window';
+import { SetupGuard } from '../../guards/setup';
 import { StatusState } from '../../state/status';
 import { StatusStateModel } from '../../state/status';
 import { Store } from '@ngxs/store';
@@ -78,6 +79,7 @@ export class RootCtrlComponent extends LifecycleComponent {
     },
 
     {
+      canNavigate: [SetupGuard],
       color: 'white',
       icon: ['fas', 'cog'],
       route: '/setup',

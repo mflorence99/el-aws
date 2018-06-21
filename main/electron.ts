@@ -1,6 +1,7 @@
-import * as fs from 'fs';
 import * as path from 'path';
 import * as url from 'url';
+
+import AWS = require('aws-sdk');
 
 /**
  * Electron event dispatcher
@@ -10,25 +11,12 @@ const { BrowserWindow, app } = require('electron');
 const isDev = process.env['DEV_MODE'] === '1';
 
 // create credentials
-const credentialsDir = path.join(app.getPath('home'), '.aws');
-const credentialsPath = path.join(credentialsDir, 'credentials');
-const accessKey = process.env['AWS_ACCESS_KEY_ID'];
-const secretKey = process.env['AWS_SECRET_KEY'] || process.env['AWS_SECRET_ACCESS_KEY'];
-if (accessKey && secretKey) {
-  const credentials = `
-    [default]
-    aws_access_key_id=${accessKey}
-    aws_secret_access_key_id=${secretKey}
-  `.replace(/^\s+/gm, '').trim();
-  try {
-    fs.mkdirSync(credentialsDir);
-    fs.writeFileSync(credentialsPath, credentials, { flag: 'w' });
-  }
-  catch (ignored) { }
-}
+AWS.config.credentials = {
+  accessKeyId: process.env['AWS_ACCESS_KEY_ID'],
+  secretAccessKey: process.env['AWS_SECRET_KEY'] || process.env['AWS_SECRET_ACCESS_KEY']
+};
 
-// no credentials? no further!
-fs.accessSync(credentialsPath, fs.constants.R_OK);
+// event dispatcher
 
 let theWindow = null;
 

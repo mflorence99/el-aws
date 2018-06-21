@@ -51,13 +51,14 @@ export interface PrefsStateModel {
     const state = getState();
     patchState({ ...prefs });
     // NOTE: new endpoints and we start over
-    if (prefs.endpoints) {
-      const delta = Object.keys(prefs.endpoints).reduce((acc, key) => {
+    let startOver = prefs.configured !== state.configured;
+    if (!startOver && prefs.endpoints) {
+      startOver = Object.keys(prefs.endpoints).reduce((acc, key) => {
         return acc || (prefs.endpoints[key] !== state.endpoints[key]);
       }, false);
-      if (delta)
-        dispatch(new Reload()); 
     }   
+    if (startOver)
+      dispatch(new Reload()); 
   }
 
 }
