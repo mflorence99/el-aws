@@ -25,6 +25,15 @@ export class SetRoute {
   constructor(public readonly payload: string) { }
 }
 
+// NOTE: this is a bit of a hack because we're using ShowPagePrefs just
+// as pub/sub -- it doesn't change the state -- but we need a way to 
+// communicate with the (hidden) innards of a route
+
+export class ShowPagePrefs {
+  static readonly type = '[Window] show page prefs';
+  constructor(public readonly payload?: any) { }
+}
+
 export interface WindowStateModel {
   bounds?: {x, y, width, height};
   route?: string;

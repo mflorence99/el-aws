@@ -1,1 +1,26 @@
-S3
+<lib-drawer-container>
+
+  <elaws-header
+    [prefs]="ctrl.prefs$ | async"
+    [view]="ctrl.view$ | async">
+  </elaws-header>
+
+  <lib-drawer-panel
+    #viewDrawer
+    position="right"> 
+
+    <elaws-view
+      [view]="ctrl.view$ | async"
+      #view>
+    </elaws-view>  
+
+  </lib-drawer-panel>
+
+</lib-drawer-container> 
+
+<elaws-s3-ctrl
+  (openView)="viewDrawer.open()"
+  [viewForm]="view.viewForm.valueChanges | async"
+  #ctrl>
+</elaws-s3-ctrl> 
+

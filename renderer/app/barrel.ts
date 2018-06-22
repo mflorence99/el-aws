@@ -1,3 +1,4 @@
+import { AngularSplitModule } from 'angular-split';
 import { CommonModule } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { LibModule } from 'ellib';
@@ -22,6 +23,7 @@ import { RouterModule } from '@angular/router';
  */
 
 const MODULES = [
+  AngularSplitModule,
   CommonModule,
   FontAwesomeModule,
   LibModule,

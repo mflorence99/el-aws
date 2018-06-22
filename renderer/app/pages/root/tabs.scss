@@ -15,4 +15,8 @@ nav {
     grid-template-columns: auto auto;
   }
 
+  .mat-tab-group {
+    width: calc(100% - 48px);
+  }
+  
 }

@@ -1,9 +1,13 @@
 import { BarrelModule } from '../../barrel';
+import { ComponentsModule } from './components/module';
+import { DictionaryService } from './services/dictionary';
+import { HeaderComponent } from './header';
 import { InitGuard } from './guards/init';
 import { NgModule } from '@angular/core';
 import { NgxsModule } from '@ngxs/store';
 import { RouterModule } from '@angular/router';
 import { Routes } from '@angular/router';
+import { S3CtrlComponent } from './ctrl';
 import { S3PageComponent } from './page';
 import { S3Service } from './services/s3';
 
@@ -14,11 +18,14 @@ import { states } from './state/feature';
  */
 
 const COMPONENTS = [
+  HeaderComponent,
+  S3CtrlComponent,
   S3PageComponent
 ];
 
 const MODULES = [
-  BarrelModule
+  BarrelModule,
+  ComponentsModule
 ];
 
 const ROUTES: Routes = [
@@ -26,6 +33,7 @@ const ROUTES: Routes = [
 ];
 
 const SERVICES = [
+  DictionaryService,
   InitGuard,
   S3Service
 ];

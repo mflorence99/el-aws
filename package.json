@@ -41,6 +41,7 @@
     "@ngxs/router-plugin": "3",
     "@ngxs/storage-plugin": "3",
     "@ngxs/store": "3",
+    "angular-split": "1.0.0-rc.3",
     "aws-sdk": "2",
     "core-js": "2",
     "ellib": "latest",

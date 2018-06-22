@@ -1,0 +1,22 @@
+:host {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  padding: 0 8px;
+}
+
+.column {
+  cursor: default;
+  font-weight: bold;
+  font-size: 0.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+
+  &.quantity {
+    margin-left: auto;
+  }
+
+}

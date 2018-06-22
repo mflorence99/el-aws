@@ -1,0 +1,24 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.column:not(:first-child) {
+  border-left: 1px dotted var(--mat-grey-700);
+}
+
+.row {
+
+  &.gridlines {
+    border-bottom: 1px dotted var(--mat-grey-700);
+  }
+
+}
+
+.outliner {
+  background-color: var(--mat-grey-800);
+  display: none;
+  position: absolute;
+  width: 3px;
+  z-index: 65535;
+}

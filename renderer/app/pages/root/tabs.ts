@@ -8,6 +8,7 @@ import { Navigator } from '../../components/navigator';
 import { OnChange } from 'ellib';
 import { RouterStateModel } from '@ngxs/router-plugin';
 import { SetRoute } from '../../state/window';
+import { ShowPagePrefs } from '../../state/window';
 import { Store } from '@ngxs/store';
 import { ViewChild } from '@angular/core';
 
@@ -35,6 +36,10 @@ export class TabsComponent extends LifecycleComponent {
   }
 
   // event handlers
+
+  onShowPagePrefs(): void {
+    this.store.dispatch(new ShowPagePrefs());
+  }
 
   onTabSelect(ix: number): void {
     const route = this.tabs[ix].route;
