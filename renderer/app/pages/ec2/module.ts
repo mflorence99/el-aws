@@ -1,6 +1,8 @@
 import { BarrelModule } from '../../barrel';
 import { EC2PageComponent } from './page';
 import { NgModule } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { Routes } from '@angular/router';
 
 /**
  * EC2 page module
@@ -14,6 +16,10 @@ const MODULES = [
   BarrelModule
 ];
 
+const ROUTES: Routes = [
+  { path: '', component: EC2PageComponent }
+];
+
 @NgModule({
 
   declarations: [
@@ -25,7 +31,8 @@ const MODULES = [
   ],
 
   imports: [
-    ...MODULES
+    ...MODULES,
+    RouterModule.forChild(ROUTES)
   ]
 
 })

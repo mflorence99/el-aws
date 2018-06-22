@@ -1,9 +1,7 @@
 import { BarrelModule } from './barrel';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { BrowserModule } from '@angular/platform-browser';
 import { DDBGuard } from './guards/ddb';
-import { DDBPageComponent } from './pages/ddb/page';
-import { DDBPageModule } from './pages/ddb/module';
-import { EC2PageComponent } from './pages/ec2/page';
-import { EC2PageModule } from './pages/ec2/module';
 import { NgModule } from '@angular/core';
 import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
 import { NgxsModule } from '@ngxs/store';
@@ -15,8 +13,6 @@ import { RootPageModule } from './pages/root/module';
 import { RouterModule } from '@angular/router';
 import { Routes } from '@angular/router';
 import { S3Guard } from './guards/s3';
-import { S3PageComponent } from './pages/s3/page';
-import { S3PageModule } from './pages/s3/module';
 import { SetupGuard } from './guards/setup';
 import { SetupPageComponent } from './pages/setup/page';
 import { SetupPageModule } from './pages/setup/module';
@@ -32,18 +28,41 @@ const COMPONENTS = [ ];
 
 const MODULES = [
   BarrelModule,
-  DDBPageModule,
-  EC2PageModule,
+  BrowserAnimationsModule,
+  BrowserModule,
   RootPageModule,
-  S3PageModule,
   SetupPageModule
 ];
 
 const ROUTES: Routes = [
-  {path: 'ddb',    component: DDBPageComponent,   canActivate: [DDBGuard]},
-  {path: 'ec2',    component: EC2PageComponent},
-  {path: 's3',     component: S3PageComponent,    canActivate: [S3Guard]},
-  {path: 'setup',  component: SetupPageComponent, canActivate: [SetupGuard]}
+
+  { path: '', children: [
+
+    {
+      path: 'ddb',    
+      loadChildren: './pages/ddb/module#DDBPageModule',    
+      canActivate: [DDBGuard]
+    },
+
+    {
+      path: 'ec2',    
+      loadChildren: './pages/ec2/module#EC2PageModule',    
+    },
+
+    { 
+      path: 's3', 
+      loadChildren: './pages/s3/module#S3PageModule',    
+      canActivate: [S3Guard]
+    },
+
+    {
+      path: 'setup',  
+      component: SetupPageComponent, 
+      canActivate: [SetupGuard]
+    }
+
+  ]}
+
 ];
 
 const SERVICES = [
@@ -69,11 +88,11 @@ const SERVICES = [
     }),
     NgxsRouterPluginModule.forRoot(),
     NgxsStoragePluginModule.forRoot({
-      key: ['prefs', 'window'],
+      key: ['prefs', 's3color', 's3view', 'window'],
       storage: StorageOption.LocalStorage
     }),
     NgxsReduxDevtoolsPluginModule.forRoot({disabled: !window['DEV_MODE']}),
-    RouterModule.forRoot(ROUTES)
+    RouterModule.forRoot(ROUTES, { enableTracing: false })
   ],
 
   providers: [

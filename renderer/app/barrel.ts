@@ -1,5 +1,3 @@
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { LibModule } from 'ellib';
@@ -24,8 +22,6 @@ import { RouterModule } from '@angular/router';
  */
 
 const MODULES = [
-  BrowserModule,
-  BrowserAnimationsModule,
   CommonModule,
   FontAwesomeModule,
   LibModule,
