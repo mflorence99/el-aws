@@ -9,6 +9,10 @@ import { PrefsStateModel } from '../../../state/prefs';
 import { Select } from '@ngxs/store';
 import { Store } from '@ngxs/store';
 
+import { config } from '../../../config';
+
+import async from 'async-es';
+
 /**
  * S3 service
  */
@@ -31,13 +35,83 @@ export class S3Service {
     });
   }
 
-  /** Load all buckets */
-  loadBuckets(cb: (buckets: S3.Buckets) => void): void {
+  /** Load all buckets, augmenting them with owner and location */
+  loadBuckets(cb: (buckets: S3.Buckets, 
+                   owner: S3.Owner,
+                   locations: string[]) => void): void {
     this.s3.listBuckets((err, data: S3.ListBucketsOutput) => {
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString()}));
-      else cb(data.Buckets);
+      else {
+        const params = data.Buckets.map(bucket => ({ Bucket: bucket.Name }));
+        async.map(params, this.s3.getBucketLocation, 
+          (err, results: S3.GetBucketLocationOutput[]) => {
+            if (err)
+              this.store.dispatch(new Message({ level: 'error', text: err.toString()}));
+            else {
+              // an empty string means us-east-1
+              // @see https://docs.aws.amazon.com/AmazonS3/
+              //       latest/API/RESTBucketGETlocation.html
+              const locations = results.map(result => result.LocationConstraint || 'us-east-1');
+              cb(data.Buckets, data.Owner, locations);
+            }
+          });
+      }
     });
+  }
+
+  /** Load the contents of a "directory" */
+  loadDirectory(path: string,
+                cb: (contents: S3.ObjectList) => void): void {
+    const { bucket, prefix } = this.getBucketAndPrefixFromPath(path);
+    const params = {
+      Bucket: bucket,
+      Delimiter: config.s3Delimiter,
+      MaxKeys: config.s3MaxKeys,
+      Prefix: prefix
+    };
+    this.s3.listObjectsV2(params, (err, data: S3.ListObjectsV2Output) => {
+      if (err)
+        this.store.dispatch(new Message({ level: 'error', text: err.toString()}));
+      else {
+        // log directory load nicely because we refer to it all the time
+        console.group(`%cloadDirectory %c${bucket}%c${config.s3Delimiter}${prefix}`, 'color: #3367d6', 'color: black', 'color: grey');
+          console.table([
+            {
+              IsTruncated: data.IsTruncated,
+              MaxKeys: data.MaxKeys,
+              CommonPrefixes: data.CommonPrefixes,
+              EncodingType: data.EncodingType,
+              KeyCount: data.KeyCount,
+              ContinuationToken: data.ContinuationToken,
+              NextContinuationToken: data.NextContinuationToken,
+              StartAfter: data.StartAfter
+            }
+          ]);
+        console.groupEnd();
+        cb(data.Contents);
+      }
+    });
+  }
+
+  // private methods
+
+  private getBucketAndPrefixFromPath(path: string): { bucket, prefix} {
+    // @see https://stackoverflow.com/questions/17375127/
+    //        how-can-i-get-list-of-only-folders-in-amazon-s3-using-python-boto
+    let bucket, prefix;
+    const ix = path.indexOf(config.s3Delimiter);
+    if (ix === -1) {
+      bucket = path;
+      prefix = '';
+    }
+    else {
+      bucket = path.substring(0, ix);
+      prefix = path.substring(ix + 1);
+    }
+    if (prefix === config.s3Delimiter)
+      prefix = '';
+    return { bucket, prefix };
   }
 
 }

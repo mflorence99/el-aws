@@ -3,6 +3,9 @@
  */
 
 export class Config {
+
+  s3Delimiter = '/';
+  s3MaxKeys = 100;
   
   setBoundsThrottle = 250;
 

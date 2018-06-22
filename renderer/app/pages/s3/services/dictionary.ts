@@ -31,7 +31,9 @@ export class DictionaryService {
     return [
       { name: 'name', tag: 'Name', isString: true, showIcon: true },
       { name: 'size', tag: 'Size', isQuantity: true },
-      { name: 'timestamp', tag: 'Timestamp', isDate: true }
+      { name: 'timestamp', tag: 'Timestamp', isDate: true },
+      { name: 'storage', tag: 'Storage', isString: true },
+      { name: 'owner', tag: 'Owner', isString: true }
     ] as Dictionary[];
   }
 

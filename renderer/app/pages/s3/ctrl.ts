@@ -1,4 +1,5 @@
 import { Actions } from '@ngxs/store';
+import { AutoUnsubscribe } from 'ellib';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { Component } from '@angular/core';
 import { EventEmitter } from '@angular/core';
@@ -14,6 +15,7 @@ import { S3ViewStateModel } from './state/s3view';
 import { Select } from '@ngxs/store';
 import { ShowPagePrefs } from '../../state/window';
 import { Store } from '@ngxs/store';
+import { Subscription } from 'rxjs/Subscription';
 import { UpdateVisibility } from './state/s3view';
 import { ViewVisibility } from './state/s3view';
 
@@ -31,6 +33,7 @@ import { ofAction } from '@ngxs/store';
   template: ''
 })
 
+@AutoUnsubscribe()
 export class S3CtrlComponent extends LifecycleComponent {
 
   @Input() viewForm: any = { };
@@ -40,11 +43,13 @@ export class S3CtrlComponent extends LifecycleComponent {
   @Select(PrefsState) prefs$: Observable<PrefsStateModel>;
   @Select(S3ViewState) view$: Observable<S3ViewStateModel>;
 
+  subToActions: Subscription;
+
   /** ctor */
   constructor(private actions$: Actions,
               private store: Store) {
     super();
-    this.actions$.pipe(ofAction(ShowPagePrefs))
+    this.subToActions = this.actions$.pipe(ofAction(ShowPagePrefs))
       .subscribe(() => this.openView.emit());
   }
 

@@ -1,6 +1,9 @@
 import { BarrelModule } from '../../../barrel';
+import { BranchComponent } from './branch';
+import { CellComponent } from './cell';
 import { ColumnComponent } from './column';
 import { NgModule } from '@angular/core';
+import { RowComponent } from './row';
 import { ViewComponent } from './view';
 
 /**
@@ -8,7 +11,10 @@ import { ViewComponent } from './view';
  */
 
 const COMPONENTS = [
+  BranchComponent,
+  CellComponent,
   ColumnComponent,
+  RowComponent,
   ViewComponent
 ];
 
