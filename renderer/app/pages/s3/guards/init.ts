@@ -40,10 +40,6 @@ export class InitGuard implements CanActivate, CanActivateChild {
     return this.prefs$
       .pipe(
         tap(prefs => this.store.dispatch(new LoadBuckets())),
-        // TODO: temporary
-        tap(prefs => this.store.dispatch(new LoadDirectory({ path: 'jobengine2-producerbucket/' }))),
-        tap(prefs => this.store.dispatch(new LoadDirectory({ path: 'jobengine2-logs/' }))),
-        tap(prefs => this.store.dispatch(new LoadDirectory({ path: 'cc-api-reporter-reed-reports/Calibrate' }))),
         map(prefs => true)
       );
   }

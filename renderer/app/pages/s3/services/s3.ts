@@ -62,8 +62,10 @@ export class S3Service {
 
   /** Load the contents of a "directory" */
   loadDirectory(path: string,
-                cb: (contents: S3.ObjectList) => void): void {
-    const { bucket, prefix } = this.getBucketAndPrefixFromPath(path);
+                cb: (bucket: string,
+                     prefixes: S3.CommonPrefixList,
+                     contents: S3.ObjectList) => void): void {
+    const { bucket, prefix } = this.extractBucketAndPrefix(path);
     const params = {
       Bucket: bucket,
       Delimiter: config.s3Delimiter,
@@ -76,29 +78,26 @@ export class S3Service {
       else {
         // log directory load nicely because we refer to it all the time
         console.group(`%cloadDirectory %c${bucket}%c${config.s3Delimiter}${prefix}`, 'color: #3367d6', 'color: black', 'color: grey');
-          console.table([
-            {
-              IsTruncated: data.IsTruncated,
-              MaxKeys: data.MaxKeys,
-              CommonPrefixes: data.CommonPrefixes,
-              EncodingType: data.EncodingType,
-              KeyCount: data.KeyCount,
-              ContinuationToken: data.ContinuationToken,
-              NextContinuationToken: data.NextContinuationToken,
-              StartAfter: data.StartAfter
-            }
-          ]);
+          console.table({
+            IsTruncated: data.IsTruncated,
+            Name: data.Name,
+            MaxKeys: data.MaxKeys,
+            CommonPrefixes: data.CommonPrefixes.map(pfx => pfx.Prefix).join(),
+            EncodingType: data.EncodingType,
+            KeyCount: data.KeyCount,
+            NextContinuationToken: data.NextContinuationToken,
+            StartAfter: data.StartAfter
+          });
         console.groupEnd();
-        cb(data.Contents);
+        cb(data.Name, data.CommonPrefixes, data.Contents);
       }
     });
   }
 
   // private methods
 
-  private getBucketAndPrefixFromPath(path: string): { bucket, prefix} {
-    // @see https://stackoverflow.com/questions/17375127/
-    //        how-can-i-get-list-of-only-folders-in-amazon-s3-using-python-boto
+  private extractBucketAndPrefix(path: string): { bucket, prefix} {
+    // @see https://stackoverflow.com/questions/30726079/aws-s3-object-listing
     let bucket, prefix;
     const ix = path.indexOf(config.s3Delimiter);
     if (ix === -1) {

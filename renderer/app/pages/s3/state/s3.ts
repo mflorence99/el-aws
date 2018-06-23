@@ -2,9 +2,13 @@ import * as S3 from 'aws-sdk/clients/s3';
 
 import { Action } from '@ngxs/store';
 import { Message } from '../../../state/status';
+import { NgxsOnInit } from '@ngxs/store';
 import { NgZone } from '@angular/core';
+import { Observable } from 'rxjs';
+import { S3ColorState } from '../state/s3color';
 import { S3ColorStateModel } from '../state/s3color';
 import { S3Service } from '../services/s3';
+import { Select } from '@ngxs/store';
 import { SetColor } from '../state/s3color';
 import { State } from '@ngxs/store';
 import { StateContext } from '@ngxs/store';
@@ -20,7 +24,7 @@ export class BucketsLoaded {
 }
 
 export class DirectoryLoaded {
-  static readonly type = '[S3] durectory loaded';
+  static readonly type = '[S3] directory loaded';
   constructor(public readonly payload: { path: string, descs: Descriptor[] }) { }
 }
 
@@ -55,7 +59,9 @@ export interface S3StateModel {
 @State<S3StateModel>({
   name: 's3',
   defaults: {}
-}) export class S3State {
+}) export class S3State implements NgxsOnInit {
+
+  @Select(S3ColorState) s3color$: Observable<S3ColorStateModel>;
 
   s3color = {} as S3ColorStateModel;
 
@@ -105,42 +111,61 @@ export interface S3StateModel {
     const state = getState();
     if (!state[path]) {
       dispatch(new Message({ text: `Loading ${path} ...` }));
-      this.s3Svc.loadDirectory(path, (contents: S3.ObjectList) => {
-        dispatch(new Message({ text: `Loaded ${path}` }));
+      this.s3Svc.loadDirectory(path, 
+                               (bucket: string,
+                                prefixes: S3.CommonPrefixList,
+                                contents: S3.ObjectList) => {
+        const dirs = prefixes.map((prefix: S3.CommonPrefix) => {
+          return this.makeDescriptorForDirectory(bucket, prefix);
+        });
+        const files = contents.map((content: S3.Object) => {
+          return this.makeDescriptorForFile(path, content);
+        });
+        const descs = dirs.concat(files);
+        this.zone.run(() => {
+          dispatch(new DirectoryLoaded({ path, descs }));
+          dispatch(new Message({ text: `Loaded ${path}` }));
+        });
       });
     }
   }
 
+  // lifecycle methods
+
+  ngxsOnInit({ dispatch }: StateContext<S3StateModel>) {
+    this.s3color$.subscribe((s3color: S3ColorStateModel) => this.s3color = s3color);
+  }
+
   // private methods
 
-  private makeColor(desc: Descriptor): string {
-    if (desc.isBucket)
-      return 'var(--mat-deep-orange-a100)';
-    else if (desc.isDirectory)
-      return 'var(--mat-deep-orange-a100)';
-    else if (desc.isFile) {
-      const ix = desc.name.lastIndexOf('.');
-      if (ix <= 0)
-        return 'var(--mat-blue-grey-400)';
-      else {
-        const ext = desc.name.substring(ix + 1).toLowerCase();
-        let color = this.s3color[ext];
-        if (!color) {
-          color = config.s3Colors[Math.trunc(Math.random() * config.s3Colors.length)];
-          this.store.dispatch(new SetColor({ ext, color }));
-        }
-        return color;
+  private extractName(path: string): string {
+    if (path.endsWith(config.s3Delimiter))
+      path = path.substring(0, path.length - 1);
+    const parts = path.split(config.s3Delimiter);
+    return parts[parts.length - 1];
+  }
+
+  private makeColor(name: string): string {
+    const ix = name.lastIndexOf('.');
+    if (ix <= 0)
+      return 'var(--mat-blue-grey-400)';
+    else {
+      const ext = name.substring(ix + 1).toLowerCase();
+      let color = this.s3color[ext];
+      if (!color) {
+        color = config.s3Colors[Math.trunc(Math.random() * config.s3Colors.length)];
+        this.store.dispatch(new SetColor({ ext, color }));
       }
+      return color;
     }
-    else return 'var(--mat-blue-grey-400)';
   }
 
   private makeDescriptorForBucket(bucket: S3.Bucket,
                                   owner: S3.Owner,
                                   location: string): Descriptor {
-    const desc = {
-      color: null,
-      icon: null,
+    return {
+      color: 'var(--mat-deep-orange-a100)',
+      icon: 'fab bitbucket',
       isBucket: true,
       name: bucket.Name,
       owner: owner.DisplayName,
@@ -149,29 +174,49 @@ export interface S3StateModel {
       storage: location,
       timestamp: new Date(bucket.CreationDate)
     };
-    // fill in the blanks
-    desc.color = this.makeColor(desc);
-    desc.icon = this.makeIcon(desc);
-    return desc;
   }
 
-  private makeIcon(desc: Descriptor): string {
-    if (desc.isBucket)
-      return 'fab bitbucket';
-    else if (desc.isDirectory)
-      return 'fas folder';
-    else if (desc.isFile) {
-      let icon = null;
-      const ix = desc.name.lastIndexOf('.');
-      if (ix <= 0)
-        icon = config.s3IconByName[desc.name.toLowerCase()];
-      else {
-        const ext = desc.name.substring(ix + 1).toLowerCase();
-        icon = config.s3IconByExt[ext];
-      }
-      return icon ? icon : 'far file';
+  private makeDescriptorForDirectory(bucket: string,
+                                     prefix: S3.CommonPrefix): Descriptor {
+    return {
+      color: 'var(--mat-deep-orange-a100)',
+      icon: 'fas folder',
+      isDirectory: true,
+      name: this.extractName(prefix.Prefix),
+      owner: null,
+      path: bucket + config.s3Delimiter + prefix.Prefix,
+      size: 0,
+      storage: null,
+      timestamp: null
+    };
+  }
+
+  private makeDescriptorForFile(path: string,
+                                content: S3.Object): Descriptor {
+    const name = this.extractName(content.Key);
+    return {
+      color: this.makeColor(name),
+      icon: this.makeIcon(name),
+      isFile: true,
+      name: name,
+      owner: content.Owner? content.Owner.DisplayName : null,
+      path: path + content.Key,
+      size: content.Size,
+      storage: content.StorageClass,
+      timestamp: new Date(content.LastModified)
+    };
+}
+
+  private makeIcon(name: string): string {
+    let icon = null;
+    const ix = name.lastIndexOf('.');
+    if (ix <= 0)
+      icon = config.s3IconByName[name.toLowerCase()];
+    else {
+      const ext = name.substring(ix + 1).toLowerCase();
+      icon = config.s3IconByExt[ext];
     }
-    else return 'far file';
+    return icon ? icon : 'far file';
   }
 
 }
