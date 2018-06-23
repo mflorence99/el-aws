@@ -85,7 +85,13 @@ export class DictionaryService {
     const col = view.sortColumn;
     const dir = view.sortDir;
     return descriptors.sort((a, b) => {
-      if (entry.isDate)
+      if ((a[col] == null) && (b[col] == null))
+        return 0;
+      else if (a[col] == null)
+        return -1 * dir;
+      else if (b[col] == null)
+        return +1 * dir;
+      else if (entry.isDate)
         return (a[col].getTime() - b[col].getTime()) * dir;
       else if (entry.isQuantity)
         return (a[col] - b[col]) * dir;

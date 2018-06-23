@@ -1,0 +1,46 @@
+<main
+  [contextMenu]="contextMenu"
+  [contextMenuSubject]="null">
+
+  <elaws-branch
+    [contextMenu]="contextMenu"
+    [descriptorsByPath]="descriptorsByPath"
+    [dictionary]="dictionary"
+    [level]="0"
+    [path]="view.paths[0]"
+    [prefs]="prefs"
+    [s3]="s3"
+    [view]="view">
+  </elaws-branch>
+
+  <div
+    *ngIf="!loaded"
+    class="no-data">
+
+    <fa-icon
+      [icon]="['fas', 'spinner']"
+      [pulse]="true"
+      size="4x">
+    </fa-icon>
+
+  </div>
+
+</main>
+
+<context-menu>
+
+  <ng-template
+    contextMenuItem
+    (execute)="onExecute($event, 'properties')"
+    [enabled]="hasProperties.bind(this)">
+    <div>Properties...</div>
+  </ng-template>
+
+  <ng-template
+    contextMenuItem
+    (execute)="onExecute($event, 'url')"
+    [enabled]="isFile.bind(this)">
+    <div>Copy URL to clipboard</div>
+  </ng-template>
+
+</context-menu>

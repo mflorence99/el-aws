@@ -47,6 +47,7 @@
     "core-js": "2",
     "ellib": "latest",
     "hammerjs": "2",
+    "ngx-contextmenu": "5",
     "ngx-electron": "1",
     "roboto-fontface": "^0.9.0",
     "rxjs": "6",

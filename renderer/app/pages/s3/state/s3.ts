@@ -110,23 +110,31 @@ export interface S3StateModel {
     const { path } = payload;
     const state = getState();
     if (!state[path]) {
-      dispatch(new Message({ text: `Loading ${path} ...` }));
-      this.s3Svc.loadDirectory(path, 
-                               (bucket: string,
-                                prefixes: S3.CommonPrefixList,
-                                contents: S3.ObjectList) => {
-        const dirs = prefixes.map((prefix: S3.CommonPrefix) => {
-          return this.makeDescriptorForDirectory(bucket, prefix);
+      // NOTE: a path of / is really the buckets themselves
+      if (path === '/')
+        dispatch(new LoadBuckets());
+      else {
+        dispatch(new Message({ text: `Loading ${path} ...` }));
+        this.s3Svc.loadDirectory(path, 
+                                (bucket: string,
+                                  prefixes: S3.CommonPrefixList,
+                                  contents: S3.ObjectList) => {
+          const dirs = prefixes.map((prefix: S3.CommonPrefix) => {
+            return this.makeDescriptorForDirectory(bucket, prefix);
+          });
+          const files = contents
+            // TODO: I don't understand how these exist -- directories are phantoms!
+            .filter((content: S3.Object) => !content.Key.endsWith(config.s3Delimiter))
+            .map((content: S3.Object) => {
+              return this.makeDescriptorForFile(path, content);
+            });
+          const descs = dirs.concat(files);
+          this.zone.run(() => {
+            dispatch(new DirectoryLoaded({ path, descs }));
+            dispatch(new Message({ text: `Loaded ${path}` }));
+          });
         });
-        const files = contents.map((content: S3.Object) => {
-          return this.makeDescriptorForFile(path, content);
-        });
-        const descs = dirs.concat(files);
-        this.zone.run(() => {
-          dispatch(new DirectoryLoaded({ path, descs }));
-          dispatch(new Message({ text: `Loaded ${path}` }));
-        });
-      });
+      }
     }
   }
 
@@ -164,12 +172,12 @@ export interface S3StateModel {
                                   owner: S3.Owner,
                                   location: string): Descriptor {
     return {
-      color: 'var(--mat-deep-orange-a100)',
+      color: 'var(--mat-brown-400)',
       icon: 'fab bitbucket',
       isBucket: true,
       name: bucket.Name,
       owner: owner.DisplayName,
-      path: bucket.Name,
+      path: bucket.Name + config.s3Delimiter,
       size: 0,
       storage: location,
       timestamp: new Date(bucket.CreationDate)

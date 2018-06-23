@@ -13,4 +13,8 @@ lib-drawer-container {
     height: var(--elaws-header-height);
   }
 
+  elaws-tree {
+    height: calc(100% - var(--elaws-header-height));
+  }
+
 }

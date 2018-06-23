@@ -1,0 +1,31 @@
+<ng-container
+  *ngFor="let desc of descriptorsByPath[path]">
+
+  <elaws-row
+    (hydrated)="row.hydrated = $event"
+    [attr.path]="desc.path"
+    [contextMenu]="contextMenu"
+    [desc]="desc"
+    [dictionary]="dictionary"
+    [libHydrated]="desc.path"
+    [level]="level + 1"
+    [path]="desc.path"
+    [prefs]="prefs"
+    [s3]="s3"
+    [view]="view"
+    #row>
+  </elaws-row>
+
+  <elaws-branch
+    [contextMenu]="contextMenu"
+    [descriptorsByPath]="descriptorsByPath"
+    [dictionary]="dictionary"
+    [level]="level + 1"
+    [path]="desc.path"
+    [prefs]="prefs"
+    [s3]="s3"
+    [view]="view"
+    *ngIf="tree.isExpanded(desc)">
+  </elaws-branch>
+
+</ng-container>

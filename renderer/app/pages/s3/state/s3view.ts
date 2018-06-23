@@ -1,4 +1,6 @@
 import { Action } from '@ngxs/store';
+import { LoadDirectory } from './s3';
+import { Selector } from '@ngxs/store';
 import { State } from '@ngxs/store';
 import { StateContext } from '@ngxs/store';
 
@@ -77,13 +79,19 @@ export interface ViewWidths {
   }
 }) export class S3ViewState {
 
+  @Selector() static getPaths(state: S3ViewStateModel): string[] {
+    return state.paths;
+  }
+
   @Action(AddPath)
-  addPath({ getState, patchState }: StateContext<S3ViewStateModel>,
+  addPath({ dispatch, getState, patchState }: StateContext<S3ViewStateModel>,
           { payload }: AddPath) {
     const { path } = payload;
     const state = getState();
-    if (!state.paths.includes(path)) 
+    if (!state.paths.includes(path)) { 
       patchState({ paths: [...state.paths, path] });
+      dispatch(new LoadDirectory({ path }));
+    }
   }
 
   @Action(RemovePath)
@@ -92,8 +100,11 @@ export interface ViewWidths {
     const { path } = payload;
     const state = getState();
     const ix = state.paths.indexOf(path);
-    if (ix !== -1)
-      patchState({ paths: [...state.paths.splice(ix, 1)] });
+    if (ix !== -1) {
+      const paths = state.paths.slice(0);
+      paths.splice(ix, 1);
+      patchState({ paths });
+    }
   }
 
   @Action(UpdatePathLRU)

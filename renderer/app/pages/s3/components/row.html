@@ -1,0 +1,45 @@
+<div
+  *ngIf="hydrated">
+
+  <div
+    (contextmenu)="onContextMenu($event, desc)"
+    [contextMenu]="contextMenu"
+    [contextMenuSubject]="desc"
+    [ngClass]="{gridlines: prefs.showGridLines}"
+    class="row">
+
+    <div
+      [ngClass]="{expander: (ix === 0), gridlines: prefs.showGridLines}"
+      [ngStyle]="{'padding-left.px': (ix === 0)? level * 16 : 8,
+                  'width.%': entry.width? entry.width : (100 / dictionary.length)}"
+      *ngFor="let entry of dictionary; let ix = index"
+      class="cell">
+
+      <fa-icon
+        (click)="onExpand($event, desc)"
+        [fixedWidth]="true"
+        [icon]="tree.isExpanded(desc)? ['fas', 'angle-down'] :
+               (tree.isExpanding(desc)? ['far', 'clock'] : ['fas', 'angle-right'])"
+        [ngStyle]="{visibility: (desc.isBucket || desc.isDirectory) && !tree.isEmpty(desc)? 'visible' : 'hidden'}"
+        [pulse]="tree.isExpanding(desc)"
+        *ngIf="ix === 0"
+        size="xs">
+      </fa-icon>
+
+      <elaws-cell
+        [desc]="desc"
+        [entry]="entry"
+        [prefs]="prefs">
+      </elaws-cell>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div
+  class="dehydrated row"
+  [ngClass]="{gridlines: prefs.showGridLines}"
+  *ngIf="!hydrated">
+</div>

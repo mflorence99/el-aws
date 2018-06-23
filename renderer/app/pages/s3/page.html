@@ -5,6 +5,16 @@
     [view]="ctrl.view$ | async">
   </elaws-header>
 
+  <elaws-tree
+    [hydratorMargin]="'100px'" 
+    [hydratorTrace]="true"
+    [prefs]="ctrl.prefs$ | async"
+    [s3]="ctrl.s3$ | async"
+    [view]="ctrl.view$ | async"
+    #tree
+    libHydrator>
+  </elaws-tree>
+
   <lib-drawer-panel
     #viewDrawer
     position="right"> 
@@ -19,6 +29,7 @@
 </lib-drawer-container> 
 
 <elaws-s3-ctrl
+  (loaded)="tree.loaded = $event"
   (openView)="viewDrawer.open()"
   [viewForm]="view.viewForm.valueChanges | async"
   #ctrl>

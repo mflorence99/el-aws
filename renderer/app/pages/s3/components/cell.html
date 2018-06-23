@@ -1,0 +1,106 @@
+<div
+  [ngClass]="{mono: entry.showMono}"
+  *ngIf="entry.isDate"
+  class="cell">
+
+  <ng-container
+    *ngIf="desc[entry.name]">
+
+    <ng-container
+      *ngIf="prefs.dateFormat === 'ago'">
+      {{ desc[entry.name] | libTimeAgo }}
+    </ng-container>
+
+    <ng-container
+      *ngIf="(prefs.dateFormat !== 'ago') && (prefs.timeFormat === 'none')">
+      {{ desc[entry.name] | date:prefs.dateFormat }}
+    </ng-container>
+
+    <div
+      *ngIf="(prefs.dateFormat !== 'ago') && (prefs.timeFormat !== 'none')"
+      class="datetime">
+
+      <div>
+        {{ desc[entry.name] | date:prefs.dateFormat }}
+      </div>
+
+      <div>
+        {{ desc[entry.name] | date:prefs.timeFormat }}
+      </div>
+
+    </div>
+
+  </ng-container>
+
+  <ng-container
+    *ngIf="!desc[entry.name]">
+    &ndash;
+  </ng-container>
+
+</div>
+
+<div
+  [ngClass]="{mono: entry.showMono}"
+  *ngIf="entry.isQuantity"
+  class="cell quantity">
+
+  <ng-container
+    *ngIf="desc[entry.name]">
+
+    <ng-container
+      *ngIf="prefs.quantityFormat === 'abbrev'">
+      {{ desc[entry.name] | libNumeral:'0a' }}
+    </ng-container>
+
+    <ng-container
+      *ngIf="prefs.quantityFormat === 'bytes'">
+      {{ desc[entry.name] | libNumeral:'0b' }}
+    </ng-container>
+
+    <ng-container
+      *ngIf="prefs.quantityFormat === 'number'">
+      {{ desc[entry.name] | libNumeral:'0,0' }}
+    </ng-container>
+
+  </ng-container>
+
+  <ng-container
+    *ngIf="!desc[entry.name]">
+    &ndash;
+  </ng-container>
+
+</div>
+
+<div
+  [ngClass]="{mono: entry.showMono}"
+  *ngIf="entry.isString"
+  class="cell">
+
+  <fa-icon
+    [fixedWidth]="true"
+    [icon]="desc.icon.split(' ')"
+    [ngStyle]="{color: tree.isEmpty(desc)? 'var(--text-color)' : desc.color}"
+    *ngIf="entry.showIcon && desc.isBucket"
+    size="xs">
+  </fa-icon>
+
+  <fa-icon
+    [fixedWidth]="true"
+    [icon]="tree.isEmpty(desc)? ['far', 'folder'] :
+           (tree.isExpanded(desc)? ['fas', 'folder-open'] : ['fas', 'folder'])"
+    [ngStyle]="{color: desc.color}"
+    *ngIf="entry.showIcon && desc.isDirectory"
+    size="xs">
+  </fa-icon>
+
+  <fa-icon
+    [fixedWidth]="true"
+    [icon]="desc.icon.split(' ')"
+    [ngStyle]="{color: desc.color}"
+    *ngIf="entry.showIcon && desc.isFile"
+    size="xs">
+  </fa-icon>
+
+  {{ desc[entry.name] }}
+
+</div>

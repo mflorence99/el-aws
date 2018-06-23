@@ -1,6 +1,7 @@
 import { BarrelModule } from './barrel';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
+import { ContextMenuModule } from 'ngx-contextmenu';
 import { DDBGuard } from './guards/ddb';
 import { NgModule } from '@angular/core';
 import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
@@ -81,6 +82,9 @@ const SERVICES = [
 
   imports: [
     ...MODULES,
+    ContextMenuModule.forRoot({
+      autoFocus: true
+    }),
     NgxsModule.forRoot(states),
     NgxsLoggerPluginModule.forRoot({
       collapsed: false,

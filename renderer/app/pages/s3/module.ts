@@ -2,7 +2,6 @@ import { BarrelModule } from '../../barrel';
 import { ComponentsModule } from './components/module';
 import { DictionaryService } from './services/dictionary';
 import { HeaderComponent } from './header';
-import { InitGuard } from './guards/init';
 import { NgModule } from '@angular/core';
 import { NgxsModule } from '@ngxs/store';
 import { RouterModule } from '@angular/router';
@@ -31,12 +30,11 @@ const MODULES = [
 ];
 
 const ROUTES: Routes = [
-  { path: '', component: S3PageComponent, canActivate: [InitGuard] }
+  { path: '', component: S3PageComponent }
 ];
 
 const SERVICES = [
   DictionaryService,
-  InitGuard,
   S3Service
 ];
 
