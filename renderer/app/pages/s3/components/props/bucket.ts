@@ -37,19 +37,23 @@ export class BucketPropsComponent extends LifecycleComponent {
               private drawerPanel: DrawerPanelComponent,
               private formBuilder: FormBuilder,
               private store: Store) {
-      super();
+    super();
     // when we are opened we get a new context
     this.drawerPanel.opened.subscribe(context => {
       this.desc = <Descriptor>context;
       this.store.dispatch(new LoadBucketMetadata({ path: this.desc.path }));
+      // create props form controls
+      this.propsForm = this.formBuilder.group({
+        path: this.desc.path,
+        accelerate: this.formBuilder.group({
+          Status: ''
+        }),
+        versioning: this.formBuilder.group({
+          Status: ''
+        })
+      });
       this.newMetadata();
       this.cdf.detectChanges();
-    });
-    // create view form controls
-    this.propsForm = this.formBuilder.group({
-      versioning: this.formBuilder.group({
-        Status: ''
-      })
     });
   }
 
@@ -63,7 +67,11 @@ export class BucketPropsComponent extends LifecycleComponent {
   @OnChange('s3meta') newMetadata() {
     if (this.s3meta) {
       this.metadata = <BucketMetadata>this.s3meta[this.desc.path];
-      this.propsForm.patchValue(this.metadata, { emitEvent: false });
+      if (this.propsForm) { 
+        this.propsForm.reset();
+        if (this.metadata)
+          this.propsForm.patchValue(this.metadata, { emitEvent: false });
+      }
     }
   }
 

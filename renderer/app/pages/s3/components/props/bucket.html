@@ -21,22 +21,52 @@
   (submit)="close()"
   [formGroup]="propsForm"
   [libRxfSubmit]="propsForm"
+  *ngIf="propsForm"
   novalidate>
 
-  <mat-radio-group
-    class="group"
-    formControlName="versioning">
+  <input
+    formControlName="path"
+    type="hidden">
 
-    <b>Versioning</b>
+  <div
+    formGroupName="versioning">
 
-    <mat-radio-button value="Enabled">
-      Enable versioning
-    </mat-radio-button>
-    <mat-radio-button value="Suspended">
-      Suspend versioning
-    </mat-radio-button>
+    <mat-radio-group
+      class="group"
+      formControlName="Status">
 
-  </mat-radio-group>
+      <b>Versioning</b>
+
+      <mat-radio-button value="Enabled">
+        Enable versioning
+      </mat-radio-button>
+      <mat-radio-button value="Suspended">
+        Suspend versioning
+      </mat-radio-button>
+
+    </mat-radio-group>
+
+  </div>
+
+  <div
+    formGroupName="accelerate">
+
+    <mat-radio-group
+      class="group"
+      formControlName="Status">
+
+      <b>Transfer Acceleration</b>
+
+      <mat-radio-button value="Enabled">
+        Enable acceleration
+      </mat-radio-button>
+      <mat-radio-button value="Suspended">
+        Suspend acceleration
+      </mat-radio-button>
+
+    </mat-radio-group>
+
+  </div>
 
   <div class="okAndCancel">
 
@@ -47,7 +77,7 @@
     </a>
 
     <button
-      [disabled]="propsForm.invalid"
+      [disabled]="propsForm.invalid || !metadata"
       color="primary"
       mat-raised-button
       type="submit">

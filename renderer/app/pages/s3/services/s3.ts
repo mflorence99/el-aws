@@ -82,6 +82,7 @@ export class S3Service {
     const { bucket } = S3Service.extractBucketAndPrefix(path);
     const params = { Bucket: bucket };
     const funcs = {
+      accelerate: this.asyncify(this.s3.getBucketAccelerateConfiguration, params),
       acl: this.asyncify(this.s3.getBucketAcl, params),
       head: this.asyncify(this.s3.headBucket, params),
       tagging: this.asyncify(this.s3.getBucketTagging, params),
