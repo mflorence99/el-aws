@@ -1,6 +1,9 @@
+import { BucketMetadata } from '../services/s3';
 import { Descriptor } from '../state/s3';
 import { Injectable } from '@angular/core';
 import { PrefsStateModel } from '../../../state/prefs';
+import { S3MetaStateModel } from '../state/s3meta';
+import { S3Service } from '../services/s3';
 import { S3StateModel } from '../state/s3';
 import { S3ViewStateModel } from '../state/s3view';
 
@@ -52,10 +55,19 @@ export class DictionaryService {
   /** Build descriptors from nodes */
   descriptorsForView(path: string,
                      s3: S3StateModel,
+                     s3meta: S3MetaStateModel,
                      dictionary: Dictionary[],
                      prefs: PrefsStateModel,
                      view: S3ViewStateModel): Descriptor[] {
-    return this.sort(s3[path] || [], dictionary, prefs, view);
+    const descs = this.sort(s3[path] || [], dictionary, prefs, view);
+    const { bucket } = S3Service.extractBucketAndPrefix(path);
+    descs.forEach(desc => {
+      const metadata = <BucketMetadata>s3meta[bucket];
+      desc.versioning = metadata 
+        && metadata.versioning.Status 
+        && (metadata.versioning.Status === 'Enabled');
+    });
+    return descs;
   }
 
   // private methods
@@ -66,7 +78,7 @@ export class DictionaryService {
                view: S3ViewStateModel): Descriptor[] {
     if (['first', 'last'].includes(prefs.sortDirectories)) {
       const directories = descriptors.filter(desc => desc.isBucket || desc.isDirectory);
-      const files = descriptors.filter(desc => desc.isFile);
+      const files = descriptors.filter(desc => desc.isFile || desc.isFileVersion);
       if (prefs.sortDirectories === 'first')
         descriptors = this.sortImpl(directories, dictionary, view)
           .concat(this.sortImpl(files, dictionary, view));

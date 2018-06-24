@@ -1,6 +1,7 @@
 import * as S3 from 'aws-sdk/clients/s3';
 
 import { Action } from '@ngxs/store';
+import { LoadBucketMetadata } from './s3meta';
 import { Message } from '../../../state/status';
 import { NgxsOnInit } from '@ngxs/store';
 import { NgZone } from '@angular/core';
@@ -28,6 +29,11 @@ export class DirectoryLoaded {
   constructor(public readonly payload: { path: string, descs: Descriptor[] }) { }
 }
 
+export class FileVersionsLoaded {
+  static readonly type = '[S3] file versions loaded';
+  constructor(public readonly payload: { path: string, descs: Descriptor[] }) { }
+}
+
 export class LoadBuckets {
   static readonly type = '[S3] load buckets';
   constructor(public readonly payload?: any) { }
@@ -38,18 +44,25 @@ export class LoadDirectory {
   constructor(public readonly payload: { path: string }) { }
 }
 
+export class LoadFileVersions {
+  static readonly type = '[S3] load file versions';
+  constructor(public readonly payload: { path: string }) { }
+}
+
 export interface Descriptor {
   color: string;
   icon: string;
   isBucket?: boolean;
   isDirectory?: boolean;
   isFile?: boolean;
+  isFileVersion?: boolean;
   name: string;
   owner: string;
   path: string;
   size: number;
   storage: string;
   timestamp: Date;
+  versioning?: boolean;
 }
 
 export interface S3StateModel {
@@ -84,6 +97,13 @@ export interface S3StateModel {
     patchState({ [path]: descs });
   }
 
+  @Action(FileVersionsLoaded)
+  fileVersionsLoaded({ patchState }: StateContext<S3StateModel>,
+                     { payload }: FileVersionsLoaded) {
+    const { path, descs } = payload;
+    patchState({ [path]: descs });
+  }
+
   @Action(LoadBuckets)
   loadBuckets({ dispatch, getState }: StateContext<S3StateModel>,
               { payload }: LoadBuckets) {
@@ -94,6 +114,7 @@ export interface S3StateModel {
                               owner: S3.Owner, 
                               locations: string[]) => {
         const descs = buckets.map((bucket: S3.Bucket, ix) => {
+          dispatch(new LoadBucketMetadata({ path: bucket.Name + config.s3Delimiter }));
           return this.makeDescriptorForBucket(bucket, owner, locations[ix]);
         });
         this.zone.run(() => {
@@ -110,13 +131,16 @@ export interface S3StateModel {
     const { path } = payload;
     const state = getState();
     if (!state[path]) {
-      // NOTE: a path of / is really the buckets themselves
+      // NOTE: a path of just / is really the buckets themselves
+      // NOTE: a path that doesn't end in / is a file
       if (path === '/')
         dispatch(new LoadBuckets());
+      else if (!path.endsWith('/'))
+        dispatch(new LoadFileVersions({ path }));
       else {
         dispatch(new Message({ text: `Loading ${path} ...` }));
         this.s3Svc.loadDirectory(path, 
-                                (bucket: string,
+                                 (bucket: string,
                                   prefixes: S3.CommonPrefixList,
                                   contents: S3.ObjectList) => {
           const dirs = prefixes.map((prefix: S3.CommonPrefix) => {
@@ -135,6 +159,28 @@ export interface S3StateModel {
           });
         });
       }
+    }
+  }
+
+  @Action(LoadFileVersions)
+  loadFileVersions({ dispatch, getState }: StateContext<S3StateModel>,
+                   { payload }: LoadFileVersions) {
+    const { path } = payload;
+    const state = getState();
+    if (!state[path]) {
+      dispatch(new Message({ text: `Loading versions for ${path} ...` }));
+      this.s3Svc.loadFileVersions(path, (versions: S3.ObjectVersionList) => {
+        const descs = versions
+          // NOTE: that's an odd encoding but it is what the tests reveal
+          .filter((version: S3.ObjectVersion) => version.VersionId && (version.VersionId !== 'null'))
+          .map((version: S3.ObjectVersion) => {
+            return this.makeDescriptorForFileVersion(path, version);
+          });
+        this.zone.run(() => {
+          dispatch(new FileVersionsLoaded({ path, descs }));
+          dispatch(new Message({ text: `Loaded versions for ${path}` }));
+        });
+      });
     }
   }
 
@@ -213,7 +259,23 @@ export interface S3StateModel {
       storage: content.StorageClass,
       timestamp: new Date(content.LastModified)
     };
-}
+  }
+
+  private makeDescriptorForFileVersion(path: string,
+                                       version: S3.ObjectVersion): Descriptor {
+    const fileName = this.extractName(path);
+    return {
+      color: 'var(--mat-blue-grey-400)',
+      icon: this.makeIcon(fileName),
+      isFileVersion: true,
+      name: version.VersionId,
+      owner: version.Owner? version.Owner.DisplayName : null,
+      path: path + '?versionid=' + version.VersionId,
+      size: version.Size,
+      storage: version.StorageClass,
+      timestamp: new Date(version.LastModified)
+    };
+  }
 
   private makeIcon(name: string): string {
     let icon = null;

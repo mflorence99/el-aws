@@ -39,7 +39,7 @@
   <ng-template
     contextMenuItem
     (execute)="onExecute($event, 'url')"
-    [enabled]="isFile.bind(this)">
+    [enabled]="hasURL.bind(this)">
     <div>Copy URL to clipboard</div>
   </ng-template>
 

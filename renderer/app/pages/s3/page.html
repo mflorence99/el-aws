@@ -12,6 +12,7 @@
     [hydratorTrace]="true"
     [prefs]="ctrl.prefs$ | async"
     [s3]="ctrl.s3$ | async"
+    [s3meta]="ctrl.s3meta$ | async"
     [view]="ctrl.view$ | async"
     #tree
     libHydrator>
@@ -22,7 +23,7 @@
     position="left"> 
 
     <elaws-bucket-props
-      [s3meta]="ctrl.s3meta | async">
+      [s3meta]="ctrl.s3meta$ | async">
     </elaws-bucket-props>  
 
   </lib-drawer-panel>
@@ -32,7 +33,7 @@
     position="left"> 
 
     <elaws-file-props
-      [s3meta]="ctrl.s3meta | async">
+      [s3meta]="ctrl.s3meta$ | async">
     </elaws-file-props>  
 
   </lib-drawer-panel>

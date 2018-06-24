@@ -97,7 +97,7 @@
     [fixedWidth]="true"
     [icon]="desc.icon.split(' ')"
     [ngStyle]="{color: desc.color}"
-    *ngIf="entry.showIcon && desc.isFile"
+    *ngIf="entry.showIcon && (desc.isFile || desc.isFileVersion)"
     size="xs">
   </fa-icon>
 

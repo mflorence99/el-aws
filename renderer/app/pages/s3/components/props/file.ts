@@ -3,7 +3,7 @@ import { ChangeDetectorRef } from '@angular/core';
 import { Component } from '@angular/core';
 import { Descriptor } from '../../state/s3';
 import { DrawerPanelComponent } from 'ellib';
-import { FileMetadata } from '../../state/s3meta';
+import { FileMetadata } from '../../services/s3';
 import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { LoadFileMetadata } from '../../state/s3meta';
@@ -22,12 +22,12 @@ import { Store } from '@ngxs/store';
   styleUrls: ['file.scss']
 })
 
-export class FilePropsComponent extends LifecycleComponent{
+export class FilePropsComponent extends LifecycleComponent {
 
   @Input() s3meta = { } as S3MetaStateModel;
 
   desc = { } as Descriptor;
-  meta = { } as FileMetadata;
+  metadata = { } as FileMetadata;
 
   /** ctor */
   constructor(private cdf: ChangeDetectorRef,
@@ -46,7 +46,7 @@ export class FilePropsComponent extends LifecycleComponent{
 
   @OnChange('s3meta') newMeta() {
     if (this.s3meta)
-      this.meta = this.s3meta[this.desc.path];
+      this.metadata = <FileMetadata>this.s3meta[this.desc.path];
   }
 
 }

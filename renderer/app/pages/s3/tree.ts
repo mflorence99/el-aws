@@ -14,6 +14,7 @@ import { Message } from '../../state/status';
 import { OnChange } from 'ellib';
 import { Output } from '@angular/core';
 import { PrefsStateModel } from '../../state/prefs';
+import { S3MetaStateModel } from './state/s3meta';
 import { S3StateModel } from './state/s3';
 import { S3ViewStateModel } from './state/s3view';
 import { Store } from '@ngxs/store';
@@ -40,6 +41,7 @@ export class TreeComponent extends LifecycleComponent {
   @Input() prefs = {} as PrefsStateModel;
   @Input() view = {} as S3ViewStateModel;
   @Input() s3 = {} as S3StateModel;
+  @Input() s3meta = {} as S3MetaStateModel;
 
   @Output() editBucketProps = new EventEmitter<Descriptor>();
   @Output() editFileProps = new EventEmitter<Descriptor>();
@@ -66,7 +68,12 @@ export class TreeComponent extends LifecycleComponent {
 
   /** Is this an object that has properties? */
   hasProperties(desc: Descriptor): boolean {
-    return this.isBucket(desc) || this.isFile(desc);
+    return this.isBucket(desc) || this.isFile(desc) || this.isFileVersion(desc);
+  }
+
+  /** Is this an object that has a URL? */
+  hasURL(desc: Descriptor): boolean {
+    return this.isFile(desc) || this.isFileVersion(desc);
   }
 
   /** Is context menu bound to a bucket? */
@@ -87,7 +94,7 @@ export class TreeComponent extends LifecycleComponent {
   /** Is this path empty? */
   isEmpty(desc: Descriptor): boolean {
     return desc
-      && (desc.isBucket || desc.isDirectory)
+      && (desc.isBucket || desc.isDirectory || (desc.isFile && desc.versioning))
       && !!this.s3[desc.path]
       && (this.s3[desc.path].length === 0);
   }
@@ -95,7 +102,7 @@ export class TreeComponent extends LifecycleComponent {
   /** Is this path expanded? */
   isExpanded(desc: Descriptor): boolean {
     return desc
-      && (desc.isBucket || desc.isDirectory)
+      && (desc.isBucket || desc.isDirectory || (desc.isFile && desc.versioning))
       && this.view.paths.includes(desc.path)
       && !!this.s3[desc.path];
   }
@@ -103,7 +110,7 @@ export class TreeComponent extends LifecycleComponent {
   /** Is this path expanding? */
   isExpanding(desc: Descriptor): boolean {
     return desc
-      && (desc.isBucket || desc.isDirectory)
+      && (desc.isBucket || desc.isDirectory || (desc.isFile && desc.versioning))
       && this.view.paths.includes(desc.path)
       && !this.s3[desc.path];
   }
@@ -111,6 +118,11 @@ export class TreeComponent extends LifecycleComponent {
   /** Is context menu bound to a file? */
   isFile(desc: Descriptor): boolean {
     return desc && desc.isFile;
+  }
+
+  /** Is context menu bound to a file version? */
+  isFileVersion(desc: Descriptor): boolean {
+    return desc && desc.isFileVersion;
   }
 
   // event handlers
@@ -123,7 +135,7 @@ export class TreeComponent extends LifecycleComponent {
       case 'properties':
         if (desc.isBucket)
           this.editBucketProps.emit(desc);
-        else if (desc.isFile)
+        else if (desc.isFile || desc.isFileVersion)
           this.editFileProps.emit(desc);
         break;
       case 'url':
@@ -136,8 +148,8 @@ export class TreeComponent extends LifecycleComponent {
 
   // bind OnChange handlers
 
-  @OnChange('prefs', 's3', 'view') onChange(): void {
-    if (this.prefs && this.s3 && this.view)
+  @OnChange('prefs', 's3', 's3meta', 'view') onChange(): void {
+    if (this.prefs && this.s3 && this.s3meta && this.view)
       this.updateDescriptors();
   }
 
@@ -147,7 +159,12 @@ export class TreeComponent extends LifecycleComponent {
     this.dictionary = this.dictSvc.dictionaryForView(this.view);
     this.view.paths.forEach(path => {
       this.descriptorsByPath[path] =
-        this.dictSvc.descriptorsForView(path, this.s3, this.dictionary, this.prefs, this.view);
+        this.dictSvc.descriptorsForView(path, 
+                                        this.s3, 
+                                        this.s3meta, 
+                                        this.dictionary, 
+                                        this.prefs, 
+                                        this.view);
     });
     this.cdf.detectChanges();
   }

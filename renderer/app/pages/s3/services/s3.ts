@@ -14,6 +14,24 @@ import { config } from '../../../config';
 import async from 'async-es';
 
 /**
+ * Model S3 service data
+ */
+
+
+export interface BucketMetadata {
+  acl?: S3.GetBucketAclOutput;
+  head?: any;
+  tagging?: S3.GetBucketTaggingOutput;
+  versioning?: S3.GetBucketVersioningOutput;
+}
+
+export interface FileMetadata {
+  acl?: S3.GetObjectAclOutput;
+  head?: S3.HeadObjectOutput;
+  tagging?: S3.GetObjectTaggingOutput;
+}
+
+/**
  * S3 service
  */
 
@@ -26,12 +44,55 @@ export class S3Service {
 
   private s3_: typeof S3;
 
+  /** Separate bucket, prefix aka Key or object */
+  static extractBucketAndPrefix(path: string): { bucket, prefix, version } {
+    // @see https://stackoverflow.com/questions/30726079/aws-s3-object-listing
+    let bucket, prefix, version = null;
+    const ix = path.indexOf(config.s3Delimiter);
+    if (ix === -1) {
+      bucket = path;
+      prefix = '';
+    }
+    else {
+      bucket = path.substring(0, ix);
+      prefix = path.substring(ix + 1);
+    }
+    if (prefix === config.s3Delimiter)
+      prefix = '';
+    const iy = prefix.indexOf('?versionid=');
+    if (iy !== -1) {
+      version = prefix.substring(iy + 11);
+      prefix = prefix.substring(0, iy);
+    }
+    return { bucket, prefix, version };
+  }
+
   /** ctor */
   constructor(private electron: ElectronService,
               private store: Store) {
     this.s3_ = this.electron.remote.require('aws-sdk/clients/s3');
     this.prefs$.subscribe((prefs: PrefsStateModel) => {
       this.s3 = new this.s3_({ endpoint: prefs.endpoints.s3 });
+    });
+  }
+
+  /** Load bucket metadata */
+  loadBucketMetadata(path: string,
+                     cb: (metadata: BucketMetadata) => void): void {
+    const { bucket } = S3Service.extractBucketAndPrefix(path);
+    const params = { Bucket: bucket };
+    const funcs = {
+      acl: this.asyncify(this.s3.getBucketAcl, params),
+      head: this.asyncify(this.s3.headBucket, params),
+      tagging: this.asyncify(this.s3.getBucketTagging, params),
+      versioning: this.asyncify(this.s3.getBucketVersioning, params)
+    };
+    async.parallelLimit(funcs, 1, (err, results: any) => {
+      const metadata = Object.keys(funcs).reduce((acc, key) => {
+        acc[key] = results[key].value || { };
+        return acc;
+      }, { } as BucketMetadata);
+      cb(metadata);
     });
   }
 
@@ -65,7 +126,7 @@ export class S3Service {
                 cb: (bucket: string,
                      prefixes: S3.CommonPrefixList,
                      contents: S3.ObjectList) => void): void {
-    const { bucket, prefix } = this.extractBucketAndPrefix(path);
+    const { bucket, prefix } = S3Service.extractBucketAndPrefix(path);
     const params = {
       Bucket: bucket,
       Delimiter: config.s3Delimiter,
@@ -75,57 +136,53 @@ export class S3Service {
     this.s3.listObjectsV2(params, (err, data: S3.ListObjectsV2Output) => {
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString()}));
-      else {
-        // log directory load nicely because we refer to it all the time
-        console.group(`%cloadDirectory %c${bucket}%c${config.s3Delimiter}${prefix}`, 'color: #3367d6', 'color: black', 'color: grey');
-          console.table({
-            IsTruncated: data.IsTruncated,
-            Name: data.Name,
-            MaxKeys: data.MaxKeys,
-            CommonPrefixes: data.CommonPrefixes.map(pfx => pfx.Prefix).join(),
-            EncodingType: data.EncodingType,
-            KeyCount: data.KeyCount,
-            NextContinuationToken: data.NextContinuationToken,
-            StartAfter: data.StartAfter
-          });
-        console.groupEnd();
-        cb(data.Name, data.CommonPrefixes, data.Contents);
-      }
+      else cb(data.Name, data.CommonPrefixes, data.Contents);
     });
   }
 
-  /** Load bucket metadata */
+  /** Load file metadata */
   loadFileMetadata(path: string,
-                   cb: (metaData: S3.HeadObjectOutput) => void): void {
-    const { bucket, prefix } = this.extractBucketAndPrefix(path);
+                   cb: (metadata: FileMetadata) => void): void {
+    const { bucket, prefix, version } = S3Service.extractBucketAndPrefix(path);
     const params = {
       Bucket: bucket,
-      Key: prefix
+      Key: prefix,
+      VersionId: version
     };
-    this.s3.headObject(params, (err, data: S3.HeadObjectOutput) => {
+    const funcs = {
+      acl: this.asyncify(this.s3.getObjectAcl, params),
+      head: this.asyncify(this.s3.headObject, params),
+      tagging: this.asyncify(this.s3.getObjectTagging, params)
+    };
+    async.parallelLimit(funcs, 1, (err, results: any) => {
+      const metadata = Object.keys(funcs).reduce((acc, key) => {
+        acc[key] = results[key].value || { };
+        return acc;
+      }, { } as FileMetadata);
+      cb(metadata);
+    });
+  }
+
+  /** Load the versions of a file */
+  loadFileVersions(path: string,
+                   cb: (versions: S3.ObjectVersionList) => void): void {
+    const { bucket, prefix } = S3Service.extractBucketAndPrefix(path);
+    const params = {
+      Bucket: bucket,
+      Prefix: prefix
+    };
+    this.s3.listObjectVersions(params, (err, data: S3.ListObjectVersionsOutput) => {
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
-      else cb(data);
+      else cb(data.Versions);
     });
   }
 
   // private methods
 
-  private extractBucketAndPrefix(path: string): { bucket, prefix} {
-    // @see https://stackoverflow.com/questions/30726079/aws-s3-object-listing
-    let bucket, prefix;
-    const ix = path.indexOf(config.s3Delimiter);
-    if (ix === -1) {
-      bucket = path;
-      prefix = '';
-    }
-    else {
-      bucket = path.substring(0, ix);
-      prefix = path.substring(ix + 1);
-    }
-    if (prefix === config.s3Delimiter)
-      prefix = '';
-    return { bucket, prefix };
+  private asyncify(fn: Function, 
+                   ...args: any[]): Function {
+    return async.reflect(async.apply(fn, ...args));
   }
 
 }
