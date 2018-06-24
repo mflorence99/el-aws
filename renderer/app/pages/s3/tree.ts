@@ -7,10 +7,12 @@ import { Descriptor } from './state/s3';
 import { Dictionary } from './services/dictionary';
 import { DictionaryService } from './services/dictionary';
 import { ElectronService } from 'ngx-electron';
+import { EventEmitter } from '@angular/core';
 import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { Message } from '../../state/status';
 import { OnChange } from 'ellib';
+import { Output } from '@angular/core';
 import { PrefsStateModel } from '../../state/prefs';
 import { S3StateModel } from './state/s3';
 import { S3ViewStateModel } from './state/s3view';
@@ -38,6 +40,9 @@ export class TreeComponent extends LifecycleComponent {
   @Input() prefs = {} as PrefsStateModel;
   @Input() view = {} as S3ViewStateModel;
   @Input() s3 = {} as S3StateModel;
+
+  @Output() editBucketProps = new EventEmitter<Descriptor>();
+  @Output() editFileProps = new EventEmitter<Descriptor>();
 
   @ViewChild(ContextMenuComponent) contextMenu: ContextMenuComponent;
 
@@ -116,6 +121,10 @@ export class TreeComponent extends LifecycleComponent {
     const desc = event.item || <Descriptor>{ isDirectory: true, path: this.view.paths[0] };
     switch (command) {
       case 'properties':
+        if (desc.isBucket)
+          this.editBucketProps.emit(desc);
+        else if (desc.isFile)
+          this.editFileProps.emit(desc);
         break;
       case 'url':
         const url = `${this.prefs.endpoints.s3}${config.s3Delimiter}${desc.path}`;

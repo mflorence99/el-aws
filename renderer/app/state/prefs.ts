@@ -20,6 +20,7 @@ export interface PrefsStateModel {
   dateFormat?: DateFmt;
   endpoints?: {
     ddb: string;
+    ec2: string;
     s3: string;
   };
   quantityFormat?: QuantityFmt;
@@ -36,6 +37,7 @@ export interface PrefsStateModel {
     dateFormat: 'mediumDate',
     endpoints: {
       ddb: '',
+      ec2: '',
       s3: ''
     },
     quantityFormat: 'bytes',

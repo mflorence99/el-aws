@@ -94,6 +94,21 @@ export class S3Service {
     });
   }
 
+  /** Load bucket metadata */
+  loadFileMetadata(path: string,
+                   cb: (metaData: S3.HeadObjectOutput) => void): void {
+    const { bucket, prefix } = this.extractBucketAndPrefix(path);
+    const params = {
+      Bucket: bucket,
+      Key: prefix
+    };
+    this.s3.headObject(params, (err, data: S3.HeadObjectOutput) => {
+      if (err)
+        this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
+      else cb(data);
+    });
+  }
+
   // private methods
 
   private extractBucketAndPrefix(path: string): { bucket, prefix} {

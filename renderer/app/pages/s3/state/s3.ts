@@ -71,7 +71,7 @@ export interface S3StateModel {
               private zone: NgZone) { }
 
   @Action(BucketsLoaded)
-  bucketsLoaded({ dispatch, patchState }: StateContext<S3StateModel>,
+  bucketsLoaded({ patchState }: StateContext<S3StateModel>,
                 { payload }: BucketsLoaded) {
     const { path, descs } = payload;
     patchState({ [path]: descs });

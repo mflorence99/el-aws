@@ -6,6 +6,8 @@
   </elaws-header>
 
   <elaws-tree
+    (editBucketProps)="bucketPropsDrawer.open($event)"
+    (editFileProps)="filePropsDrawer.open($event)"
     [hydratorMargin]="'100px'" 
     [hydratorTrace]="true"
     [prefs]="ctrl.prefs$ | async"
@@ -14,6 +16,26 @@
     #tree
     libHydrator>
   </elaws-tree>
+
+  <lib-drawer-panel
+    #bucketPropsDrawer
+    position="left"> 
+
+    <elaws-bucket-props
+      [s3meta]="ctrl.s3meta | async">
+    </elaws-bucket-props>  
+
+  </lib-drawer-panel>
+
+  <lib-drawer-panel
+    #filePropsDrawer
+    position="left"> 
+
+    <elaws-file-props
+      [s3meta]="ctrl.s3meta | async">
+    </elaws-file-props>  
+
+  </lib-drawer-panel>
 
   <lib-drawer-panel
     #viewDrawer

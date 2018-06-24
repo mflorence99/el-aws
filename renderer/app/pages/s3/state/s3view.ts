@@ -9,32 +9,32 @@ import { isObjectEqual } from 'ellib';
 /** NOTE: actions must come first because of AST */
 
 export class AddPath {
-  static readonly type = '[View] add path';
+  static readonly type = '[S3View] add path';
   constructor(public readonly payload: { path: string }) { }
 }
 
 export class RemovePath {
-  static readonly type = '[View] remove path';
+  static readonly type = '[S3View] remove path';
   constructor(public readonly payload: { path: string }) { }
 }
 
 export class UpdatePathLRU {
-  static readonly type = '[View] update path LRU';
+  static readonly type = '[S3View] update path LRU';
   constructor(public readonly payload: { path: string }) { }
 }
 
 export class UpdateSort {
-  static readonly type = '[View] update sort';
+  static readonly type = '[S3View] update sort';
   constructor(public readonly payload: { sortColumn: string, sortDir: number }) { }
 }
 
 export class UpdateVisibility {
-  static readonly type = '[View] update visibility';
+  static readonly type = '[S3View] update visibility';
   constructor(public readonly payload: { visibility: ViewVisibility }) { }
 }
 
 export class UpdateWidths {
-  static readonly type = '[View] update widths';
+  static readonly type = '[S3View] update widths';
   constructor(public readonly payload: { widths: ViewWidths }) { }
 }
 

@@ -12,6 +12,8 @@ import { OnChange } from 'ellib';
 import { Output } from '@angular/core';
 import { PrefsState } from '../../state/prefs';
 import { PrefsStateModel } from '../../state/prefs';
+import { S3MetaState } from './state/s3meta';
+import { S3MetaStateModel } from './state/s3meta';
 import { S3State } from './state/s3';
 import { S3StateModel } from './state/s3';
 import { S3ViewState } from './state/s3view';
@@ -47,6 +49,7 @@ export class S3CtrlComponent extends LifecycleComponent {
 
   @Select(PrefsState) prefs$: Observable<PrefsStateModel>;
   @Select(S3State) s3$: Observable<S3StateModel>;
+  @Select(S3MetaState) s3meta$: Observable<S3MetaStateModel>;
   @Select(S3ViewState) view$: Observable<S3ViewStateModel>;
 
   subToLoaded: Subscription;

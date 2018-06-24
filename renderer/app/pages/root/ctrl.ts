@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy } from '@angular/core';
 import { Component } from '@angular/core';
 import { DDBGuard } from '../../guards/ddb';
+import { EC2Guard } from '../../guards/ec2';
 import { ElectronService } from 'ngx-electron';
 import { Injector } from '@angular/core';
 import { Input } from '@angular/core';
@@ -65,6 +66,7 @@ export class RootCtrlComponent extends LifecycleComponent {
     },
 
     {
+      canNavigate: [EC2Guard],
       color: 'var(--mat-orange-a400)',
       icon: ['fas', 'server'],
       route: '/ec2',

@@ -3,6 +3,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
 import { ContextMenuModule } from 'ngx-contextmenu';
 import { DDBGuard } from './guards/ddb';
+import { EC2Guard } from './guards/ec2';
 import { NgModule } from '@angular/core';
 import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
 import { NgxsModule } from '@ngxs/store';
@@ -47,7 +48,8 @@ const ROUTES: Routes = [
 
     {
       path: 'ec2',    
-      loadChildren: './pages/ec2/module#EC2PageModule',    
+      loadChildren: './pages/ec2/module#EC2PageModule',
+      canActivate: [EC2Guard],    
     },
 
     { 
@@ -68,6 +70,7 @@ const ROUTES: Routes = [
 
 const SERVICES = [
   DDBGuard,
+  EC2Guard,
   S3Guard,
   SetupGuard
 ];

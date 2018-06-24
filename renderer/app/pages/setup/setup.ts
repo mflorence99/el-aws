@@ -35,6 +35,7 @@ export class SetupComponent extends LifecycleComponent {
       configured: '',
       endpoints: this.formBuilder.group({
         ddb: ['', [Validators.pattern(config.urlValidationPattern)]],
+        ec2: ['', [Validators.pattern(config.urlValidationPattern)]],
         s3: ['', [Validators.pattern(config.urlValidationPattern)]]
       })
     });
