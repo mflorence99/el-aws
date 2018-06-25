@@ -36,17 +36,17 @@ export class FileVersionsLoaded {
 
 export class LoadBuckets {
   static readonly type = '[S3] load buckets';
-  constructor(public readonly payload?: any) { }
+  constructor(public readonly payload: { force?: boolean }) { }
 }
 
 export class LoadDirectory {
   static readonly type = '[S3] load directory';
-  constructor(public readonly payload: { path: string }) { }
+  constructor(public readonly payload: { path: string, force?: boolean }) { }
 }
 
 export class LoadFileVersions {
   static readonly type = '[S3] load file versions';
-  constructor(public readonly payload: { path: string }) { }
+  constructor(public readonly payload: { path: string, force?: boolean }) { }
 }
 
 export interface Descriptor {
@@ -128,46 +128,44 @@ export interface S3StateModel {
   @Action(LoadDirectory)
   loadDirectory({ dispatch, getState }: StateContext<S3StateModel>,
                 { payload }: LoadDirectory) {
-    const { path } = payload;
+    const { path, force } = payload;
     const state = getState();
-    if (!state[path]) {
-      // NOTE: a path of just / is really the buckets themselves
-      // NOTE: a path that doesn't end in / is a file
-      if (path === '/')
-        dispatch(new LoadBuckets());
-      else if (!path.endsWith('/'))
-        dispatch(new LoadFileVersions({ path }));
-      else {
-        dispatch(new Message({ text: `Loading ${path} ...` }));
-        this.s3Svc.loadDirectory(path, 
-                                 (bucket: string,
-                                  prefixes: S3.CommonPrefixList,
-                                  contents: S3.ObjectList) => {
-          const dirs = prefixes.map((prefix: S3.CommonPrefix) => {
-            return this.makeDescriptorForDirectory(bucket, prefix);
-          });
-          const files = contents
-            // TODO: I don't understand how these exist -- directories are phantoms!
-            .filter((content: S3.Object) => !content.Key.endsWith(config.s3Delimiter))
-            .map((content: S3.Object) => {
-              return this.makeDescriptorForFile(path, content);
-            });
-          const descs = dirs.concat(files);
-          this.zone.run(() => {
-            dispatch(new DirectoryLoaded({ path, descs }));
-            dispatch(new Message({ text: `Loaded ${path}` }));
-          });
+    // NOTE: a path of just / is really the buckets themselves
+    // NOTE: a path that doesn't end in / is a file
+    if (path === '/')
+      dispatch(new LoadBuckets({ force }));
+    else if (!path.endsWith('/'))
+      dispatch(new LoadFileVersions({ path, force }));
+    else if (force || !state[path]) {
+      dispatch(new Message({ text: `Loading ${path} ...` }));
+      this.s3Svc.loadDirectory(path, 
+                                (bucket: string,
+                                prefixes: S3.CommonPrefixList,
+                                contents: S3.ObjectList) => {
+        const dirs = prefixes.map((prefix: S3.CommonPrefix) => {
+          return this.makeDescriptorForDirectory(bucket, prefix);
         });
-      }
+        const files = contents
+          // TODO: I don't understand how these exist -- directories are phantoms!
+          .filter((content: S3.Object) => !content.Key.endsWith(config.s3Delimiter))
+          .map((content: S3.Object) => {
+            return this.makeDescriptorForFile(path, content);
+          });
+        const descs = dirs.concat(files);
+        this.zone.run(() => {
+          dispatch(new DirectoryLoaded({ path, descs }));
+          dispatch(new Message({ text: `Loaded ${path}` }));
+        });
+      });
     }
   }
 
   @Action(LoadFileVersions)
   loadFileVersions({ dispatch, getState }: StateContext<S3StateModel>,
                    { payload }: LoadFileVersions) {
-    const { path } = payload;
+    const { path, force } = payload;
     const state = getState();
-    if (!state[path]) {
+    if (force || !state[path]) {
       dispatch(new Message({ text: `Loading versions for ${path} ...` }));
       this.s3Svc.loadFileVersions(path, (versions: S3.ObjectVersionList) => {
         const descs = versions

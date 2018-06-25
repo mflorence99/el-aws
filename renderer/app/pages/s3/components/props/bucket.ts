@@ -44,7 +44,7 @@ export class BucketPropsComponent extends LifecycleComponent {
       this.store.dispatch(new LoadBucketMetadata({ path: this.desc.path }));
       // create props form controls
       this.propsForm = this.formBuilder.group({
-        path: this.desc.path,
+        path: '',
         accelerate: this.formBuilder.group({
           Status: ''
         }),
@@ -69,8 +69,10 @@ export class BucketPropsComponent extends LifecycleComponent {
       this.metadata = <BucketMetadata>this.s3meta[this.desc.path];
       if (this.propsForm) { 
         this.propsForm.reset();
-        if (this.metadata)
-          this.propsForm.patchValue(this.metadata, { emitEvent: false });
+        if (this.metadata) {
+          this.propsForm.patchValue({ ...this.metadata, path: this.desc.path }, 
+                                    { emitEvent: false });
+        }
       }
     }
   }

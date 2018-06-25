@@ -82,13 +82,15 @@ export class S3Service {
     const { bucket } = S3Service.extractBucketAndPrefix(path);
     const params = { Bucket: bucket };
     const funcs = {
-      accelerate: this.asyncify(this.s3.getBucketAccelerateConfiguration, params),
-      acl: this.asyncify(this.s3.getBucketAcl, params),
-      head: this.asyncify(this.s3.headBucket, params),
-      tagging: this.asyncify(this.s3.getBucketTagging, params),
-      versioning: this.asyncify(this.s3.getBucketVersioning, params)
+      accelerate: async.apply(this.s3.getBucketAccelerateConfiguration, params),
+      acl: async.apply(this.s3.getBucketAcl, params),
+      head: async.apply(this.s3.headBucket, params),
+      tagging: async.apply(this.s3.getBucketTagging, params),
+      versioning: async.apply(this.s3.getBucketVersioning, params)
     };
-    async.parallelLimit(funcs, 1, (err, results: any) => {
+    async.parallelLimit(async.reflectAll(funcs), 1, (err, results: any) => {
+      // NOTE: we are ignoring errors and only recording metadata actually found
+      // reason: a bucket with no tags for example errors on the tagging call
       const metadata = Object.keys(funcs).reduce((acc, key) => {
         acc[key] = results[key].value || { };
         return acc;
@@ -151,11 +153,13 @@ export class S3Service {
       VersionId: version
     };
     const funcs = {
-      acl: this.asyncify(this.s3.getObjectAcl, params),
-      head: this.asyncify(this.s3.headObject, params),
-      tagging: this.asyncify(this.s3.getObjectTagging, params)
+      acl: async.apply(this.s3.getObjectAcl, params),
+      head: async.apply(this.s3.headObject, params),
+      tagging: async.apply(this.s3.getObjectTagging, params)
     };
-    async.parallelLimit(funcs, 1, (err, results: any) => {
+    async.parallelLimit(async.reflectAll(funcs), 1, (err, results: any) => {
+      // NOTE: we are ignoring errors and only recording metadata actually found
+      // reason: a file with no tags for example errors on the tagging call
       const metadata = Object.keys(funcs).reduce((acc, key) => {
         acc[key] = results[key].value || { };
         return acc;
@@ -179,11 +183,23 @@ export class S3Service {
     });
   }
 
-  // private methods
-
-  private asyncify(fn: Function, 
-                   ...args: any[]): Function {
-    return async.reflect(async.apply(fn, ...args));
+  /** Update bucket metadata */
+  updateBucketMetadata(path: string,
+                       metadata: BucketMetadata,
+                       cb: () => void): void {
+    const { bucket } = S3Service.extractBucketAndPrefix(path);
+    const common = { Bucket: bucket };
+    const params = {
+      versioning: { VersioningConfiguration: { Status: metadata.versioning.Status || 'Suspended' } }
+    };
+    const funcs = [
+      async.apply(this.s3.putBucketVersioning, { ...common, ...params.versioning })
+    ];
+    async.parallelLimit(funcs, 1, (err, results: any) => {
+      if (err)
+        this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
+      else cb();
+    });
   }
 
 }

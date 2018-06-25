@@ -21,12 +21,22 @@ export class FileMetadataLoaded {
 
 export class LoadBucketMetadata {
   static readonly type = '[S3Meta] load bucket metadata';
-  constructor(public readonly payload: { path: string }) { }
+  constructor(public readonly payload: { path: string, force?: boolean }) { }
 }
 
 export class LoadFileMetadata {
   static readonly type = '[S3Meta] load file metadata';
-  constructor(public readonly payload: { path: string }) { }
+  constructor(public readonly payload: { path: string, force?: boolean }) { }
+}
+
+export class UpdateBucketMetadata {
+  static readonly type = '[S3Meta] update bucket metadata';
+  constructor(public readonly payload: { path: string, metadata: BucketMetadata }) { }
+}
+
+export class UpdateFileMetadata {
+  static readonly type = '[S3Meta] update file metadata';
+  constructor(public readonly payload: { path: string, metadata: FileMetadata }) { }
 }
 
 export interface S3MetaStateModel {
@@ -59,9 +69,9 @@ export interface S3MetaStateModel {
   @Action(LoadBucketMetadata)
   loadBucketMetadata({ dispatch, getState }: StateContext<S3MetaStateModel>,
                      { payload }: LoadBucketMetadata) {
-    const { path } = payload;
+    const { path, force } = payload;
     const state = getState();
-    if (!state[path]) {
+    if (force || !state[path]) {
       dispatch(new Message({ text: `Loading metadata for ${path} ...` }));
       this.s3Svc.loadBucketMetadata(path, (metadata: BucketMetadata) => {
         this.zone.run(() => {
@@ -75,9 +85,9 @@ export interface S3MetaStateModel {
   @Action(LoadFileMetadata)
   loadFileMetadata({ dispatch, getState }: StateContext<S3MetaStateModel>,
                    { payload }: LoadFileMetadata) {
-    const { path } = payload;
+    const { path, force } = payload;
     const state = getState();
-    if (!state[path]) {
+    if (force || !state[path]) {
       dispatch(new Message({ text: `Loading metadata for ${path} ...` }));
       this.s3Svc.loadFileMetadata(path, (metadata: FileMetadata) => {
         this.zone.run(() => {
@@ -86,6 +96,22 @@ export interface S3MetaStateModel {
         });
       });
     }
+  }
+
+  @Action(UpdateBucketMetadata)
+  updateBucketMetadata({ dispatch }: StateContext<S3MetaStateModel>,
+                       { payload }: UpdateBucketMetadata) {
+    const { path, metadata } = payload;
+    this.s3Svc.updateBucketMetadata(path, metadata, () => {
+      dispatch(new LoadBucketMetadata({ path, force: true }));
+    });
+  }
+
+  @Action(UpdateFileMetadata)
+  updateFileMetadata({ dispatch, getState }: StateContext<S3MetaStateModel>,
+                     { payload }: UpdateFileMetadata) {
+    // const { path, metadata } = payload;
+    // const state = getState();
   }
 
 }

@@ -23,7 +23,8 @@
     position="left"> 
 
     <elaws-bucket-props
-      [s3meta]="ctrl.s3meta$ | async">
+      [s3meta]="ctrl.s3meta$ | async"
+      #bucketProps>
     </elaws-bucket-props>  
 
   </lib-drawer-panel>
@@ -33,7 +34,8 @@
     position="left"> 
 
     <elaws-file-props
-      [s3meta]="ctrl.s3meta$ | async">
+      [s3meta]="ctrl.s3meta$ | async"
+      #fileProps>
     </elaws-file-props>  
 
   </lib-drawer-panel>
@@ -54,6 +56,7 @@
 <elaws-s3-ctrl
   (loaded)="tree.loaded = $event"
   (openView)="viewDrawer.open()"
+  [bucketPropsForm]="bucketProps.propsForm?.valueChanges | async"
   [viewForm]="view.viewForm.valueChanges | async"
   #ctrl>
 </elaws-s3-ctrl> 
