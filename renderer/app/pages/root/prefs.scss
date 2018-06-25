@@ -13,6 +13,16 @@ form {
     display: grid;
     grid-gap: 8px;
     grid-template-columns: auto;
+
+    &.outer {
+      grid-gap: 16px;
+    }
+    
+  }
+
+  label {
+    font-size: 0.66rem;
+    font-weight: 300;
   }
 
   .okAndCancel {

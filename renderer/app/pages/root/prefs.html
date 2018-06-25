@@ -21,128 +21,180 @@
   [libRxfSubmit]="prefsForm"
   novalidate>
 
-  <div
-    class="group"
-    formGroupName="endpoints">
-    
-    <mat-form-field>
-      <input
-        formControlName="ddb"
-        matInput
-        placeholder="DDB endpoint"
-        type="text">
-    </mat-form-field>
-    
-    <mat-form-field>
-      <input
-        formControlName="ec2"
-        matInput
-        placeholder="EC2 endpoint"
-        type="text">
-    </mat-form-field>
-    
-    <mat-form-field>
-      <input
-        formControlName="s3"
-        matInput
-        placeholder="S3 endpoint"
-        type="text">
-    </mat-form-field>
+  <mat-accordion>
 
-  </div>
+    <mat-expansion-panel
+      [expanded]="true">
 
-  <mat-checkbox
-    formControlName="showGridLines">
-    Show grid lines
-  </mat-checkbox>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Endpoints
+        </mat-panel-title>
+      </mat-expansion-panel-header>
 
-  <mat-radio-group
-    *ngIf="window.route === '/s3'"
-    class="group"
-    formControlName="sortDirectories">
+      <div 
+        class="group"
+        formGroupName="endpoints">
+        
+        <mat-form-field>
+          <input
+            formControlName="ddb"
+            matInput
+            placeholder="DDB endpoint"
+            type="text">
+        </mat-form-field>
+        
+        <mat-form-field>
+          <input
+            formControlName="ec2"
+            matInput
+            placeholder="EC2 endpoint"
+            type="text">
+        </mat-form-field>
+        
+        <mat-form-field>
+          <input
+            formControlName="s3"
+            matInput
+            placeholder="S3 endpoint"
+            type="text">
+        </mat-form-field>
 
-    <b>How to Sort Directories</b>
+      </div>
 
-    <mat-radio-button value="alpha">
-      Alphabetically with files
-    </mat-radio-button>
-    <mat-radio-button value="first">
-      Before all files
-    </mat-radio-button>
-    <mat-radio-button value="last">
-      After all files
-    </mat-radio-button>
+    </mat-expansion-panel>
 
-  </mat-radio-group>
+    <mat-expansion-panel
+      *ngIf="window.route === '/s3'">
 
-  <mat-radio-group
-    *ngIf="window.route === '/s3'"
-    class="group"
-    formControlName="quantityFormat">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Sort Options
+        </mat-panel-title>
+      </mat-expansion-panel-header>
 
-    <b>How to Show Size</b>
+      <mat-radio-group
+        class="group"
+        formControlName="sortDirectories">
 
-    <mat-radio-button value="number">
-      {{ size | libNumeral:'0,0' }}
-    </mat-radio-button>
-    <mat-radio-button value="abbrev">
-      {{ size | libNumeral:'0a' }}
-    </mat-radio-button>
-    <mat-radio-button value="bytes">
-      {{ size | libNumeral:'0b' }}
-    </mat-radio-button>
+        <label>How to Sort Directories</label>
 
-  </mat-radio-group>
+        <mat-radio-button value="alpha">
+          Alphabetically with files
+        </mat-radio-button>
+        <mat-radio-button value="first">
+          Before all files
+        </mat-radio-button>
+        <mat-radio-button value="last">
+          After all files
+        </mat-radio-button>
 
-  <mat-radio-group
-    *ngIf="window.route === '/s3'"
-    class="group"
-    formControlName="dateFormat">
+      </mat-radio-group>
 
-    <b>Select Date Format</b>
+    </mat-expansion-panel>
 
-    <mat-radio-button value="ago">
-      an hour ago
-    </mat-radio-button>
-    <mat-radio-button value="shortDate">
-      {{ today | date:'shortDate' }}
-    </mat-radio-button>
-    <mat-radio-button value="mediumDate">
-      {{ today | date:'mediumDate' }}
-    </mat-radio-button>
-    <mat-radio-button value="longDate">
-      {{ today | date:'longDate' }}
-    </mat-radio-button>
-    <mat-radio-button value="fullDate">
-      {{ today | date:'fullDate' }}
-    </mat-radio-button>
+    <mat-expansion-panel
+      *ngIf="window.route === '/s3'">
 
-  </mat-radio-group>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Formatting Options
+        </mat-panel-title>
+      </mat-expansion-panel-header>
 
-  <mat-radio-group
-    *ngIf="window.route === '/s3'"
-    class="group"
-    formControlName="timeFormat">
+      <div class="group outer">
 
-    <b>Select Time Format</b>
+        <mat-radio-group
+          class="group"
+          formControlName="quantityFormat">
 
-    <mat-radio-button value="none">
-      Don't show time
-    </mat-radio-button>
-    <mat-radio-button value="shortTime">
-      {{ today | date:'shortTime' }}
-    </mat-radio-button>
-    <mat-radio-button value="mediumTime">
-      {{ today | date:'mediumTime' }}
-    </mat-radio-button>
-    <mat-radio-button value="longTime">
-      {{ today | date:'longTime' }}
-    </mat-radio-button>
-    <mat-radio-button value="fullTime">
-      {{ today | date:'fullTime' }}
-    </mat-radio-button>
+          <label>How to Show Size</label>
 
-  </mat-radio-group>
+          <mat-radio-button value="number">
+            {{ size | libNumeral:'0,0' }}
+          </mat-radio-button>
+          <mat-radio-button value="abbrev">
+            {{ size | libNumeral:'0a' }}
+          </mat-radio-button>
+          <mat-radio-button value="bytes">
+            {{ size | libNumeral:'0b' }}
+          </mat-radio-button>
+
+        </mat-radio-group>
+
+        <mat-checkbox
+          formControlName="showGridLines">
+          Show grid lines
+        </mat-checkbox>
+
+      </div>
+
+    </mat-expansion-panel>
+
+    <mat-expansion-panel
+      *ngIf="window.route === '/s3'">
+
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Date and Time
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <div class="group outer">
+
+        <mat-radio-group
+          class="group"
+          formControlName="dateFormat">
+
+          <label>Select Date Format</label>
+
+          <mat-radio-button value="ago">
+            an hour ago
+          </mat-radio-button>
+          <mat-radio-button value="shortDate">
+            {{ today | date:'shortDate' }}
+          </mat-radio-button>
+          <mat-radio-button value="mediumDate">
+            {{ today | date:'mediumDate' }}
+          </mat-radio-button>
+          <mat-radio-button value="longDate">
+            {{ today | date:'longDate' }}
+          </mat-radio-button>
+          <mat-radio-button value="fullDate">
+            {{ today | date:'fullDate' }}
+          </mat-radio-button>
+
+        </mat-radio-group>
+
+        <mat-radio-group
+          class="group"
+          formControlName="timeFormat">
+
+          <label>Select Time Format</label>
+
+          <mat-radio-button value="none">
+            Don't show time
+          </mat-radio-button>
+          <mat-radio-button value="shortTime">
+            {{ today | date:'shortTime' }}
+          </mat-radio-button>
+          <mat-radio-button value="mediumTime">
+            {{ today | date:'mediumTime' }}
+          </mat-radio-button>
+          <mat-radio-button value="longTime">
+            {{ today | date:'longTime' }}
+          </mat-radio-button>
+          <mat-radio-button value="fullTime">
+            {{ today | date:'fullTime' }}
+          </mat-radio-button>
+
+        </mat-radio-group>
+
+      </div>
+
+    </mat-expansion-panel>
+
+  </mat-accordion>
 
   <div class="okAndCancel">
 
