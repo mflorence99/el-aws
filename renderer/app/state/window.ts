@@ -3,6 +3,8 @@ import { ElectronService } from 'ngx-electron';
 import { State } from '@ngxs/store';
 import { StateContext } from '@ngxs/store';
 
+import { config } from '../config';
+
 /** NOTE: actions must come first because of AST */
 
 export class DevTools {
@@ -12,6 +14,11 @@ export class DevTools {
 
 export class Reload {
   static readonly type = '[Window] reload';
+  constructor(public readonly payload?: any) { }
+}
+
+export class Reset {
+  static readonly type = '[Window] reset';
   constructor(public readonly payload?: any) { }
 }
 
@@ -59,6 +66,12 @@ export interface WindowStateModel {
   reload() {
     const win = this.electron.remote.getCurrentWindow();
     win.webContents.reload();
+  }
+
+  @Action(Reset)
+  reset({ dispatch }: StateContext<WindowStateModel>,
+        { payload }: Reset) {
+    setTimeout(() => dispatch(new Reload()), config.resetDelay);
   }
 
   @Action(SetBounds)

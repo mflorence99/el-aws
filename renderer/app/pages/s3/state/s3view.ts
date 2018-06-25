@@ -4,6 +4,7 @@ import { Selector } from '@ngxs/store';
 import { State } from '@ngxs/store';
 import { StateContext } from '@ngxs/store';
 
+import { config } from '../../../config';
 import { isObjectEqual } from 'ellib'; 
 
 /** NOTE: actions must come first because of AST */
@@ -11,6 +12,16 @@ import { isObjectEqual } from 'ellib';
 export class AddPath {
   static readonly type = '[S3View] add path';
   constructor(public readonly payload: { path: string }) { }
+}
+
+export class ClearPaths {
+  static readonly type = '[S3View] clear paths';
+  constructor(public readonly payload?: any) { }
+}
+
+export class ExpirePaths {
+  static readonly type = '[S3View] expire paths';
+  constructor(public readonly payload?: any) { }
 }
 
 export class RemovePath {
@@ -94,6 +105,26 @@ export interface ViewWidths {
     }
   }
 
+  @Action(ClearPaths)
+  clearPaths({ patchState }: StateContext<S3ViewStateModel>,
+             { payload }: ClearPaths) {
+    patchState({ paths: [config.s3Delimiter] });
+    patchState({ lru: { } });
+  }
+
+  @Action(ExpirePaths)
+  expirePaths({ dispatch, getState }: StateContext<S3ViewStateModel>,
+              { payload }: ExpirePaths) {
+    const state = getState();
+    const paths = [...Object.keys(state.lru)];
+    const now = Date.now();
+    paths.forEach(path => {
+      const ts = state.lru[path];
+      if (ts < (now - config.s3PathPurgeAge))
+        dispatch(new RemovePath({ path }));
+    });
+  }
+
   @Action(RemovePath)
   removePath({ getState, patchState }: StateContext<S3ViewStateModel>,
              { payload }: RemovePath) {
@@ -104,6 +135,8 @@ export interface ViewWidths {
       const paths = state.paths.slice(0);
       paths.splice(ix, 1);
       patchState({ paths });
+      const { [path]: gonzo, ...lru } = state.lru;
+      patchState({ lru });
     }
   }
 
@@ -111,8 +144,11 @@ export interface ViewWidths {
   updatePathLRU({ getState, patchState }: StateContext<S3ViewStateModel>,
                 { payload }: UpdatePathLRU) {
     const { path } = payload;
-    const state = getState();
-    patchState({ lru: { ...state.lru, [path]: Date.now() } });
+    // NOTE: the root doesn't have an LRU
+    if (path !== config.s3Delimiter) {
+      const state = getState();
+      patchState({ lru: { ...state.lru, [path]: Date.now() } });
+    }
   }
 
   @Action(UpdateSort)

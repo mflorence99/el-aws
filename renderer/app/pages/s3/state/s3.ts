@@ -107,13 +107,17 @@ export interface S3StateModel {
   @Action(LoadBuckets)
   loadBuckets({ dispatch, getState }: StateContext<S3StateModel>,
               { payload }: LoadBuckets) {
+    const { force } = payload;
     const state = getState();
-    if (!state[config.s3Delimiter]) {
+    let descs = state[config.s3Delimiter];
+    if (!force && descs)
+      dispatch(new BucketsLoaded({ path: config.s3Delimiter, descs }));
+    else {
       dispatch(new Message({ text: 'Loading buckets ...' }));
       this.s3Svc.loadBuckets((buckets: S3.Buckets, 
                               owner: S3.Owner, 
                               locations: string[]) => {
-        const descs = buckets.map((bucket: S3.Bucket, ix) => {
+        descs = buckets.map((bucket: S3.Bucket, ix) => {
           dispatch(new LoadBucketMetadata({ path: bucket.Name + config.s3Delimiter }));
           return this.makeDescriptorForBucket(bucket, owner, locations[ix]);
         });
@@ -136,27 +140,32 @@ export interface S3StateModel {
       dispatch(new LoadBuckets({ force }));
     else if (!path.endsWith('/'))
       dispatch(new LoadFileVersions({ path, force }));
-    else if (force || !state[path]) {
-      dispatch(new Message({ text: `Loading ${path} ...` }));
-      this.s3Svc.loadDirectory(path, 
-                                (bucket: string,
-                                prefixes: S3.CommonPrefixList,
-                                contents: S3.ObjectList) => {
-        const dirs = prefixes.map((prefix: S3.CommonPrefix) => {
-          return this.makeDescriptorForDirectory(bucket, prefix);
-        });
-        const files = contents
-          // TODO: I don't understand how these exist -- directories are phantoms!
-          .filter((content: S3.Object) => !content.Key.endsWith(config.s3Delimiter))
-          .map((content: S3.Object) => {
-            return this.makeDescriptorForFile(path, content);
+    else {
+      let descs = state[path];
+      if (!force && descs)
+        dispatch(new DirectoryLoaded({ path, descs }));
+      else {
+        dispatch(new Message({ text: `Loading ${path} ...` }));
+        this.s3Svc.loadDirectory(path, 
+                                  (bucket: string,
+                                   prefixes: S3.CommonPrefixList,
+                                   contents: S3.ObjectList) => {
+          const dirs = prefixes.map((prefix: S3.CommonPrefix) => {
+            return this.makeDescriptorForDirectory(bucket, prefix);
           });
-        const descs = dirs.concat(files);
-        this.zone.run(() => {
-          dispatch(new DirectoryLoaded({ path, descs }));
-          dispatch(new Message({ text: `Loaded ${path}` }));
+          const files = contents
+            // TODO: I don't understand how these exist -- directories are phantoms!
+            .filter((content: S3.Object) => !content.Key.endsWith(config.s3Delimiter))
+            .map((content: S3.Object) => {
+              return this.makeDescriptorForFile(path, content);
+            });
+          descs = dirs.concat(files);
+          this.zone.run(() => {
+            dispatch(new DirectoryLoaded({ path, descs }));
+            dispatch(new Message({ text: `Loaded ${path}` }));
+          });
         });
-      });
+      }
     }
   }
 
@@ -165,10 +174,13 @@ export interface S3StateModel {
                    { payload }: LoadFileVersions) {
     const { path, force } = payload;
     const state = getState();
-    if (force || !state[path]) {
+    let descs = state[path];
+    if (!force && descs)
+      dispatch(new FileVersionsLoaded({ path, descs }));
+    else {
       dispatch(new Message({ text: `Loading versions for ${path} ...` }));
       this.s3Svc.loadFileVersions(path, (versions: S3.ObjectVersionList) => {
-        const descs = versions
+        descs = versions
           // NOTE: that's an odd encoding but it is what the tests reveal
           .filter((version: S3.ObjectVersion) => version.VersionId && (version.VersionId !== 'null'))
           .map((version: S3.ObjectVersion) => {
@@ -252,7 +264,7 @@ export interface S3StateModel {
       isFile: true,
       name: name,
       owner: content.Owner? content.Owner.DisplayName : null,
-      path: path + content.Key,
+      path: path + name,
       size: content.Size,
       storage: content.StorageClass,
       timestamp: new Date(content.LastModified)

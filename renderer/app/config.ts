@@ -4,8 +4,11 @@
 
 export class Config {
 
+  resetDelay: 1500;
+
   s3Delimiter = '/';
   s3MaxKeys = 100;
+  s3PathPurgeAge = 15 * 60 * 1000;
   s3TreeRefreshThrottle = 100;
   
   setBoundsThrottle = 250;

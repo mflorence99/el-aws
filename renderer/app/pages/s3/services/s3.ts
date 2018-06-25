@@ -72,7 +72,10 @@ export class S3Service {
               private store: Store) {
     this.s3_ = this.electron.remote.require('aws-sdk/clients/s3');
     this.prefs$.subscribe((prefs: PrefsStateModel) => {
-      this.s3 = new this.s3_({ endpoint: prefs.endpoints.s3 });
+      this.s3 = new this.s3_({ 
+        endpoint: prefs.endpoints.s3,
+        s3ForcePathStyle: true
+      });
     });
   }
 
@@ -125,7 +128,7 @@ export class S3Service {
   }
 
   /** Load the contents of a "directory" */
-  loadDirectory(path: string,
+  loadDirectory(path: string, 
                 cb: (bucket: string,
                      prefixes: S3.CommonPrefixList,
                      contents: S3.ObjectList) => void): void {

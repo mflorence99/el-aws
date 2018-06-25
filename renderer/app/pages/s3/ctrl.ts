@@ -1,9 +1,10 @@
 import { Actions } from '@ngxs/store';
 import { AutoUnsubscribe } from 'ellib';
-import { BucketsLoaded } from './state/s3';
 import { ChangeDetectionStrategy } from '@angular/core';
+import { ClearPaths } from './state/s3view';
 import { Component } from '@angular/core';
 import { EventEmitter } from '@angular/core';
+import { ExpirePaths } from './state/s3view';
 import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { LoadDirectory } from './state/s3';
@@ -12,6 +13,7 @@ import { OnChange } from 'ellib';
 import { Output } from '@angular/core';
 import { PrefsState } from '../../state/prefs';
 import { PrefsStateModel } from '../../state/prefs';
+import { Reset } from '../../state/window';
 import { S3MetaState } from './state/s3meta';
 import { S3MetaStateModel } from './state/s3meta';
 import { S3State } from './state/s3';
@@ -54,21 +56,23 @@ export class S3CtrlComponent extends LifecycleComponent {
   @Select(S3MetaState) s3meta$: Observable<S3MetaStateModel>;
   @Select(S3ViewState) view$: Observable<S3ViewStateModel>;
 
-  subToLoaded: Subscription;
+  subToReset: Subscription;
   subToShowPagePrefs: Subscription;
 
   /** ctor */
   constructor(private actions$: Actions,
               private store: Store) {
     super();
-    const paths = this.store.selectSnapshot(S3ViewState.getPaths);
-    paths.forEach(path => this.store.dispatch(new LoadDirectory({ path })));
-    // listen for initial load complete
-    this.subToLoaded = this.actions$.pipe(ofAction(BucketsLoaded))
-      .subscribe(() => this.loaded.emit(true));
     // listen for open prefs
     this.subToShowPagePrefs = this.actions$.pipe(ofAction(ShowPagePrefs))
       .subscribe(() => this.openView.emit());
+    // clean up on a reset
+    this.subToReset = this.actions$.pipe(ofAction(Reset))
+      .subscribe(() => this.store.dispatch(new ClearPaths()));
+    // load all the data in the view
+    this.store.dispatch(new ExpirePaths());
+    const paths = this.store.selectSnapshot(S3ViewState.getPaths);
+    paths.forEach(path => this.store.dispatch(new LoadDirectory({ path })));
   }
 
   // bind OnChange handlers

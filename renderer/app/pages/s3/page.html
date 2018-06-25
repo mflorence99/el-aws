@@ -54,7 +54,6 @@
 </lib-drawer-container> 
 
 <elaws-s3-ctrl
-  (loaded)="tree.loaded = $event"
   (openView)="viewDrawer.open()"
   [bucketPropsForm]="bucketProps.propsForm?.valueChanges | async"
   [viewForm]="view.viewForm.valueChanges | async"

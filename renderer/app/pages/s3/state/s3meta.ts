@@ -71,7 +71,10 @@ export interface S3MetaStateModel {
                      { payload }: LoadBucketMetadata) {
     const { path, force } = payload;
     const state = getState();
-    if (force || !state[path]) {
+    const metadata = state[path];
+    if (!force && metadata)
+      dispatch(new BucketMetadataLoaded({ path, metadata }));
+    else {
       dispatch(new Message({ text: `Loading metadata for ${path} ...` }));
       this.s3Svc.loadBucketMetadata(path, (metadata: BucketMetadata) => {
         this.zone.run(() => {
@@ -87,7 +90,10 @@ export interface S3MetaStateModel {
                    { payload }: LoadFileMetadata) {
     const { path, force } = payload;
     const state = getState();
-    if (force || !state[path]) {
+    const metadata = state[path];
+    if (!force && metadata)
+      dispatch(new FileMetadataLoaded({ path, metadata }));
+    else {
       dispatch(new Message({ text: `Loading metadata for ${path} ...` }));
       this.s3Svc.loadFileMetadata(path, (metadata: FileMetadata) => {
         this.zone.run(() => {

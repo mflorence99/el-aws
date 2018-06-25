@@ -1,4 +1,5 @@
 import { Alarm } from '../../state/status';
+import { Canceled } from '../../state/status';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { Component } from '@angular/core';
 import { Input } from '@angular/core';
@@ -28,6 +29,11 @@ export class StatusbarComponent extends LifecycleComponent {
   /** ctor */
   constructor(private store: Store) {
     super();
+  }
+
+  /** Signal cancel long-running operation */
+  cancel(): void {
+    this.store.dispatch(new Canceled());
   }
 
   // bind OnChange handlers

@@ -10,7 +10,7 @@ footer {
   display: grid;
   font-size: 0.66rem;
   grid-gap: 16px;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr auto auto;
   height: 100%;
 
   .error,
@@ -31,6 +31,11 @@ footer {
 
   .warning {
     color: var(--warning-color);
+  }
+
+  .mat-progress-bar {
+    height: 100%;
+    width: 140px;
   }
 
 }

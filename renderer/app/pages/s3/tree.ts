@@ -51,8 +51,6 @@ export class TreeComponent extends LifecycleComponent {
   descriptorsByPath: { [path: string]: Descriptor[] } = {};
   dictionary: Dictionary[] = [];
 
-  loaded: boolean;
-
   subToActions: Subscription;
 
   private updateDescriptors: Function;

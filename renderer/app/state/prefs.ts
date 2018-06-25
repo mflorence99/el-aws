@@ -1,5 +1,5 @@
 import { Action } from '@ngxs/store';
-import { Reload } from './window';
+import { Reset } from './window';
 import { State } from '@ngxs/store';
 import { StateContext } from '@ngxs/store';
 
@@ -59,8 +59,8 @@ export interface PrefsStateModel {
         return acc || (prefs.endpoints[key] !== state.endpoints[key]);
       }, false);
     }   
-    if (startOver)
-      dispatch(new Reload()); 
+    if (startOver) 
+      dispatch(new Reset()); 
   }
 
 }

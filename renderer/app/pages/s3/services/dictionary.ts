@@ -7,6 +7,8 @@ import { S3Service } from '../services/s3';
 import { S3StateModel } from '../state/s3';
 import { S3ViewStateModel } from '../state/s3view';
 
+import { config } from '../../../config';
+
 /**
  * Dictionary of data
  */
@@ -62,7 +64,7 @@ export class DictionaryService {
     const descs = this.sort(s3[path] || [], dictionary, prefs, view);
     const { bucket } = S3Service.extractBucketAndPrefix(path);
     descs.forEach(desc => {
-      const metadata = <BucketMetadata>s3meta[bucket];
+      const metadata = <BucketMetadata>s3meta[bucket + config.s3Delimiter];
       desc.versioning = metadata 
         && metadata.versioning.Status 
         && (metadata.versioning.Status === 'Enabled');
