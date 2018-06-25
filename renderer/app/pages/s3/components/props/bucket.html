@@ -28,45 +28,57 @@
     formControlName="path"
     type="hidden">
 
-  <div
-    formGroupName="versioning">
+  <mat-accordion>
 
-    <mat-radio-group
-      class="group"
-      formControlName="Status">
+    <mat-expansion-panel
+      formGroupName="versioning">
 
-      <b>Versioning</b>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Versioning
+        </mat-panel-title>
+      </mat-expansion-panel-header>
 
-      <mat-radio-button value="Enabled">
-        Enable versioning
-      </mat-radio-button>
-      <mat-radio-button value="Suspended">
-        Suspend versioning
-      </mat-radio-button>
+      <mat-radio-group
+        class="group"
+        formControlName="Status">
 
-    </mat-radio-group>
+        <mat-radio-button value="Enabled">
+          Enable versioning
+        </mat-radio-button>
+        <mat-radio-button value="Suspended">
+          Suspend versioning
+        </mat-radio-button>
 
-  </div>
+      </mat-radio-group>
 
-  <div
-    formGroupName="accelerate">
+    </mat-expansion-panel>
 
-    <mat-radio-group
-      class="group"
-      formControlName="Status">
+    <mat-expansion-panel
+      formGroupName="accelerate">
 
-      <b>Transfer Acceleration</b>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Transfer Acceleration
+        </mat-panel-title>
+      </mat-expansion-panel-header>
 
-      <mat-radio-button value="Enabled">
-        Enable acceleration
-      </mat-radio-button>
-      <mat-radio-button value="Suspended">
-        Suspend acceleration
-      </mat-radio-button>
+      <mat-radio-group
+        class="group"
+        formControlName="Status">
 
-    </mat-radio-group>
+        <mat-radio-button value="Enabled">
+          Enable acceleration
+        </mat-radio-button>
+        <mat-radio-button value="Suspended">
+          Suspend acceleration
+        </mat-radio-button>
 
-  </div>
+      </mat-radio-group>
+
+    </mat-expansion-panel>
+
+  </mat-accordion>
 
   <div class="okAndCancel">
 
