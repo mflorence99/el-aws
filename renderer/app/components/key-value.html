@@ -1,0 +1,67 @@
+<div
+  [formGroup]="keyValueForm"
+  class="key-value">
+
+  <ng-container
+    *ngFor="let key of keys">
+      
+    <mat-form-field>
+
+      <span 
+        *ngIf="valueIcon"
+        matPrefix>
+        <ng-container
+          [ngTemplateOutlet]="valueIcon">
+        </ng-container>
+      </span>
+
+      <input
+        [formControlName]="key"
+        [placeholder]="key"
+        [required]="true"
+        matInput
+        type="text">
+
+    </mat-form-field>
+
+    <a
+      (click)="deleteKey($event, key)"
+      matTooltip="Remove this key"
+      mat-icon-button>
+      <fa-icon
+        [icon]="['fas', 'times']">
+      </fa-icon>
+    </a>
+
+  </ng-container>
+    
+  <mat-form-field>
+
+    <span 
+      *ngIf="keyIcon"
+      matPrefix>
+      <ng-container
+        [ngTemplateOutlet]="keyIcon">
+      </ng-container>
+    </span>
+
+    <input
+      [placeholder]="placeholder"
+      formControlName="$$newKey"
+      matInput
+      type="text"
+      #newKey>
+
+  </mat-form-field>
+
+  <a
+    (click)="addKey($event, newKey.value)"
+    [disabled]="!newKey.value"
+    matTooltip="Add a new key"
+    mat-icon-button>
+    <fa-icon
+      [icon]="['fas', 'plus']">
+    </fa-icon>
+  </a>
+
+</div>

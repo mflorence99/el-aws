@@ -13,7 +13,7 @@ import { Store } from '@ngxs/store';
 import { ViewChild } from '@angular/core';
 
 /**
- * Tabs page
+ * Tabs component
  */
 
 @Component({

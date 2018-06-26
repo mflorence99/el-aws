@@ -1,0 +1,13 @@
+:host {
+  display: block;
+  // TODO: this has to be constrained because the key and valueIcon templates
+  // push it too wide
+  width: 100px;
+}
+
+.key-value {
+  align-items: center;
+  display: grid;
+  grid-gap: 8px;
+  grid-template-columns: 1fr auto;
+}

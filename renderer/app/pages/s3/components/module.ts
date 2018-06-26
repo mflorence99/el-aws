@@ -3,6 +3,7 @@ import { BranchComponent } from './branch';
 import { BucketPropsComponent } from './props/bucket';
 import { CellComponent } from './cell';
 import { ColumnComponent } from './column';
+import { ComponentsModule as CommonComponentsModule } from '../../../components/module';
 import { FilePropsComponent } from './props/file';
 import { NgModule } from '@angular/core';
 import { RowComponent } from './row';
@@ -33,7 +34,8 @@ const COMPONENTS = [
   ],
 
   imports: [
-    BarrelModule
+    BarrelModule,
+    CommonComponentsModule
   ]
 
 })

@@ -50,6 +50,9 @@ export class BucketPropsComponent extends LifecycleComponent {
         accelerate: this.formBuilder.group({
           Status: ''
         }),
+        tagging: this.formBuilder.group({
+          TagSet: ''
+        }),
         versioning: this.formBuilder.group({
           Status: ''
         })

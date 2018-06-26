@@ -1,5 +1,6 @@
 import { BarrelModule } from '../../barrel';
-import { ComponentsModule } from './components/module';
+import { ComponentsModule as CommonComponentsModule } from '../../components/module';
+import { ComponentsModule as S3ComponentsModule } from './components/module';
 import { DictionaryService } from './services/dictionary';
 import { HeaderComponent } from './header';
 import { NgModule } from '@angular/core';
@@ -26,7 +27,8 @@ const COMPONENTS = [
 
 const MODULES = [
   BarrelModule,
-  ComponentsModule
+  CommonComponentsModule,
+  S3ComponentsModule
 ];
 
 const ROUTES: Routes = [

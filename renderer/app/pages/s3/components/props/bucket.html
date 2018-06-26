@@ -31,36 +31,6 @@
   <mat-accordion>
 
     <mat-expansion-panel
-      formGroupName="versioning">
-
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          Versioning
-          <div class="drawer-label">
-            {{ metadata?.versioning?.Status || 'Off' }}
-          </div>
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-
-      <mat-radio-group
-        class="group"
-        formControlName="Status">
-
-        <mat-radio-button value="Enabled">
-          Enable versioning
-        </mat-radio-button>
-        <mat-radio-button value="Suspended">
-          Suspend versioning
-          <div class="drawer-label">
-            This suspends the creation of object versions for all operations but preserves any existing object versions.
-          </div>
-        </mat-radio-button>
-
-      </mat-radio-group>
-
-    </mat-expansion-panel>
-
-    <mat-expansion-panel
       formGroupName="accelerate">
 
       <mat-expansion-panel-header>
@@ -85,6 +55,73 @@
         </mat-radio-button>
         <mat-radio-button value="Suspended">
           Suspend acceleration
+        </mat-radio-button>
+
+      </mat-radio-group>
+
+    </mat-expansion-panel>
+
+    <mat-expansion-panel
+      formGroupName="tagging">
+
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Tags
+          <div class="drawer-label">
+            {{ metadata?.tagging?.TagSet?.length? 'TBD'  : 'None' }}
+          </div>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <elaws-key-value
+        [value]="{aKey: 'aValue', bKey: 'bValue'}"
+        placeholder="Enter new tag name">
+
+        <ng-template #keyIcon>
+          <fa-icon
+            [icon]="['fas', 'key']"
+            flip="horizontal"
+            size="xs">
+          </fa-icon>
+          &nbsp;
+        </ng-template>
+
+        <ng-template #valueIcon>
+          <fa-icon
+            [icon]="['fas', 'tag']"
+            size="xs">
+          </fa-icon>
+          &nbsp;
+        </ng-template>
+
+      </elaws-key-value>
+
+    </mat-expansion-panel>
+
+    <mat-expansion-panel
+      formGroupName="versioning">
+
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Versioning
+          <div class="drawer-label">
+            {{ metadata?.versioning?.Status || 'Off' }}
+          </div>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <mat-radio-group
+        class="group"
+        formControlName="Status">
+
+        <mat-radio-button value="Enabled">
+          Enable versioning
+        </mat-radio-button>
+        <mat-radio-button value="Suspended">
+          Suspend versioning
+          <div class="drawer-label">
+            This suspends the creation of object versions for all operations but preserves any existing object versions.
+          </div>
         </mat-radio-button>
 
       </mat-radio-group>
