@@ -4,7 +4,6 @@ import { ChangeDetectionStrategy } from '@angular/core';
 import { ClearPaths } from './state/s3view';
 import { Component } from '@angular/core';
 import { EventEmitter } from '@angular/core';
-import { ExpirePaths } from './state/s3view';
 import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { LoadDirectory } from './state/s3';
@@ -70,7 +69,8 @@ export class S3CtrlComponent extends LifecycleComponent {
     this.subToReset = this.actions$.pipe(ofAction(Reset))
       .subscribe(() => this.store.dispatch(new ClearPaths()));
     // load all the data in the view
-    this.store.dispatch(new ExpirePaths());
+    // TODO: expire here doesn't work because it's ALWAYS 15 mins between sessions
+    // this.store.dispatch(new ExpirePaths());
     const paths = this.store.selectSnapshot(S3ViewState.getPaths);
     paths.forEach(path => this.store.dispatch(new LoadDirectory({ path })));
   }

@@ -8,6 +8,7 @@ import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { LoadFileMetadata } from '../../state/s3meta';
 import { OnChange } from 'ellib';
+import { PrefsStateModel } from '../../../../state/prefs';
 import { S3MetaStateModel } from '../../state/s3meta';
 import { Store } from '@ngxs/store';
 
@@ -24,6 +25,7 @@ import { Store } from '@ngxs/store';
 
 export class FilePropsComponent extends LifecycleComponent {
 
+  @Input() prefs = {} as PrefsStateModel;
   @Input() s3meta = { } as S3MetaStateModel;
 
   desc = { } as Descriptor;

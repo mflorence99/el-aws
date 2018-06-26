@@ -71,7 +71,7 @@ export interface S3MetaStateModel {
                      { payload }: LoadBucketMetadata) {
     const { path, force } = payload;
     const state = getState();
-    const metadata = state[path];
+    const metadata = <BucketMetadata>state[path];
     if (!force && metadata)
       dispatch(new BucketMetadataLoaded({ path, metadata }));
     else {
@@ -90,7 +90,7 @@ export interface S3MetaStateModel {
                    { payload }: LoadFileMetadata) {
     const { path, force } = payload;
     const state = getState();
-    const metadata = state[path];
+    const metadata = <FileMetadata>state[path];
     if (!force && metadata)
       dispatch(new FileMetadataLoaded({ path, metadata }));
     else {

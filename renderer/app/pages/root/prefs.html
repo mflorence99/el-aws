@@ -77,7 +77,9 @@
         class="group"
         formControlName="sortDirectories">
 
-        <label>How to Sort Directories</label>
+        <div class="drawer-label">
+          How to Sort Directories
+        </div>
 
         <mat-radio-button value="alpha">
           Alphabetically with files
@@ -108,7 +110,9 @@
           class="group"
           formControlName="quantityFormat">
 
-          <label>How to Show Size</label>
+          <div class="drawer-label">
+            How to Show Size
+          </div>
 
           <mat-radio-button value="number">
             {{ size | libNumeral:'0,0' }}
@@ -146,7 +150,9 @@
           class="group"
           formControlName="dateFormat">
 
-          <label>Select Date Format</label>
+          <div class="drawer-label">
+            Select Date Format
+          </div>
 
           <mat-radio-button value="ago">
             an hour ago
@@ -170,7 +176,9 @@
           class="group"
           formControlName="timeFormat">
 
-          <label>Select Time Format</label>
+          <div class="drawer-label">
+            Select Time Format
+          </div>
 
           <mat-radio-button value="none">
             Don't show time

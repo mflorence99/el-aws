@@ -19,6 +19,7 @@ import async from 'async-es';
 
 
 export interface BucketMetadata {
+  accelerate: S3.GetBucketAccelerateConfigurationOutput;
   acl?: S3.GetBucketAclOutput;
   head?: any;
   tagging?: S3.GetBucketTaggingOutput;
@@ -191,13 +192,14 @@ export class S3Service {
                        metadata: BucketMetadata,
                        cb: () => void): void {
     const { bucket } = S3Service.extractBucketAndPrefix(path);
-    const common = { Bucket: bucket };
-    const params = {
-      versioning: { VersioningConfiguration: { Status: metadata.versioning.Status || 'Suspended' } }
-    };
-    const funcs = [
-      async.apply(this.s3.putBucketVersioning, { ...common, ...params.versioning })
-    ];
+    const funcs = [];
+    if (metadata.accelerate.Status)
+      funcs.push(async.apply(this.s3.putBucketAccelerateConfiguration, {
+        Bucket: bucket, AccelerateConfiguration: { Status: metadata.accelerate.Status }
+      }));
+    if (metadata.versioning.Status)
+      funcs.push(async.apply(this.s3.putBucketVersioning, { 
+        Bucket: bucket, VersioningConfiguration: { Status: metadata.versioning.Status } }));
     async.parallelLimit(funcs, 1, (err, results: any) => {
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));

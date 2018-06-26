@@ -23,6 +23,7 @@
     position="left"> 
 
     <elaws-bucket-props
+      [prefs]="ctrl.prefs$ | async"
       [s3meta]="ctrl.s3meta$ | async"
       #bucketProps>
     </elaws-bucket-props>  
@@ -34,6 +35,7 @@
     position="left"> 
 
     <elaws-file-props
+      [prefs]="ctrl.prefs$ | async"
       [s3meta]="ctrl.s3meta$ | async"
       #fileProps>
     </elaws-file-props>  

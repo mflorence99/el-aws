@@ -65,9 +65,8 @@ export class DictionaryService {
     const { bucket } = S3Service.extractBucketAndPrefix(path);
     descs.forEach(desc => {
       const metadata = <BucketMetadata>s3meta[bucket + config.s3Delimiter];
-      desc.versioning = metadata 
-        && metadata.versioning.Status 
-        && (metadata.versioning.Status === 'Enabled');
+      // NOTE: once versioning has been set it can only be suspended, never turned off
+      desc.versioning = !!(metadata && metadata.versioning.Status);
     });
     return descs;
   }
