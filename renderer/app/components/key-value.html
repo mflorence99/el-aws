@@ -16,6 +16,7 @@
       </span>
 
       <input
+        [errorStateMatcher]="errorStateMatcher"
         [formControlName]="key"
         [placeholder]="key"
         [required]="true"
@@ -25,7 +26,8 @@
     </mat-form-field>
 
     <a
-      (click)="deleteKey($event, key)"
+      (click)="deleteKey(key)"
+      [disabled]="disabled"
       matTooltip="Remove this key"
       mat-icon-button>
       <fa-icon
@@ -46,8 +48,9 @@
     </span>
 
     <input
+      [disabled]="disabled"
+      [errorStateMatcher]="errorStateMatcher"
       [placeholder]="placeholder"
-      formControlName="$$newKey"
       matInput
       type="text"
       #newKey>
@@ -55,13 +58,17 @@
   </mat-form-field>
 
   <a
-    (click)="addKey($event, newKey.value)"
-    [disabled]="!newKey.value"
+    (click)="addKey(newKey.value)"
+    [disabled]="disabled || !newKey.value"
     matTooltip="Add a new key"
     mat-icon-button>
     <fa-icon
       [icon]="['fas', 'plus']">
     </fa-icon>
   </a>
+
+  <mat-error *ngIf="duplicateKey">
+    {{ duplicateKeyMessage }}
+  </mat-error>
 
 </div>

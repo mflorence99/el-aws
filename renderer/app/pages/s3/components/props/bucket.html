@@ -30,6 +30,8 @@
 
   <mat-accordion>
 
+    <!-- ACCELERATE -->
+
     <mat-expansion-panel
       formGroupName="accelerate">
 
@@ -61,6 +63,8 @@
 
     </mat-expansion-panel>
 
+    <!-- TAGGING -->
+
     <mat-expansion-panel
       formGroupName="tagging">
 
@@ -74,14 +78,17 @@
       </mat-expansion-panel-header>
 
       <elaws-key-value
-        [value]="{aKey: 'aValue', bKey: 'bValue'}"
-        placeholder="Enter new tag name">
+        [asArrayOfHashes]="['Key', 'Value']"
+        duplicateKeyMessage="Tag name is already in use"
+        formControlName="TagSet"
+        placeholder="New tag name">
 
         <ng-template #keyIcon>
           <fa-icon
             [icon]="['fas', 'key']"
             flip="horizontal"
-            size="xs">
+            size="xs"
+            style="color: var(--primary-color)">
           </fa-icon>
           &nbsp;
         </ng-template>
@@ -89,7 +96,8 @@
         <ng-template #valueIcon>
           <fa-icon
             [icon]="['fas', 'tag']"
-            size="xs">
+            size="xs"
+            style="color: var(--primary-color)">
           </fa-icon>
           &nbsp;
         </ng-template>
@@ -97,6 +105,8 @@
       </elaws-key-value>
 
     </mat-expansion-panel>
+
+    <!-- VERSIONING -->
 
     <mat-expansion-panel
       formGroupName="versioning">

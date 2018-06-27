@@ -1,3 +1,4 @@
+import { A11yModule } from '@angular/cdk/a11y';
 import { AngularSplitModule } from 'angular-split';
 import { CommonModule } from '@angular/common';
 import { ContextMenuModule } from 'ngx-contextmenu';
@@ -25,6 +26,7 @@ import { RouterModule } from '@angular/router';
  */
 
 const MODULES = [
+  A11yModule,
   AngularSplitModule,
   CommonModule,
   ContextMenuModule,

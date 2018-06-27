@@ -4,6 +4,8 @@
 
 export class Config {
 
+  keyValueComponentThrottle = 100;
+
   resetDelay: 1500;
 
   s3Delimiter = '/';

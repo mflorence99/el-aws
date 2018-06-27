@@ -79,7 +79,6 @@ export class S3CtrlComponent extends LifecycleComponent {
 
   @OnChange('bucketPropsForm') saveBucketProps(): void {
     if (this.bucketPropsForm && this.bucketPropsForm.submitted) {
-      console.log(this.bucketPropsForm);
       // TODO: why do we need this in Electron? and only running live?
       // at worst, running in NgZone should work -- but otherwise a DOM
       // event is necessary to force change detection

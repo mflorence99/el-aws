@@ -97,6 +97,7 @@ export class S3Service {
       // reason: a bucket with no tags for example errors on the tagging call
       const metadata = Object.keys(funcs).reduce((acc, key) => {
         acc[key] = results[key].value || { };
+        console.log(key, JSON.stringify(acc[key]));
         return acc;
       }, { } as BucketMetadata);
       cb(metadata);
@@ -196,6 +197,10 @@ export class S3Service {
     if (metadata.accelerate.Status)
       funcs.push(async.apply(this.s3.putBucketAccelerateConfiguration, {
         Bucket: bucket, AccelerateConfiguration: { Status: metadata.accelerate.Status }
+      }));
+    if (metadata.tagging.TagSet)
+      funcs.push(async.apply(this.s3.putBucketTagging, {
+        Bucket: bucket, Tagging: { TagSet: metadata.tagging.TagSet }
       }));
     if (metadata.versioning.Status)
       funcs.push(async.apply(this.s3.putBucketVersioning, { 
