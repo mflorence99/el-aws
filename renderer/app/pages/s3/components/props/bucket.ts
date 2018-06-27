@@ -34,6 +34,8 @@ export class BucketPropsComponent extends LifecycleComponent {
   metadata = {} as BucketMetadata;
   propsForm: FormGroup;
 
+  tagLabelMapping: { [k: string]: string } = { '=0': 'No tags.', '=1': 'One tag.', 'other': '# tags.' };
+
   /** ctor */
   constructor(private cdf: ChangeDetectorRef,
               private drawerPanel: DrawerPanelComponent,
@@ -49,6 +51,18 @@ export class BucketPropsComponent extends LifecycleComponent {
         path: '',
         accelerate: this.formBuilder.group({
           Status: ''
+        }),
+        encryption: this.formBuilder.group({
+          ServerSideEncryptionConfiguration: this.formBuilder.group({
+            Rules: this.formBuilder.array([
+              this.formBuilder.group({
+                ApplyServerSideEncryptionByDefault: this.formBuilder.group({
+                  SSEAlgorithm: '',
+                  KMSMasterKeyID: ''
+                })
+              })
+            ])
+          })
         }),
         tagging: this.formBuilder.group({
           TagSet: ''

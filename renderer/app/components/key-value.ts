@@ -55,7 +55,9 @@ export type KeyValueType = KeyValueArray | KeyValueArrayOfHashes | KeyValueHash 
  */
 
 @Component({
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  // TODO: we really want OnPush but we run into this problem:
+  // @see https://github.com/angular/angular/issues/14057
+  changeDetection: ChangeDetectionStrategy.Default,
   providers: [{ provide: MatFormFieldControl, useExisting: KeyValueComponent }],
   selector: 'elaws-key-value',
   styleUrls: ['key-value.scss'],

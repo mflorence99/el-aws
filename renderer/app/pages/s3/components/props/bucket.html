@@ -63,6 +63,78 @@
 
     </mat-expansion-panel>
 
+    <!-- ENCRYPTION -->
+
+    <mat-expansion-panel
+      formGroupName="encryption">
+
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Encryption
+          <div class="drawer-label">
+            {{ metadata?.encryption?.ServerSideEncryptionConfiguration?.Rules[0]?.ApplyServerSideEncryptionByDefault?.SSEAlgorithm || 'None' }}
+          </div>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <div formGroupName="ServerSideEncryptionConfiguration">
+        <div formArrayName="Rules">
+          <div [formGroupName]="0">
+            <div 
+              class="group"
+              formGroupName="ApplyServerSideEncryptionByDefault">
+
+              <mat-radio-group
+                class="group"
+                formControlName="SSEAlgorithm">
+
+                <div class="drawer-label">
+                  This property does not affect existing objects in your bucket.
+                </div>
+
+                <mat-radio-button value="None">
+                  None
+                </mat-radio-button>
+                <mat-radio-button #AES256 value="AES256">
+                  AES-256
+                  <div class="drawer-label">
+                    Use Server-Side Encryption with Amazon S3-Managed Keys (SSE-S3).
+                  </div>
+                </mat-radio-button>
+                <mat-radio-button #AWSKMS value="aws:kms">
+                  AWS-KMS
+                  <div class="drawer-label">
+                    Use Server-Side Encryption with AWS KMS-Managed Keys (SSE-KMS).
+                  </div>
+                </mat-radio-button>
+
+              </mat-radio-group>
+
+              <!-- NOTE: can't use *ngIf because of form validation -->
+
+              <mat-form-field
+                [ngStyle]="{display: AWSKMS.checked? 'block' : 'none'}">
+                <input
+                  [required]="AWSKMS.checked"
+                  formControlName="KMSMasterKeyID"
+                  placeholder="Select a key"
+                  matInput
+                  type="text">
+              </mat-form-field>
+
+              <div
+                *ngIf="AES256.checked || AWSKMS.checked" 
+                class="drawer-label">
+                Amazon S3 evaluates and applies bucket policies before applying bucket encryption settings. Even if you enable bucket encryption settings, your PUT requests without encryption information will be rejected if you have bucket policies to reject such PUT requests. Check your bucket policy and modify it if required.
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </mat-expansion-panel>
+
     <!-- TAGGING -->
 
     <mat-expansion-panel
@@ -72,37 +144,45 @@
         <mat-panel-title>
           Tags
           <div class="drawer-label">
-            {{ metadata?.tagging?.TagSet?.length? 'TBD'  : 'None' }}
+            {{ metadata?.tagging?.TagSet?.length? (metadata.tagging.TagSet.length | i18nPlural: tagLabelMapping) : 'None' }}
           </div>
         </mat-panel-title>
       </mat-expansion-panel-header>
 
-      <elaws-key-value
-        [asArrayOfHashes]="['Key', 'Value']"
-        duplicateKeyMessage="Tag name is already in use"
-        formControlName="TagSet"
-        placeholder="New tag name">
+      <div class="group">
 
-        <ng-template #keyIcon>
-          <fa-icon
-            [icon]="['fas', 'key']"
-            flip="horizontal"
-            size="xs"
-            style="color: var(--primary-color)">
-          </fa-icon>
-          &nbsp;
-        </ng-template>
+        <div class="drawer-label">
+          Use tags to track your cost against projects or other criteria.
+        </div>
 
-        <ng-template #valueIcon>
-          <fa-icon
-            [icon]="['fas', 'tag']"
-            size="xs"
-            style="color: var(--primary-color)">
-          </fa-icon>
-          &nbsp;
-        </ng-template>
+        <elaws-key-value
+          [asArrayOfHashes]="['Key', 'Value']"
+          duplicateKeyMessage="Tag name is already in use"
+          formControlName="TagSet"
+          placeholder="New tag name">
 
-      </elaws-key-value>
+          <ng-template #keyIcon>
+            <fa-icon
+              [icon]="['fas', 'key']"
+              flip="horizontal"
+              size="xs"
+              style="color: var(--primary-color)">
+            </fa-icon>
+            &nbsp;
+          </ng-template>
+
+          <ng-template #valueIcon>
+            <fa-icon
+              [icon]="['fas', 'tag']"
+              size="xs"
+              style="color: var(--primary-color)">
+            </fa-icon>
+            &nbsp;
+          </ng-template>
+
+        </elaws-key-value>
+
+      </div>
 
     </mat-expansion-panel>
 

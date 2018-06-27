@@ -21,6 +21,7 @@ import async from 'async-es';
 export interface BucketMetadata {
   accelerate: S3.GetBucketAccelerateConfigurationOutput;
   acl?: S3.GetBucketAclOutput;
+  encryption?: S3.GetBucketEncryptionOutput;
   head?: any;
   tagging?: S3.GetBucketTaggingOutput;
   versioning?: S3.GetBucketVersioningOutput;
@@ -88,18 +89,23 @@ export class S3Service {
     const funcs = {
       accelerate: async.apply(this.s3.getBucketAccelerateConfiguration, params),
       acl: async.apply(this.s3.getBucketAcl, params),
+      encryption: async.apply(this.s3.getBucketEncryption, params),
       head: async.apply(this.s3.headBucket, params),
       tagging: async.apply(this.s3.getBucketTagging, params),
       versioning: async.apply(this.s3.getBucketVersioning, params)
     };
+    // now load them all in parallel
     async.parallelLimit(async.reflectAll(funcs), 1, (err, results: any) => {
       // NOTE: we are ignoring errors and only recording metadata actually found
       // reason: a bucket with no tags for example errors on the tagging call
+      // TODO: while developing, log this nicely
+      console.group(`%cloadBucketMetadata('${bucket}')`, `color: #004d40`);
       const metadata = Object.keys(funcs).reduce((acc, key) => {
         acc[key] = results[key].value || { };
-        console.log(key, JSON.stringify(acc[key]));
+        console.log(`%c${key} %c${JSON.stringify(acc[key])}`, 'color: black', 'color: grey');
         return acc;
       }, { } as BucketMetadata);
+      console.groupEnd();
       cb(metadata);
     });
   }
@@ -162,13 +168,18 @@ export class S3Service {
       head: async.apply(this.s3.headObject, params),
       tagging: async.apply(this.s3.getObjectTagging, params)
     };
+    // now load them all in parallel
     async.parallelLimit(async.reflectAll(funcs), 1, (err, results: any) => {
       // NOTE: we are ignoring errors and only recording metadata actually found
       // reason: a file with no tags for example errors on the tagging call
+      // TODO: while developing, log this nicely
+      console.group(`%cloadFileMetadata('${path}')`, `color: #006064`);
       const metadata = Object.keys(funcs).reduce((acc, key) => {
         acc[key] = results[key].value || { };
+        console.log(`%c${key} %c${JSON.stringify(acc[key])}`, 'color: black', 'color: grey');
         return acc;
       }, { } as FileMetadata);
+      console.groupEnd();
       cb(metadata);
     });
   }
@@ -198,6 +209,10 @@ export class S3Service {
       funcs.push(async.apply(this.s3.putBucketAccelerateConfiguration, {
         Bucket: bucket, AccelerateConfiguration: { Status: metadata.accelerate.Status }
       }));
+    if (metadata.encryption.ServerSideEncryptionConfiguration)
+      funcs.push(async.apply(this.s3.putBucketEncryption, {
+        Bucket: bucket, ServerSideEncryptionConfiguration: metadata.encryption.ServerSideEncryptionConfiguration
+      }));
     if (metadata.tagging.TagSet)
       funcs.push(async.apply(this.s3.putBucketTagging, {
         Bucket: bucket, Tagging: { TagSet: metadata.tagging.TagSet }
@@ -205,10 +220,19 @@ export class S3Service {
     if (metadata.versioning.Status)
       funcs.push(async.apply(this.s3.putBucketVersioning, { 
         Bucket: bucket, VersioningConfiguration: { Status: metadata.versioning.Status } }));
+    // now update them all in parallel
     async.parallelLimit(funcs, 1, (err, results: any) => {
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
-      else cb();
+      else {
+        // TODO: while developing, log this nicely
+        console.group(`%cupdateBucketMetadata('${bucket}')`, `color: #0d47a1`);
+        Object.keys(metadata).forEach(key => {
+          console.log(`%c${key} %c${JSON.stringify(metadata[key])}`, 'color: black', 'color: grey');
+        });
+        console.groupEnd();
+        cb();
+      }
     });
   }
 
