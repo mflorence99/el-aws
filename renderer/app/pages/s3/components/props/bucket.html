@@ -135,6 +135,98 @@
 
     </mat-expansion-panel>
 
+    <!-- LOGGING -->
+
+    <mat-expansion-panel
+      formGroupName="logging">
+
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Logging
+          <div class="drawer-label">
+            {{ metadata?.logging?.LoggingEnabled?.TargetBucket? 'On' : 'Off' }}
+          </div>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <div class="group">
+
+        <mat-radio-group
+          (change)="enableLogging($event.value === 'on')"
+          [value]="loggingEnabled? 'on' : 'off'"
+          class="group">
+
+          <div class="drawer-label">
+            Set up access log records that provide details about access requests.
+          </div>
+
+          <mat-radio-button value="off">
+            Disable logging
+          </mat-radio-button>
+          <mat-radio-button value="on">
+            Enable logging
+          </mat-radio-button>
+
+        </mat-radio-group>
+
+        <!-- NOTE: can't use *ngIf because of form validation -->
+
+        <div 
+          class="group"
+          formGroupName="LoggingEnabled"
+          [ngStyle]="{display: loggingEnabled? 'block' : 'none'}">
+
+          <elaws-select-bucket
+            [required]="loggingEnabled"
+            formControlName="TargetBucket"
+            placeholder="Select target bucket">
+          </elaws-select-bucket>
+
+          <mat-form-field>
+            <input
+              [required]="loggingEnabled"
+              formControlName="TargetPrefix"
+              placeholder="Enter target prefix"
+              matInput
+              type="text">
+          </mat-form-field>
+
+          <div class="drawer-label">
+            This prefix will be assigned to all log records.
+          </div>
+
+          <div 
+            formGroupName="TargetGrants"
+            style="display: none">
+            <div [formGroupName]="0">
+              <div formGroupName="Grantee">
+                      
+                <mat-form-field>
+                  <input
+                    formControlName="Type"
+                    matInput
+                    type="text">
+                </mat-form-field>
+
+              </div>
+                    
+              <mat-form-field>
+                <input
+                  formControlName="Permission"
+                  matInput
+                  type="text">
+              </mat-form-field>
+
+            </div>
+        </div>
+
+        </div>
+
+      </div>
+
+    </mat-expansion-panel>
+
+
     <!-- TAGGING -->
 
     <mat-expansion-panel

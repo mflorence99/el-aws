@@ -23,6 +23,7 @@ export interface BucketMetadata {
   acl?: S3.GetBucketAclOutput;
   encryption?: S3.GetBucketEncryptionOutput;
   head?: any;
+  logging?: S3.GetBucketLoggingOutput;
   tagging?: S3.GetBucketTaggingOutput;
   versioning?: S3.GetBucketVersioningOutput;
 }
@@ -91,6 +92,7 @@ export class S3Service {
       acl: async.apply(this.s3.getBucketAcl, params),
       encryption: async.apply(this.s3.getBucketEncryption, params),
       head: async.apply(this.s3.headBucket, params),
+      logging: async.apply(this.s3.getBucketLogging, params),
       tagging: async.apply(this.s3.getBucketTagging, params),
       versioning: async.apply(this.s3.getBucketVersioning, params)
     };
@@ -214,6 +216,15 @@ export class S3Service {
       funcs.push(async.apply(this.s3.putBucketEncryption, {
         Bucket: bucket, ServerSideEncryptionConfiguration: metadata.encryption.ServerSideEncryptionConfiguration
       }));
+    if (metadata.logging.LoggingEnabled.TargetBucket)
+      funcs.push(async.apply(this.s3.putBucketLogging, {
+        Bucket: bucket, BucketLoggingStatus: { LoggingEnabled: metadata.logging.LoggingEnabled }
+      }));
+    else {
+      funcs.push(async.apply(this.s3.putBucketLogging, {
+        Bucket: bucket, BucketLoggingStatus: { }
+      }));
+    }
     if (metadata.tagging.TagSet)
       funcs.push(async.apply(this.s3.putBucketTagging, {
         Bucket: bucket, Tagging: { TagSet: metadata.tagging.TagSet }

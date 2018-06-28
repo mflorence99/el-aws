@@ -18,6 +18,10 @@ form {
     grid-template-columns: auto;
   }
 
+  .mat-form-field {
+    width: 100%;
+  }
+
   .okAndCancel {
     display: grid;
     grid-gap: 16px;

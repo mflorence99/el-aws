@@ -34,6 +34,8 @@ export class BucketPropsComponent extends LifecycleComponent {
   metadata = {} as BucketMetadata;
   propsForm: FormGroup;
 
+  loggingEnabled: boolean;
+
   tagLabelMapping: { [k: string]: string } = { '=0': 'No tags.', '=1': 'One tag.', 'other': '# tags.' };
 
   /** ctor */
@@ -46,7 +48,6 @@ export class BucketPropsComponent extends LifecycleComponent {
     this.drawerPanel.opened.subscribe(context => {
       this.desc = <Descriptor>context;
       this.store.dispatch(new LoadBucketMetadata({ path: this.desc.path }));
-      // create props form controls
       this.propsForm = this.formBuilder.group({
         path: '',
         accelerate: this.formBuilder.group({
@@ -60,6 +61,20 @@ export class BucketPropsComponent extends LifecycleComponent {
                   SSEAlgorithm: '',
                   KMSMasterKeyID: ''
                 })
+              })
+            ])
+          })
+        }),
+        logging: this.formBuilder.group({
+          LoggingEnabled: this.formBuilder.group({
+            TargetBucket: '',
+            TargetPrefix: '',
+            TargetGrants: this.formBuilder.array([
+              this.formBuilder.group({
+                Grantee: this.formBuilder.group({
+                  Type: ''
+                }),
+                Permission: ''
               })
             ])
           })
@@ -81,6 +96,16 @@ export class BucketPropsComponent extends LifecycleComponent {
     this.drawerPanel.close();
   }
 
+  /** Enable/disable logging in the UI */
+  enableLogging(state: boolean): void {
+    this.loggingEnabled = state;
+    const patch: any = { logging: { LoggingEnabled: { } } };
+    if (this.loggingEnabled) 
+      patch.logging.LoggingEnabled = { TargetGrants: [{ Grantee: { Type: 'CanonicalUser' }, Permission: 'FULL_CONTROL' }] };
+    else patch.logging.LoggingEnabled = { TargetBucket: '', TargetPrefix: '' };
+    this.propsForm.patchValue({ ...patch }, { emitEvent: false });
+  }
+
   // bind OnChange handlers
 
   @OnChange('s3meta') newMetadata() {
@@ -89,6 +114,7 @@ export class BucketPropsComponent extends LifecycleComponent {
       if (this.propsForm) { 
         this.propsForm.reset();
         if (this.metadata) {
+          this.loggingEnabled = !!(this.metadata.logging.LoggingEnabled && this.metadata.logging.LoggingEnabled.TargetBucket);
           this.propsForm.patchValue({ ...this.metadata, path: this.desc.path }, 
                                     { emitEvent: false });
         }
