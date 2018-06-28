@@ -1,0 +1,26 @@
+<div
+  [formGroup]="selectBucketForm">
+
+  <mat-form-field>
+
+    <mat-select
+      [disabled]="disabled"
+      [placeholder]="placeholder"
+      [required]="required"
+      formControlName="selectBucket">
+
+      <ng-container
+        *ngFor="let bucket of (buckets$ | async)">
+
+        <mat-option
+          [value]="bucket.name">
+          {{ bucket.name }}
+        </mat-option>
+
+      </ng-container>
+
+    </mat-select>
+
+  </mat-form-field>
+
+</div>

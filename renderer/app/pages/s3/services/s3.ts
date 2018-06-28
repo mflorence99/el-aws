@@ -210,7 +210,7 @@ export class S3Service {
         Bucket: bucket, AccelerateConfiguration: { Status: metadata.accelerate.Status }
       }));
     // TODO: this is a hack, but no worse than any alternative until TypeScript has ?.
-    if (eval('metadata.encryption.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault')) // tslint:disable-line:no-eval
+    if (eval('metadata.encryption.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm')) // tslint:disable-line:no-eval
       funcs.push(async.apply(this.s3.putBucketEncryption, {
         Bucket: bucket, ServerSideEncryptionConfiguration: metadata.encryption.ServerSideEncryptionConfiguration
       }));

@@ -1,4 +1,3 @@
-import { AfterViewInit } from '@angular/core';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { Component } from '@angular/core';
 import { ContentChild } from '@angular/core';
@@ -66,7 +65,7 @@ export type KeyValueType = KeyValueArray | KeyValueArrayOfHashes | KeyValueHash 
 
 export class KeyValueComponent implements ControlValueAccessor,
                                           MatFormFieldControl<KeyValueType>, 
-                                          AfterViewInit, OnDestroy { 
+                                          OnDestroy { 
 
   static nextID = 0;
 
@@ -85,7 +84,6 @@ export class KeyValueComponent implements ControlValueAccessor,
 
   // @see MatFormFieldControl
   controlType = 'elaws-key-value';
-  empty = false;
   focused = false;
   shouldLabelFloat = false;
   stateChanges = new Subject<void>();
@@ -106,6 +104,12 @@ export class KeyValueComponent implements ControlValueAccessor,
   set disabled(disabled: boolean) {
     this._disabled = coerceBooleanProperty(disabled);
     this.stateChanges.next();
+  }
+
+  // empty accessor
+
+  get empty(): boolean {
+    return isObjectEmpty(this.keyValues);
   }
 
   // errorState accessor
@@ -157,12 +161,35 @@ export class KeyValueComponent implements ControlValueAccessor,
   private _required: boolean;
 
   /** ctor  */
-  constructor(private focusMonitor: FocusMonitor,
+  constructor(private element: ElementRef,
+              private focusMonitor: FocusMonitor,
               private formBuilder: FormBuilder,
               @Optional() @Self() public ngControl: NgControl) { 
     this.keyValueForm = this.formBuilder.group({ });
     if (this.ngControl != null)
       this.ngControl.valueAccessor = this;
+    // monitor for value
+    this.keyValueForm.valueChanges
+      .pipe(
+        tap(values => {
+          if (this.errorState)
+            this.ngControl.control.setErrors({ 'invalid': true });
+        }),
+        filter(values => !this.errorState),
+        debounceTime(config.componentOnChangeThrottle)
+      ).subscribe(values => {
+        this.duplicateKey = false;
+        this.keys.forEach(key => this.keyValues[key] = values[key]);
+        if (this.onChange)
+          this.onChange(this.value);
+        this.stateChanges.next();
+      });
+    // monitor for focus
+    this.focusMonitor.monitor(this.element.nativeElement, true)
+      .subscribe(origin => {
+        this.focused = !!origin;
+        this.stateChanges.next();
+      });
   }
 
   /** Add a new key */
@@ -193,7 +220,7 @@ export class KeyValueComponent implements ControlValueAccessor,
   /** @see https://material.angular.io/guide/creating-a-custom-form-field-control */
   onContainerClick(event: MouseEvent) { 
     const tagName = (<Element>event.target).tagName.toLowerCase();
-    if (['input', 'a'].includes(tagName))
+    if (!['input', 'a'].includes(tagName))
       this.newKey.nativeElement.focus();
   }
 
@@ -217,33 +244,9 @@ export class KeyValueComponent implements ControlValueAccessor,
 
   // lifecycle methods
 
-  ngAfterViewInit(): void {
-    // monitor for value
-    this.keyValueForm.valueChanges
-      .pipe(
-        tap(values => {
-          if (this.errorState)
-            this.ngControl.control.setErrors({ 'invalid': true });
-        }),
-        filter(values => !this.errorState),
-        debounceTime(config.keyValueComponentThrottle)
-      ).subscribe(values => {
-        this.duplicateKey = false;
-        this.keys.forEach(key => this.keyValues[key] = values[key]);
-        this.onChange(this.value);
-        this.stateChanges.next();
-      });
-    // monitor for focus
-    this.focusMonitor.monitor(this.newKey.nativeElement, true)
-      .subscribe(origin => {
-        this.focused = !!origin;
-        this.stateChanges.next();
-      });
-  }
-
   ngOnDestroy(): void {
     this.stateChanges.complete();
-    this.focusMonitor.stopMonitoring(this.newKey.nativeElement);
+    this.focusMonitor.stopMonitoring(this.element.nativeElement);
   }
 
   // private methods

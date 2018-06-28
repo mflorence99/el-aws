@@ -7,6 +7,7 @@ import { ComponentsModule as CommonComponentsModule } from '../../../components/
 import { FilePropsComponent } from './props/file';
 import { NgModule } from '@angular/core';
 import { RowComponent } from './row';
+import { SelectBucketComponent } from './select-bucket';
 import { ViewComponent } from './view';
 
 /**
@@ -20,6 +21,7 @@ const COMPONENTS = [
   ColumnComponent,
   FilePropsComponent,
   RowComponent,
+  SelectBucketComponent,
   ViewComponent
 ];
 

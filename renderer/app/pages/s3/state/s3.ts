@@ -10,6 +10,7 @@ import { S3ColorState } from '../state/s3color';
 import { S3ColorStateModel } from '../state/s3color';
 import { S3Service } from '../services/s3';
 import { Select } from '@ngxs/store';
+import { Selector } from '@ngxs/store';
 import { SetColor } from '../state/s3color';
 import { State } from '@ngxs/store';
 import { StateContext } from '@ngxs/store';
@@ -73,6 +74,12 @@ export interface S3StateModel {
   name: 's3',
   defaults: {}
 }) export class S3State implements NgxsOnInit {
+
+  @Selector() static getBuckets(state: S3StateModel): Descriptor[] {
+    return state[config.s3Delimiter].sort((a, b) => {
+      return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+    });
+  }
 
   @Select(S3ColorState) s3color$: Observable<S3ColorStateModel>;
 
