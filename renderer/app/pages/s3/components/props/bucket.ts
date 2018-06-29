@@ -34,6 +34,7 @@ export class BucketPropsComponent extends LifecycleComponent {
   metadata = {} as BucketMetadata;
   propsForm: FormGroup;
 
+  encryptionEnabled: string;
   loggingEnabled: boolean;
 
   tagLabelMapping: { [k: string]: string } = { '=0': 'No tags.', '=1': 'One tag.', 'other': '# tags.' };
@@ -84,6 +85,8 @@ export class BucketPropsComponent extends LifecycleComponent {
         }),
         versioning: this.formBuilder.group({
           Status: ''
+        }),
+        website: this.formBuilder.group({
         })
       });
       this.newMetadata();
@@ -96,7 +99,17 @@ export class BucketPropsComponent extends LifecycleComponent {
     this.drawerPanel.close();
   }
 
-  /** Enable/disable logging in the UI */
+  /** Enforce AWS encryption semantics in the UI */
+  enableEncryption(state: string): void {
+    this.encryptionEnabled = state;
+    const patch: any = { encryption: { ServerSideEncryptionConfiguration: { Rules: [{ ApplyServerSideEncryptionByDefault: { } } ]} } };
+    if (this.encryptionEnabled === 'AES256') {
+      patch.encryption.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.KMSMasterKeyID = '';
+      this.propsForm.patchValue({ ...patch }, { emitEvent: false });
+    }
+  }
+
+  /** Enforce AWS logging semantics in the UI */
   enableLogging(state: boolean): void {
     this.loggingEnabled = state;
     const patch: any = { logging: { LoggingEnabled: { } } };

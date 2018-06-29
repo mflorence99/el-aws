@@ -26,6 +26,7 @@ export interface BucketMetadata {
   logging?: S3.GetBucketLoggingOutput;
   tagging?: S3.GetBucketTaggingOutput;
   versioning?: S3.GetBucketVersioningOutput;
+  website?: S3.GetBucketWebsiteOutput;
 }
 
 export interface FileMetadata {
@@ -94,7 +95,8 @@ export class S3Service {
       head: async.apply(this.s3.headBucket, params),
       logging: async.apply(this.s3.getBucketLogging, params),
       tagging: async.apply(this.s3.getBucketTagging, params),
-      versioning: async.apply(this.s3.getBucketVersioning, params)
+      versioning: async.apply(this.s3.getBucketVersioning, params),
+      website: async.apply(this.s3.getBucketWebsite, params)
     };
     // now load them all in parallel
     async.parallelLimit(async.reflectAll(funcs), 1, (err, results: any) => {
@@ -207,31 +209,30 @@ export class S3Service {
                        cb: () => void): void {
     const { bucket } = S3Service.extractBucketAndPrefix(path);
     const funcs = [];
+    // Acceleration -- Note: can't turn off and Status must be present
     if (metadata.accelerate.Status)
       funcs.push(async.apply(this.s3.putBucketAccelerateConfiguration, {
-        Bucket: bucket, AccelerateConfiguration: { Status: metadata.accelerate.Status }
-      }));
+        Bucket: bucket, AccelerateConfiguration:  metadata.accelerate }));
+    // ENCRYPTION -- Note: if no algorithm, set Rules to [] to turn off
     // TODO: this is a hack, but no worse than any alternative until TypeScript has ?.
-    if (eval('metadata.encryption.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm')) // tslint:disable-line:no-eval
-      funcs.push(async.apply(this.s3.putBucketEncryption, {
-        Bucket: bucket, ServerSideEncryptionConfiguration: metadata.encryption.ServerSideEncryptionConfiguration
-      }));
-    if (metadata.logging.LoggingEnabled.TargetBucket)
-      funcs.push(async.apply(this.s3.putBucketLogging, {
-        Bucket: bucket, BucketLoggingStatus: { LoggingEnabled: metadata.logging.LoggingEnabled }
-      }));
-    else {
-      funcs.push(async.apply(this.s3.putBucketLogging, {
-        Bucket: bucket, BucketLoggingStatus: { }
-      }));
-    }
+    const encAlgorithm = eval('metadata.encryption.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm'); // tslint:disable-line:no-eval
+    funcs.push(async.apply(this.s3.putBucketEncryption, {
+      Bucket: bucket, ServerSideEncryptionConfiguration: encAlgorithm?  metadata.encryption.ServerSideEncryptionConfiguration : { Rules: [] } }));
+    // LOGGING -- Note: if no bucket etc, set to empty to disable logging
+    const logBucket = metadata.logging.LoggingEnabled.TargetBucket;
+    funcs.push(async.apply(this.s3.putBucketLogging, {
+      Bucket: bucket, BucketLoggingStatus: logBucket? metadata.logging : { } }));
+    // TAGGING -- Note: must have a TagSet, even if empty
     if (metadata.tagging.TagSet)
       funcs.push(async.apply(this.s3.putBucketTagging, {
-        Bucket: bucket, Tagging: { TagSet: metadata.tagging.TagSet }
-      }));
+        Bucket: bucket, Tagging: metadata.tagging }));
+    // VERSIONING -- Note: can't turn off and Status must be present
     if (metadata.versioning.Status)
       funcs.push(async.apply(this.s3.putBucketVersioning, { 
-        Bucket: bucket, VersioningConfiguration: { Status: metadata.versioning.Status } }));
+        Bucket: bucket, VersioningConfiguration: metadata.versioning }));
+    // WEBSITE
+    funcs.push(async.apply(this.s3.putBucketWebsite, {
+      Bucket: bucket, WebsiteConfiguration: metadata.website }));
     // now update them all in parallel
     async.parallelLimit(funcs, 1, (err, results: any) => {
       if (err)

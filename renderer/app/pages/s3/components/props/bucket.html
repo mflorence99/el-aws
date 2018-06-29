@@ -85,6 +85,7 @@
               formGroupName="ApplyServerSideEncryptionByDefault">
 
               <mat-radio-group
+                (change)="enableEncryption($event.value)"
                 class="group"
                 formControlName="SSEAlgorithm">
 
@@ -92,16 +93,16 @@
                   This property does not affect existing objects in your bucket.
                 </div>
 
-                <mat-radio-button value="None">
+                <mat-radio-button value="">
                   None
                 </mat-radio-button>
-                <mat-radio-button #AES256 value="AES256">
+                <mat-radio-button value="AES256">
                   AES-256
                   <div class="drawer-label">
                     Use Server-Side Encryption with Amazon S3-Managed Keys (SSE-S3).
                   </div>
                 </mat-radio-button>
-                <mat-radio-button #AWSKMS value="aws:kms">
+                <mat-radio-button value="aws:kms">
                   AWS-KMS
                   <div class="drawer-label">
                     Use Server-Side Encryption with AWS KMS-Managed Keys (SSE-KMS).
@@ -113,9 +114,9 @@
               <!-- NOTE: can't use *ngIf because of form validation -->
 
               <mat-form-field
-                [ngStyle]="{display: AWSKMS.checked? 'block' : 'none'}">
+                [ngStyle]="{display: (encryptionEnabled === 'aws:kms')? 'block' : 'none'}">
                 <input
-                  [required]="AWSKMS.checked"
+                  [required]="encryptionEnabled === 'aws:kms'"
                   formControlName="KMSMasterKeyID"
                   placeholder="Select a key"
                   matInput
@@ -123,7 +124,7 @@
               </mat-form-field>
 
               <div
-                *ngIf="AES256.checked || AWSKMS.checked" 
+                *ngIf="encryptionEnabled" 
                 class="drawer-label">
                 Amazon S3 evaluates and applies bucket policies before applying bucket encryption settings. Even if you enable bucket encryption settings, your PUT requests without encryption information will be rejected if you have bucket policies to reject such PUT requests. Check your bucket policy and modify it if required.
               </div>
