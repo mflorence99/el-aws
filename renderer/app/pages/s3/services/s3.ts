@@ -10,6 +10,8 @@ import { Select } from '@ngxs/store';
 import { Store } from '@ngxs/store';
 
 import { config } from '../../../config';
+import { isObjectEmpty } from 'ellib';
+import { nullSafe } from 'ellib';
 
 import async from 'async-es';
 
@@ -211,28 +213,28 @@ export class S3Service {
     const funcs = [];
     // Acceleration -- Note: can't turn off and Status must be present
     if (metadata.accelerate.Status)
-      funcs.push(async.apply(this.s3.putBucketAccelerateConfiguration, {
-        Bucket: bucket, AccelerateConfiguration:  metadata.accelerate }));
-    // ENCRYPTION -- Note: if no algorithm, set Rules to [] to turn off
-    // TODO: this is a hack, but no worse than any alternative until TypeScript has ?.
-    const encAlgorithm = eval('metadata.encryption.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm'); // tslint:disable-line:no-eval
-    funcs.push(async.apply(this.s3.putBucketEncryption, {
-      Bucket: bucket, ServerSideEncryptionConfiguration: encAlgorithm?  metadata.encryption.ServerSideEncryptionConfiguration : { Rules: [] } }));
+      funcs.push(async.apply(this.s3.putBucketAccelerateConfiguration, { Bucket: bucket, AccelerateConfiguration:  metadata.accelerate }));
+    // ENCRYPTION -- Note: if no algorithm, need to explcitly delete
+    const encAlgorithm = nullSafe(metadata.encryption, 'ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm');
+    if (encAlgorithm)
+      funcs.push(async.apply(this.s3.putBucketEncryption, { Bucket: bucket, ...metadata.encryption }));
+    else funcs.push(async.apply(this.s3.deleteBucketEncryption, { Bucket: bucket }));
     // LOGGING -- Note: if no bucket etc, set to empty to disable logging
     const logBucket = metadata.logging.LoggingEnabled.TargetBucket;
-    funcs.push(async.apply(this.s3.putBucketLogging, {
-      Bucket: bucket, BucketLoggingStatus: logBucket? metadata.logging : { } }));
+    funcs.push(async.apply(this.s3.putBucketLogging, { Bucket: bucket, BucketLoggingStatus: logBucket? metadata.logging : { } }));
     // TAGGING -- Note: must have a TagSet, even if empty
-    if (metadata.tagging.TagSet)
-      funcs.push(async.apply(this.s3.putBucketTagging, {
-        Bucket: bucket, Tagging: metadata.tagging }));
+    if (metadata.tagging.TagSet && !isObjectEmpty(metadata.tagging.TagSet))
+      funcs.push(async.apply(this.s3.putBucketTagging, { Bucket: bucket, Tagging: metadata.tagging }));
+    else funcs.push(async.apply(this.s3.deleteBucketTagging, { Bucket: bucket }));
     // VERSIONING -- Note: can't turn off and Status must be present
     if (metadata.versioning.Status)
-      funcs.push(async.apply(this.s3.putBucketVersioning, { 
-        Bucket: bucket, VersioningConfiguration: metadata.versioning }));
+      funcs.push(async.apply(this.s3.putBucketVersioning, { Bucket: bucket, VersioningConfiguration: metadata.versioning }));
     // WEBSITE
-    funcs.push(async.apply(this.s3.putBucketWebsite, {
-      Bucket: bucket, WebsiteConfiguration: metadata.website }));
+    if (metadata.website.RedirectAllRequestsTo.HostName)
+      funcs.push(async.apply(this.s3.putBucketWebsite, { Bucket: bucket, WebsiteConfiguration: { RedirectAllRequestsTo: metadata.website.RedirectAllRequestsTo } }));
+    else if (metadata.website.IndexDocument.Suffix)
+      funcs.push(async.apply(this.s3.putBucketWebsite, { Bucket: bucket, WebsiteConfiguration: { IndexDocument: metadata.website.IndexDocument, ErrorDocument: metadata.website.ErrorDocument } }));
+    else funcs.push(async.apply(this.s3.deleteBucketWebsite, { Bucket: bucket }));
     // now update them all in parallel
     async.parallelLimit(funcs, 1, (err, results: any) => {
       if (err)

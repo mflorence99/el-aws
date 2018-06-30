@@ -14,6 +14,8 @@ import { PrefsStateModel } from '../../../../state/prefs';
 import { S3MetaStateModel } from '../../state/s3meta';
 import { Store } from '@ngxs/store';
 
+import { nullSafe } from 'ellib';
+
 /**
  * Bucket props component
  */
@@ -36,6 +38,7 @@ export class BucketPropsComponent extends LifecycleComponent {
 
   encryptionEnabled: string;
   loggingEnabled: boolean;
+  websiteEnabled: string;
 
   tagLabelMapping: { [k: string]: string } = { '=0': 'No tags.', '=1': 'One tag.', 'other': '# tags.' };
 
@@ -70,14 +73,7 @@ export class BucketPropsComponent extends LifecycleComponent {
           LoggingEnabled: this.formBuilder.group({
             TargetBucket: '',
             TargetPrefix: '',
-            TargetGrants: this.formBuilder.array([
-              this.formBuilder.group({
-                Grantee: this.formBuilder.group({
-                  Type: ''
-                }),
-                Permission: ''
-              })
-            ])
+            TargetGrants: this.formBuilder.array([ ])
           })
         }),
         tagging: this.formBuilder.group({
@@ -87,6 +83,16 @@ export class BucketPropsComponent extends LifecycleComponent {
           Status: ''
         }),
         website: this.formBuilder.group({
+          RedirectAllRequestsTo: this.formBuilder.group({
+            HostName: '',
+            Protocol: ''
+          }),
+          IndexDocument: this.formBuilder.group({
+            Suffix: ''
+          }),
+          ErrorDocument: this.formBuilder.group({
+            Key: ''
+          })
         })
       });
       this.newMetadata();
@@ -104,7 +110,7 @@ export class BucketPropsComponent extends LifecycleComponent {
     this.encryptionEnabled = state;
     const patch: any = { encryption: { ServerSideEncryptionConfiguration: { Rules: [{ ApplyServerSideEncryptionByDefault: { } } ]} } };
     if (this.encryptionEnabled === 'AES256') {
-      patch.encryption.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.KMSMasterKeyID = '';
+      patch.encryption.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.KMSMasterKeyID = null;
       this.propsForm.patchValue({ ...patch }, { emitEvent: false });
     }
   }
@@ -113,9 +119,26 @@ export class BucketPropsComponent extends LifecycleComponent {
   enableLogging(state: boolean): void {
     this.loggingEnabled = state;
     const patch: any = { logging: { LoggingEnabled: { } } };
-    if (this.loggingEnabled) 
-      patch.logging.LoggingEnabled = { TargetGrants: [{ Grantee: { Type: 'CanonicalUser' }, Permission: 'FULL_CONTROL' }] };
-    else patch.logging.LoggingEnabled = { TargetBucket: '', TargetPrefix: '' };
+    if (!this.loggingEnabled) 
+      patch.logging.LoggingEnabled = { TargetBucket: null, TargetPrefix: null };
+    this.propsForm.patchValue({ ...patch }, { emitEvent: false });
+  }
+
+  /** Enforce AWS website semantics in the UI */
+  enableWebsite(state: string): void {
+    this.websiteEnabled = state;
+    const patch: any = { website: { RedirectAllRequestsTo: { }, IndexDocument: { }, ErrorDocument: { } } };
+    if (this.websiteEnabled === 'Off') {
+      patch.website.RedirectAllRequestsTo = { HostName: null, Protocol: null };
+      patch.website.IndexDocument = { Suffix: null };
+      patch.website.ErrorDocument = { Key: null };
+    }
+    else if (this.websiteEnabled === 'On') 
+      patch.website.RedirectAllRequestsTo = { HostName: null, Protocol: null };
+    else if (this.websiteEnabled === 'Redirect') {
+      patch.website.IndexDocument = { Suffix: null };
+      patch.website.ErrorDocument = { Key: null };
+    }
     this.propsForm.patchValue({ ...patch }, { emitEvent: false });
   }
 
@@ -127,7 +150,14 @@ export class BucketPropsComponent extends LifecycleComponent {
       if (this.propsForm) { 
         this.propsForm.reset();
         if (this.metadata) {
+          // UI assist
+          this.encryptionEnabled = nullSafe(this.metadata.encryption, 'ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm');
           this.loggingEnabled = !!(this.metadata.logging.LoggingEnabled && this.metadata.logging.LoggingEnabled.TargetBucket);
+          this.websiteEnabled = 'Off';
+          if (this.metadata.website.IndexDocument)
+            this.websiteEnabled = 'On';
+          else if (this.metadata.website.RedirectAllRequestsTo)
+            this.websiteEnabled = 'Redirect';
           this.propsForm.patchValue({ ...this.metadata, path: this.desc.path }, 
                                     { emitEvent: false });
         }

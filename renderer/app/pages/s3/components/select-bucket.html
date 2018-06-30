@@ -4,9 +4,9 @@
   <mat-form-field>
 
     <mat-select
-      [disabled]="disabled"
+      [libRxfDisabled]="disabled"
+      [libRxfRequired]="required"
       [placeholder]="placeholder"
-      [required]="required"
       formControlName="selectBucket">
 
       <ng-container

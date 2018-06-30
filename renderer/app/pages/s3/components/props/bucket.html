@@ -13,6 +13,9 @@
 
   <div class="title">
     {{ desc.name | libBreakable }}
+    <div class="subtitle">
+      {{ desc.storage }}
+    </div>
   </div>
 
 </h3>
@@ -72,7 +75,7 @@
         <mat-panel-title>
           Encryption
           <div class="drawer-label">
-            {{ metadata?.encryption?.ServerSideEncryptionConfiguration?.Rules[0]?.ApplyServerSideEncryptionByDefault?.SSEAlgorithm || 'None' }}
+            {{ encryptionEnabled || 'None' }}
           </div>
         </mat-panel-title>
       </mat-expansion-panel-header>
@@ -90,7 +93,8 @@
                 formControlName="SSEAlgorithm">
 
                 <div class="drawer-label">
-                  This property does not affect existing objects in your bucket.
+                  Automatically encrypt objects when stored in Amazon S3.
+                  <b>Note</b> this property does not affect existing objects in your bucket.
                 </div>
 
                 <mat-radio-button value="">
@@ -145,7 +149,7 @@
         <mat-panel-title>
           Logging
           <div class="drawer-label">
-            {{ metadata?.logging?.LoggingEnabled?.TargetBucket? 'On' : 'Off' }}
+            {{ loggingEnabled? 'On' : 'Off' }}
           </div>
         </mat-panel-title>
       </mat-expansion-panel-header>
@@ -195,31 +199,6 @@
           <div class="drawer-label">
             This prefix will be assigned to all log records.
           </div>
-
-          <div 
-            formGroupName="TargetGrants"
-            style="display: none">
-            <div [formGroupName]="0">
-              <div formGroupName="Grantee">
-                      
-                <mat-form-field>
-                  <input
-                    formControlName="Type"
-                    matInput
-                    type="text">
-                </mat-form-field>
-
-              </div>
-                    
-              <mat-form-field>
-                <input
-                  formControlName="Permission"
-                  matInput
-                  type="text">
-              </mat-form-field>
-
-            </div>
-        </div>
 
         </div>
 
@@ -293,21 +272,138 @@
         </mat-panel-title>
       </mat-expansion-panel-header>
 
-      <mat-radio-group
-        class="group"
-        formControlName="Status">
+      <div class="group">
 
-        <mat-radio-button value="Enabled">
-          Enable versioning
-        </mat-radio-button>
-        <mat-radio-button value="Suspended">
-          Suspend versioning
+        <div class="drawer-label">
+          Keep multiple versions of an object in the same bucket.
+        </div>
+
+        <mat-radio-group
+          class="group"
+          formControlName="Status">
+
+          <mat-radio-button value="Enabled">
+            Enable versioning
+          </mat-radio-button>
+          <mat-radio-button value="Suspended">
+            Suspend versioning
+            <div class="drawer-label">
+              This suspends the creation of object versions for all operations but preserves any existing object versions.
+            </div>
+          </mat-radio-button>
+
+        </mat-radio-group>
+
+      </div>
+
+    </mat-expansion-panel>
+
+    <!-- WEBSITE -->
+
+    <mat-expansion-panel
+      formGroupName="website">
+
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Website Hosting
           <div class="drawer-label">
-            This suspends the creation of object versions for all operations but preserves any existing object versions.
+            {{ websiteEnabled }}
           </div>
-        </mat-radio-button>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
 
-      </mat-radio-group>
+      <div class="group">
+
+        <mat-radio-group
+          (change)="enableWebsite($event.value)"
+          [value]="websiteEnabled"
+          class="group">
+
+          <div class="drawer-label">
+            Host a static website at <a>http://{{ desc.name }}.s3-website-{{ desc.storage }}.amazonaws.com</a> that doesn't require server-side technologies.
+          </div>
+
+          <mat-radio-button value="Off">
+            Disable website hosting
+          </mat-radio-button>
+
+          <mat-radio-button value="On">
+            Use this bucket to host a website
+          </mat-radio-button>
+
+          <mat-radio-button value="Redirect">
+            Redirect requests
+          </mat-radio-button>
+
+        </mat-radio-group>
+
+        <!-- NOTE: can't use *ngIf because of form validation -->
+
+        <div
+          [ngStyle]="{display: (websiteEnabled === 'On')? 'block' : 'none'}">
+
+          <div
+            formGroupName="IndexDocument">
+                      
+            <mat-form-field>
+              <input 
+                [required]="websiteEnabled === 'On'"
+                formControlName="Suffix"
+                placeholder="Index document"
+                matInput
+                type="text">
+            </mat-form-field>
+
+          </div>
+
+          <div
+            formGroupName="ErrorDocument">
+                      
+            <mat-form-field>
+              <input 
+                [required]="websiteEnabled === 'On'" 
+                formControlName="Key"
+                placeholder="Error document"
+                matInput
+                type="text">
+            </mat-form-field>
+
+          </div>
+
+        </div>
+
+        <!-- NOTE: can't use *ngIf because of form validation -->
+
+        <div
+          [ngStyle]="{display: (websiteEnabled === 'Redirect')? 'block' : 'none'}">
+
+          <div
+            formGroupName="RedirectAllRequestsTo">
+                      
+            <mat-form-field>
+              <input 
+                [required]="websiteEnabled === 'Redirect'"
+                formControlName="HostName"
+                placeholder="Target bucket or domain"
+                matInput
+                type="text">
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-select 
+                [required]="websiteEnabled === 'Redirect'"
+                formControlName="Protocol"
+                placeholder="Protocol">
+                <mat-option value="http">http</mat-option>
+                <mat-option value="https">https</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+          </div>
+
+        </div>
+
+      </div>
 
     </mat-expansion-panel>
 
