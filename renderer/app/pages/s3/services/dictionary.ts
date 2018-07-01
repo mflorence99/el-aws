@@ -1,4 +1,4 @@
-import { BucketMetadata } from '../services/s3';
+import { BucketMetadata } from '../state/s3meta';
 import { Descriptor } from '../state/s3';
 import { Injectable } from '@angular/core';
 import { PrefsStateModel } from '../../../state/prefs';
@@ -8,6 +8,7 @@ import { S3StateModel } from '../state/s3';
 import { S3ViewStateModel } from '../state/s3view';
 
 import { config } from '../../../config';
+import { nullSafe } from 'ellib';
 
 /**
  * Dictionary of data
@@ -66,7 +67,7 @@ export class DictionaryService {
     descs.forEach(desc => {
       const metadata = <BucketMetadata>s3meta[bucket + config.s3Delimiter];
       // NOTE: once versioning has been set it can only be suspended, never turned off
-      desc.versioning = !!(metadata && metadata.versioning.Status);
+      desc.versioning = !!(metadata && nullSafe(metadata, 'versioning.Status'));
     });
     return descs;
   }

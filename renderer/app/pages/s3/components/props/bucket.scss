@@ -23,6 +23,7 @@ form {
   }
 
   .okAndCancel {
+    align-items: center;
     display: grid;
     grid-gap: 16px;
     grid-template-columns: auto auto;

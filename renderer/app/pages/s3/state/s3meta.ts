@@ -1,7 +1,6 @@
+import * as S3 from 'aws-sdk/clients/s3';
+
 import { Action } from '@ngxs/store';
-import { BucketMetadata } from '../services/s3';
-import { FileMetadata } from '../services/s3';
-import { Message } from '../../../state/status';
 import { NgZone } from '@angular/core';
 import { S3Service } from '../services/s3';
 import { State } from '@ngxs/store';
@@ -39,6 +38,25 @@ export class UpdateFileMetadata {
   constructor(public readonly payload: { path: string, metadata: FileMetadata }) { }
 }
 
+export interface BucketMetadata {
+  accelerate: S3.GetBucketAccelerateConfigurationOutput;
+  acl?: S3.GetBucketAclOutput;
+  encryption?: S3.GetBucketEncryptionOutput;
+  head?: any;
+  loading?: boolean;
+  logging?: S3.GetBucketLoggingOutput;
+  tagging?: S3.GetBucketTaggingOutput;
+  versioning?: S3.GetBucketVersioningOutput;
+  website?: S3.GetBucketWebsiteOutput;
+}
+
+export interface FileMetadata {
+  acl?: S3.GetObjectAclOutput;
+  head?: S3.HeadObjectOutput;
+  loading?: boolean;
+  tagging?: S3.GetObjectTaggingOutput;
+}
+
 export interface S3MetaStateModel {
   [path: string]: BucketMetadata | FileMetadata;
 }
@@ -67,7 +85,7 @@ export interface S3MetaStateModel {
   }
 
   @Action(LoadBucketMetadata)
-  loadBucketMetadata({ dispatch, getState }: StateContext<S3MetaStateModel>,
+  loadBucketMetadata({ dispatch, getState, patchState }: StateContext<S3MetaStateModel>,
                      { payload }: LoadBucketMetadata) {
     const { path, force } = payload;
     const state = getState();
@@ -75,18 +93,18 @@ export interface S3MetaStateModel {
     if (!force && metadata)
       dispatch(new BucketMetadataLoaded({ path, metadata }));
     else {
-      dispatch(new Message({ text: `Loading metadata for ${path} ...` }));
+      const loading = { loading: true };
+      patchState({ [path]: (metadata? { ...metadata, ...loading } : loading ) });
       this.s3Svc.loadBucketMetadata(path, (metadata: BucketMetadata) => {
         this.zone.run(() => {
           dispatch(new BucketMetadataLoaded({ path, metadata }));
-          dispatch(new Message({ text: `Loaded metadata for ${path}` }));
         });
       });
     }
   }
 
   @Action(LoadFileMetadata)
-  loadFileMetadata({ dispatch, getState }: StateContext<S3MetaStateModel>,
+  loadFileMetadata({ dispatch, getState, patchState }: StateContext<S3MetaStateModel>,
                    { payload }: LoadFileMetadata) {
     const { path, force } = payload;
     const state = getState();
@@ -94,30 +112,34 @@ export interface S3MetaStateModel {
     if (!force && metadata)
       dispatch(new FileMetadataLoaded({ path, metadata }));
     else {
-      dispatch(new Message({ text: `Loading metadata for ${path} ...` }));
+      const loading = { loading: true };
+      patchState({ [path]: (metadata ? { ...metadata, ...loading } : loading) });
       this.s3Svc.loadFileMetadata(path, (metadata: FileMetadata) => {
         this.zone.run(() => {
           dispatch(new FileMetadataLoaded({ path, metadata }));
-          dispatch(new Message({ text: `Loaded metadata for ${path}` }));
         });
       });
     }
   }
 
   @Action(UpdateBucketMetadata)
-  updateBucketMetadata({ dispatch }: StateContext<S3MetaStateModel>,
+  updateBucketMetadata({ dispatch, patchState }: StateContext<S3MetaStateModel>,
                        { payload }: UpdateBucketMetadata) {
     const { path, metadata } = payload;
+    patchState({ [path]: { ...metadata, loading: true } });
     this.s3Svc.updateBucketMetadata(path, metadata, () => {
       dispatch(new LoadBucketMetadata({ path, force: true }));
     });
   }
 
   @Action(UpdateFileMetadata)
-  updateFileMetadata({ dispatch, getState }: StateContext<S3MetaStateModel>,
+  updateFileMetadata({ dispatch, patchState }: StateContext<S3MetaStateModel>,
                      { payload }: UpdateFileMetadata) {
-    // const { path, metadata } = payload;
-    // const state = getState();
+    const { path, metadata } = payload;
+    patchState({ [path]: { ...metadata, loading: true } });
+    this.s3Svc.updateFileMetadata(path, metadata, () => {
+      dispatch(new LoadFileMetadata({ path, force: true }));
+    });
   }
 
 }

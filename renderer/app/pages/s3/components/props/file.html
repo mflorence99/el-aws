@@ -16,3 +16,95 @@
   </div>
 
 </h3>
+
+<form
+  (submit)="close()"
+  [formGroup]="propsForm"
+  [libRxfSubmit]="propsForm"
+  *ngIf="propsForm"
+  novalidate>
+
+  <input
+    formControlName="path"
+    type="hidden">
+
+  <mat-accordion>
+
+    <!-- TAGGING -->
+
+    <mat-expansion-panel
+      formGroupName="tagging">
+
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Tags
+          <div class="drawer-label">
+            {{ metadata?.tagging?.TagSet?.length? (metadata.tagging.TagSet.length | i18nPlural: tagLabelMapping) : 'None' }}
+          </div>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <div class="group">
+
+        <div class="drawer-label">
+          Tag objects to search, organize and manage access.
+        </div>
+
+        <elaws-key-value
+          [asArrayOfHashes]="['Key', 'Value']"
+          duplicateKeyMessage="Tag name is already in use"
+          formControlName="TagSet"
+          placeholder="New tag name">
+
+          <ng-template #keyIcon>
+            <fa-icon
+              [icon]="['fas', 'key']"
+              flip="horizontal"
+              size="xs"
+              style="color: var(--primary-color)">
+            </fa-icon>
+            &nbsp;
+          </ng-template>
+
+          <ng-template #valueIcon>
+            <fa-icon
+              [icon]="['fas', 'tag']"
+              size="xs"
+              style="color: var(--primary-color)">
+            </fa-icon>
+            &nbsp;
+          </ng-template>
+
+        </elaws-key-value>
+
+      </div>
+
+    </mat-expansion-panel>
+
+  </mat-accordion>
+
+  <div class="okAndCancel">
+
+    <a
+      (click)="close()"
+      mat-button>
+      Cancel
+    </a>
+
+    <button
+      [disabled]="propsForm.invalid || !metadata"
+      *ngIf="!metadata?.loading"
+      color="primary"
+      mat-raised-button
+      type="submit">
+      OK
+    </button>
+
+    <mat-spinner
+      *ngIf="metadata?.loading"
+      diameter="24">
+    </mat-spinner>
+
+  </div>
+
+</form>

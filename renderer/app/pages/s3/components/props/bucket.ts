@@ -1,4 +1,4 @@
-import { BucketMetadata } from '../../services/s3';
+import { BucketMetadata } from '../../state/s3meta';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { ChangeDetectorRef } from '@angular/core';
 import { Component } from '@angular/core';
@@ -152,11 +152,11 @@ export class BucketPropsComponent extends LifecycleComponent {
         if (this.metadata) {
           // UI assist
           this.encryptionEnabled = nullSafe(this.metadata.encryption, 'ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm');
-          this.loggingEnabled = !!(this.metadata.logging.LoggingEnabled && this.metadata.logging.LoggingEnabled.TargetBucket);
+          this.loggingEnabled = !!(nullSafe(this.metadata.logging, 'LoggingEnabled') && nullSafe(this.metadata.logging, 'LoggingEnabled.TargetBucket'));
           this.websiteEnabled = 'Off';
-          if (this.metadata.website.IndexDocument)
+          if (nullSafe(this.metadata.website, 'IndexDocument'))
             this.websiteEnabled = 'On';
-          else if (this.metadata.website.RedirectAllRequestsTo)
+          else if (nullSafe(this.metadata.website, 'RedirectAllRequestsTo'))
             this.websiteEnabled = 'Redirect';
           this.propsForm.patchValue({ ...this.metadata, path: this.desc.path }, 
                                     { emitEvent: false });

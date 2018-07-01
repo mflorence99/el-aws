@@ -12,6 +12,7 @@ import { MatExpansionModule } from '@angular/material';
 import { MatFormFieldModule } from '@angular/material';
 import { MatInputModule } from '@angular/material';
 import { MatProgressBarModule } from '@angular/material';
+import { MatProgressSpinnerModule } from '@angular/material';
 import { MatRadioModule } from '@angular/material';
 import { MatSelectModule } from '@angular/material';
 import { MatTabsModule } from '@angular/material';
@@ -40,6 +41,7 @@ const MODULES = [
   MatFormFieldModule,
   MatInputModule,
   MatProgressBarModule,
+  MatProgressSpinnerModule,
   MatRadioModule,
   MatSelectModule,
   MatTabsModule,

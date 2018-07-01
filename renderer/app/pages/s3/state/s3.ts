@@ -1,7 +1,6 @@
 import * as S3 from 'aws-sdk/clients/s3';
 
 import { Action } from '@ngxs/store';
-import { LoadBucketMetadata } from './s3meta';
 import { Message } from '../../../state/status';
 import { NgxsOnInit } from '@ngxs/store';
 import { NgZone } from '@angular/core';
@@ -125,7 +124,6 @@ export interface S3StateModel {
                               owner: S3.Owner, 
                               locations: string[]) => {
         descs = buckets.map((bucket: S3.Bucket, ix) => {
-          dispatch(new LoadBucketMetadata({ path: bucket.Name + config.s3Delimiter }));
           return this.makeDescriptorForBucket(bucket, owner, locations[ix]);
         });
         this.zone.run(() => {

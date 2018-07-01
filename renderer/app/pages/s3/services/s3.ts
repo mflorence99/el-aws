@@ -1,6 +1,8 @@
 import * as S3 from 'aws-sdk/clients/s3';
 
+import { BucketMetadata } from '../state/s3meta';
 import { ElectronService } from 'ngx-electron';
+import { FileMetadata } from '../state/s3meta';
 import { Injectable } from '@angular/core';
 import { Message } from '../../../state/status';
 import { Observable } from 'rxjs';
@@ -14,28 +16,6 @@ import { isObjectEmpty } from 'ellib';
 import { nullSafe } from 'ellib';
 
 import async from 'async-es';
-
-/**
- * Model S3 service data
- */
-
-
-export interface BucketMetadata {
-  accelerate: S3.GetBucketAccelerateConfigurationOutput;
-  acl?: S3.GetBucketAclOutput;
-  encryption?: S3.GetBucketEncryptionOutput;
-  head?: any;
-  logging?: S3.GetBucketLoggingOutput;
-  tagging?: S3.GetBucketTaggingOutput;
-  versioning?: S3.GetBucketVersioningOutput;
-  website?: S3.GetBucketWebsiteOutput;
-}
-
-export interface FileMetadata {
-  acl?: S3.GetObjectAclOutput;
-  head?: S3.HeadObjectOutput;
-  tagging?: S3.GetObjectTaggingOutput;
-}
 
 /**
  * S3 service
@@ -210,31 +190,39 @@ export class S3Service {
                        metadata: BucketMetadata,
                        cb: () => void): void {
     const { bucket } = S3Service.extractBucketAndPrefix(path);
+    const params = { Bucket: bucket };
     const funcs = [];
+
     // Acceleration -- Note: can't turn off and Status must be present
     if (metadata.accelerate.Status)
-      funcs.push(async.apply(this.s3.putBucketAccelerateConfiguration, { Bucket: bucket, AccelerateConfiguration:  metadata.accelerate }));
+      funcs.push(async.apply(this.s3.putBucketAccelerateConfiguration, { ...params, AccelerateConfiguration:  metadata.accelerate }));
+
     // ENCRYPTION -- Note: if no algorithm, need to explcitly delete
     const encAlgorithm = nullSafe(metadata.encryption, 'ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm');
     if (encAlgorithm)
-      funcs.push(async.apply(this.s3.putBucketEncryption, { Bucket: bucket, ...metadata.encryption }));
-    else funcs.push(async.apply(this.s3.deleteBucketEncryption, { Bucket: bucket }));
+      funcs.push(async.apply(this.s3.putBucketEncryption, { ...params, ...metadata.encryption }));
+    else funcs.push(async.apply(this.s3.deleteBucketEncryption, params));
+
     // LOGGING -- Note: if no bucket etc, set to empty to disable logging
     const logBucket = metadata.logging.LoggingEnabled.TargetBucket;
-    funcs.push(async.apply(this.s3.putBucketLogging, { Bucket: bucket, BucketLoggingStatus: logBucket? metadata.logging : { } }));
+    funcs.push(async.apply(this.s3.putBucketLogging, { ...params, BucketLoggingStatus: logBucket? metadata.logging : { } }));
+
     // TAGGING -- Note: must have a TagSet, even if empty
     if (metadata.tagging.TagSet && !isObjectEmpty(metadata.tagging.TagSet))
-      funcs.push(async.apply(this.s3.putBucketTagging, { Bucket: bucket, Tagging: metadata.tagging }));
-    else funcs.push(async.apply(this.s3.deleteBucketTagging, { Bucket: bucket }));
+      funcs.push(async.apply(this.s3.putBucketTagging, { ...params, Tagging: metadata.tagging }));
+    else funcs.push(async.apply(this.s3.deleteBucketTagging, params));
+
     // VERSIONING -- Note: can't turn off and Status must be present
     if (metadata.versioning.Status)
-      funcs.push(async.apply(this.s3.putBucketVersioning, { Bucket: bucket, VersioningConfiguration: metadata.versioning }));
+      funcs.push(async.apply(this.s3.putBucketVersioning, { ...params, VersioningConfiguration: metadata.versioning }));
+
     // WEBSITE
     if (metadata.website.RedirectAllRequestsTo.HostName)
-      funcs.push(async.apply(this.s3.putBucketWebsite, { Bucket: bucket, WebsiteConfiguration: { RedirectAllRequestsTo: metadata.website.RedirectAllRequestsTo } }));
+      funcs.push(async.apply(this.s3.putBucketWebsite, { ...params, WebsiteConfiguration: { RedirectAllRequestsTo: metadata.website.RedirectAllRequestsTo } }));
     else if (metadata.website.IndexDocument.Suffix)
-      funcs.push(async.apply(this.s3.putBucketWebsite, { Bucket: bucket, WebsiteConfiguration: { IndexDocument: metadata.website.IndexDocument, ErrorDocument: metadata.website.ErrorDocument } }));
-    else funcs.push(async.apply(this.s3.deleteBucketWebsite, { Bucket: bucket }));
+      funcs.push(async.apply(this.s3.putBucketWebsite, { ...params, WebsiteConfiguration: { IndexDocument: metadata.website.IndexDocument, ErrorDocument: metadata.website.ErrorDocument } }));
+    else funcs.push(async.apply(this.s3.deleteBucketWebsite, params));
+
     // now update them all in parallel
     async.parallelLimit(funcs, 1, (err, results: any) => {
       if (err)
@@ -242,6 +230,35 @@ export class S3Service {
       else {
         // TODO: while developing, log this nicely
         console.group(`%cupdateBucketMetadata('${bucket}')`, `color: #0d47a1`);
+        Object.keys(metadata).forEach(key => {
+          console.log(`%c${key} %c${JSON.stringify(metadata[key])}`, 'color: black', 'color: grey');
+        });
+        console.groupEnd();
+        cb();
+      }
+    });
+  }
+
+  /** Update file metadata */
+  updateFileMetadata(path: string,
+                     metadata: FileMetadata,
+                     cb: () => void): void {
+    const { bucket, prefix } = S3Service.extractBucketAndPrefix(path);
+    const params = { Bucket: bucket, Key: prefix };
+    const funcs = [];
+
+    // TAGGING -- Note: must have a TagSet, even if empty
+    if (metadata.tagging.TagSet && !isObjectEmpty(metadata.tagging.TagSet))
+      funcs.push(async.apply(this.s3.putObjectTagging, { ...params, Tagging: metadata.tagging }));
+    else funcs.push(async.apply(this.s3.deleteObjectTagging, params));
+
+    // now update them all in parallel
+    async.parallelLimit(funcs, 1, (err, results: any) => {
+      if (err)
+        this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
+      else {
+        // TODO: while developing, log this nicely
+        console.group(`%cupdateFileMetadata('${bucket}')`, `color: #1b5e20`);
         Object.keys(metadata).forEach(key => {
           console.log(`%c${key} %c${JSON.stringify(metadata[key])}`, 'color: black', 'color: grey');
         });

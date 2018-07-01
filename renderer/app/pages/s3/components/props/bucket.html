@@ -206,7 +206,6 @@
 
     </mat-expansion-panel>
 
-
     <!-- TAGGING -->
 
     <mat-expansion-panel
@@ -419,11 +418,17 @@
 
     <button
       [disabled]="propsForm.invalid || !metadata"
+      *ngIf="!metadata?.loading"
       color="primary"
       mat-raised-button
       type="submit">
       OK
     </button>
+
+    <mat-spinner
+      *ngIf="metadata?.loading"
+      diameter="24">
+    </mat-spinner>
 
   </div>
 

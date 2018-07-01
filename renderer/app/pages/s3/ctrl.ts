@@ -24,6 +24,7 @@ import { ShowPagePrefs } from '../../state/window';
 import { Store } from '@ngxs/store';
 import { Subscription } from 'rxjs/Subscription';
 import { UpdateBucketMetadata } from './state/s3meta';
+import { UpdateFileMetadata } from './state/s3meta';
 import { UpdateVisibility } from './state/s3view';
 import { ViewVisibility } from './state/s3view';
 
@@ -45,6 +46,7 @@ import { ofAction } from '@ngxs/store';
 export class S3CtrlComponent extends LifecycleComponent {
 
   @Input() bucketPropsForm: any = { };
+  @Input() filePropsForm: any = { };
   @Input() viewForm: any = { };
 
   @Output() loaded = new EventEmitter<boolean>();
@@ -86,6 +88,19 @@ export class S3CtrlComponent extends LifecycleComponent {
       nextTick(() => {
         const path = this.bucketPropsForm.path;
         this.store.dispatch(new UpdateBucketMetadata({ path, metadata: this.bucketPropsForm }));
+      });
+    }
+  }
+
+  @OnChange('filePropsForm') saveFileProps(): void {
+    if (this.filePropsForm && this.filePropsForm.submitted) {
+      console.log(this.filePropsForm);
+      // TODO: why do we need this in Electron? and only running live?
+      // at worst, running in NgZone should work -- but otherwise a DOM
+      // event is necessary to force change detection
+      nextTick(() => {
+        const path = this.filePropsForm.path;
+        this.store.dispatch(new UpdateFileMetadata({ path, metadata: this.filePropsForm }));
       });
     }
   }

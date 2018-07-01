@@ -58,6 +58,7 @@
 <elaws-s3-ctrl
   (openView)="viewDrawer.open()"
   [bucketPropsForm]="bucketProps.propsForm?.valueChanges | async"
+  [filePropsForm]="fileProps.propsForm?.valueChanges | async"
   [viewForm]="view.viewForm.valueChanges | async"
   #ctrl>
 </elaws-s3-ctrl> 
