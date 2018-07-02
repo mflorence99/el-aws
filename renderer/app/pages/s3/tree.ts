@@ -64,6 +64,11 @@ export class TreeComponent extends LifecycleComponent {
     this.updateDescriptors = debounce(this._updateDescriptors, config.s3TreeRefreshThrottle);
   }
 
+  /** Are all buckets loaded? */
+  areBucketsLoaded(): boolean {
+    return !!this.s3[config.s3Delimiter];
+  }
+
   /** Is this an object that has properties? */
   hasProperties(desc: Descriptor): boolean {
     return this.isBucket(desc) || this.isFile(desc) || this.isFileVersion(desc);
@@ -92,7 +97,7 @@ export class TreeComponent extends LifecycleComponent {
   /** Is this path empty? */
   isEmpty(desc: Descriptor): boolean {
     return desc
-      && (desc.isBucket || desc.isDirectory || (desc.isFile && desc.versioning))
+      && (desc.isBucket || desc.isDirectory || (desc.isFile && desc.isFileVersioned))
       && !!this.s3[desc.path]
       && (this.s3[desc.path].length === 0);
   }
@@ -100,7 +105,7 @@ export class TreeComponent extends LifecycleComponent {
   /** Is this path expanded? */
   isExpanded(desc: Descriptor): boolean {
     return desc
-      && (desc.isBucket || desc.isDirectory || (desc.isFile && desc.versioning))
+      && (desc.isBucket || desc.isDirectory || (desc.isFile && desc.isFileVersioned))
       && this.view.paths.includes(desc.path)
       && !!this.s3[desc.path];
   }
@@ -108,7 +113,7 @@ export class TreeComponent extends LifecycleComponent {
   /** Is this path expanding? */
   isExpanding(desc: Descriptor): boolean {
     return desc
-      && (desc.isBucket || desc.isDirectory || (desc.isFile && desc.versioning))
+      && (desc.isBucket || desc.isDirectory || (desc.isFile && desc.isFileVersioned))
       && this.view.paths.includes(desc.path)
       && !this.s3[desc.path];
   }
@@ -159,7 +164,6 @@ export class TreeComponent extends LifecycleComponent {
       this.descriptorsByPath[path] =
         this.dictSvc.descriptorsForView(path, 
                                         this.s3, 
-                                        this.s3meta, 
                                         this.dictionary, 
                                         this.prefs, 
                                         this.view);

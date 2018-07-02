@@ -20,7 +20,7 @@
         [fixedWidth]="true"
         [icon]="tree.isExpanded(desc)? ['fas', 'angle-down'] :
                (tree.isExpanding(desc)? ['far', 'clock'] : ['fas', 'angle-right'])"
-        [ngStyle]="{visibility: (desc.isBucket || desc.isDirectory || (desc.isFile && desc.versioning)) && !tree.isEmpty(desc)? 'visible' : 'hidden'}"
+        [ngStyle]="{visibility: (desc.isBucket || desc.isDirectory || (desc.isFile && desc.isFileVersioned)) && !tree.isEmpty(desc)? 'visible' : 'hidden'}"
         [pulse]="tree.isExpanding(desc)"
         *ngIf="ix === 0"
         size="xs">

@@ -13,10 +13,8 @@
     [view]="view">
   </elaws-branch>
 
-  <!-- TODO: this is bad anyway because of the hard-coded / but it doesn't work and the spinner comes down way too soon when connected live -->
-
   <div
-    *ngIf="!descriptorsByPath['/']"
+    *ngIf="!areBucketsLoaded()"
     class="no-data">
 
     <fa-icon

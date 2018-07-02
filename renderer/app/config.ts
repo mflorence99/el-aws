@@ -6,17 +6,14 @@ export class Config {
 
   componentOnChangeThrottle = 100;
 
+  numParallel = 16;
+
   resetDelay: 1500;
 
   s3Delimiter = '/';
   s3MaxKeys = 100;
   s3PathPurgeAge = 15 * 60 * 1000;
   s3TreeRefreshThrottle = 100;
-  
-  setBoundsThrottle = 250;
-
-  // @see https://www.regextester.com/94502
-  urlValidationPattern = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
 
   s3Colors = [
     'var(--mat-amber-a100)',
@@ -185,6 +182,11 @@ export class Config {
     '.npmrc': 'fab node-js',
     'dockerfile': 'fab docker',
   };
+
+  setBoundsThrottle = 250;
+
+  // @see https://www.regextester.com/94502
+  urlValidationPattern = /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
 
 }
 

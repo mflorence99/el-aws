@@ -70,18 +70,17 @@ export class S3Service {
                      cb: (metadata: BucketMetadata) => void): void {
     const { bucket } = S3Service.extractBucketAndPrefix(path);
     const params = { Bucket: bucket };
-    const funcs = {
+    const funcs = async.reflectAll({
       accelerate: async.apply(this.s3.getBucketAccelerateConfiguration, params),
       acl: async.apply(this.s3.getBucketAcl, params),
       encryption: async.apply(this.s3.getBucketEncryption, params),
-      head: async.apply(this.s3.headBucket, params),
       logging: async.apply(this.s3.getBucketLogging, params),
       tagging: async.apply(this.s3.getBucketTagging, params),
       versioning: async.apply(this.s3.getBucketVersioning, params),
       website: async.apply(this.s3.getBucketWebsite, params)
-    };
+    });
     // now load them all in parallel
-    async.parallelLimit(async.reflectAll(funcs), 1, (err, results: any) => {
+    async.parallelLimit(funcs, config.numParallel, (err, results: any) => {
       // NOTE: we are ignoring errors and only recording metadata actually found
       // reason: a bucket with no tags for example errors on the tagging call
       // TODO: while developing, log this nicely
@@ -99,24 +98,34 @@ export class S3Service {
   /** Load all buckets, augmenting them with owner and location */
   loadBuckets(cb: (buckets: S3.Buckets, 
                    owner: S3.Owner,
-                   locations: string[]) => void): void {
+                   locations: string[],
+                   versionings: boolean[]) => void): void {
     this.s3.listBuckets((err, data: S3.ListBucketsOutput) => {
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString()}));
       else {
-        const params = data.Buckets.map(bucket => ({ Bucket: bucket.Name }));
-        async.map(params, this.s3.getBucketLocation, 
-          (err, results: S3.GetBucketLocationOutput[]) => {
-            if (err)
-              this.store.dispatch(new Message({ level: 'error', text: err.toString()}));
-            else {
-              // an empty string means us-east-1
-              // @see https://docs.aws.amazon.com/AmazonS3/
-              //       latest/API/RESTBucketGETlocation.html
-              const locations = results.map(result => result.LocationConstraint || 'us-east-1');
-              cb(data.Buckets, data.Owner, locations);
-            }
-          });
+        const funcs = async.reflectAll(data.Buckets.reduce((acc, bucket) => {
+          const params = { Bucket: bucket.Name };
+          acc.push(async.apply(this.s3.getBucketLocation, params));
+          acc.push(async.apply(this.s3.getBucketVersioning, params));
+          return acc;
+        }, []));
+        // now run them all in parrallel
+        async.parallelLimit(funcs, config.numParallel, (err, results: any[]) => {
+          const locations: string[] = [];
+          const versionings: boolean[] = [];
+          for  (let ix = 0; ix < results.length; ix += 2) {
+            const location = <S3.GetBucketLocationOutput>results[ix].value;
+            const versioning = <S3.GetBucketVersioningOutput>results[ix + 1].value;
+            // an empty string means us-east-1
+            // @see https://docs.aws.amazon.com/AmazonS3/
+            //       latest/API/RESTBucketGETlocation.html
+            locations.push(location.LocationConstraint || 'us-east-1');
+            // NOTE: once versioning has been set it can only be suspended, never turned off
+            versionings.push(!!versioning.Status);
+          }
+          cb(data.Buckets, data.Owner, locations, versionings);
+        });
       }
     });
   }
@@ -149,13 +158,12 @@ export class S3Service {
       Key: prefix,
       VersionId: version
     };
-    const funcs = {
+    const funcs = async.reflectAll({
       acl: async.apply(this.s3.getObjectAcl, params),
-      head: async.apply(this.s3.headObject, params),
       tagging: async.apply(this.s3.getObjectTagging, params)
-    };
+    });
     // now load them all in parallel
-    async.parallelLimit(async.reflectAll(funcs), 1, (err, results: any) => {
+    async.parallelLimit(funcs, config.numParallel, (err, results: any) => {
       // NOTE: we are ignoring errors and only recording metadata actually found
       // reason: a file with no tags for example errors on the tagging call
       // TODO: while developing, log this nicely
@@ -224,7 +232,7 @@ export class S3Service {
     else funcs.push(async.apply(this.s3.deleteBucketWebsite, params));
 
     // now update them all in parallel
-    async.parallelLimit(funcs, 1, (err, results: any) => {
+    async.parallelLimit(funcs, config.numParallel, (err, results: any) => {
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
       else {
@@ -253,7 +261,7 @@ export class S3Service {
     else funcs.push(async.apply(this.s3.deleteObjectTagging, params));
 
     // now update them all in parallel
-    async.parallelLimit(funcs, 1, (err, results: any) => {
+    async.parallelLimit(funcs, config.numParallel, (err, results: any) => {
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
       else {

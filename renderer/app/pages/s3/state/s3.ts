@@ -53,16 +53,17 @@ export interface Descriptor {
   color: string;
   icon: string;
   isBucket?: boolean;
+  isBucketVersioned?: boolean;
   isDirectory?: boolean;
   isFile?: boolean;
   isFileVersion?: boolean;
+  isFileVersioned?: boolean;
   name: string;
   owner: string;
   path: string;
   size: number;
   storage: string;
   timestamp: Date;
-  versioning?: boolean;
 }
 
 export interface S3StateModel {
@@ -122,9 +123,10 @@ export interface S3StateModel {
       dispatch(new Message({ text: 'Loading buckets ...' }));
       this.s3Svc.loadBuckets((buckets: S3.Buckets, 
                               owner: S3.Owner, 
-                              locations: string[]) => {
+                              locations: string[],
+                              versionings: boolean[]) => {
         descs = buckets.map((bucket: S3.Bucket, ix) => {
-          return this.makeDescriptorForBucket(bucket, owner, locations[ix]);
+          return this.makeDescriptorForBucket(bucket, owner, locations[ix], versionings[ix]);
         });
         this.zone.run(() => {
           dispatch(new BucketsLoaded({ path: config.s3Delimiter, descs }));
@@ -231,11 +233,13 @@ export interface S3StateModel {
 
   private makeDescriptorForBucket(bucket: S3.Bucket,
                                   owner: S3.Owner,
-                                  location: string): Descriptor {
+                                  location: string,
+                                  versioning: boolean): Descriptor {
     return {
       color: 'var(--mat-brown-400)',
       icon: 'fab bitbucket',
       isBucket: true,
+      isBucketVersioned: versioning,
       name: bucket.Name,
       owner: owner.DisplayName,
       path: bucket.Name + config.s3Delimiter,

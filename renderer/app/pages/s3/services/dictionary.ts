@@ -1,14 +1,8 @@
-import { BucketMetadata } from '../state/s3meta';
 import { Descriptor } from '../state/s3';
 import { Injectable } from '@angular/core';
 import { PrefsStateModel } from '../../../state/prefs';
-import { S3MetaStateModel } from '../state/s3meta';
-import { S3Service } from '../services/s3';
 import { S3StateModel } from '../state/s3';
 import { S3ViewStateModel } from '../state/s3view';
-
-import { config } from '../../../config';
-import { nullSafe } from 'ellib';
 
 /**
  * Dictionary of data
@@ -58,18 +52,10 @@ export class DictionaryService {
   /** Build descriptors from nodes */
   descriptorsForView(path: string,
                      s3: S3StateModel,
-                     s3meta: S3MetaStateModel,
                      dictionary: Dictionary[],
                      prefs: PrefsStateModel,
                      view: S3ViewStateModel): Descriptor[] {
-    const descs = this.sort(s3[path] || [], dictionary, prefs, view);
-    const { bucket } = S3Service.extractBucketAndPrefix(path);
-    descs.forEach(desc => {
-      const metadata = <BucketMetadata>s3meta[bucket + config.s3Delimiter];
-      // NOTE: once versioning has been set it can only be suspended, never turned off
-      desc.versioning = !!(metadata && nullSafe(metadata, 'versioning.Status'));
-    });
-    return descs;
+    return this.sort(s3[path] || [], dictionary, prefs, view);
   }
 
   // private methods

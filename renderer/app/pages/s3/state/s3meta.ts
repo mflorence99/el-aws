@@ -42,7 +42,6 @@ export interface BucketMetadata {
   accelerate: S3.GetBucketAccelerateConfigurationOutput;
   acl?: S3.GetBucketAclOutput;
   encryption?: S3.GetBucketEncryptionOutput;
-  head?: any;
   loading?: boolean;
   logging?: S3.GetBucketLoggingOutput;
   tagging?: S3.GetBucketTaggingOutput;
@@ -52,7 +51,6 @@ export interface BucketMetadata {
 
 export interface FileMetadata {
   acl?: S3.GetObjectAclOutput;
-  head?: S3.HeadObjectOutput;
   loading?: boolean;
   tagging?: S3.GetObjectTaggingOutput;
 }
