@@ -53,7 +53,6 @@ export interface Descriptor {
   color: string;
   icon: string;
   isBucket?: boolean;
-  isBucketVersioned?: boolean;
   isDirectory?: boolean;
   isFile?: boolean;
   isFileVersion?: boolean;
@@ -123,10 +122,9 @@ export interface S3StateModel {
       dispatch(new Message({ text: 'Loading buckets ...' }));
       this.s3Svc.loadBuckets((buckets: S3.Buckets, 
                               owner: S3.Owner, 
-                              locations: string[],
-                              versionings: boolean[]) => {
+                              locations: string[]) => {
         descs = buckets.map((bucket: S3.Bucket, ix) => {
-          return this.makeDescriptorForBucket(bucket, owner, locations[ix], versionings[ix]);
+          return this.makeDescriptorForBucket(bucket, owner, locations[ix]);
         });
         this.zone.run(() => {
           dispatch(new BucketsLoaded({ path: config.s3Delimiter, descs }));
@@ -156,7 +154,8 @@ export interface S3StateModel {
         this.s3Svc.loadDirectory(path, 
                                   (bucket: string,
                                    prefixes: S3.CommonPrefixList,
-                                   contents: S3.ObjectList) => {
+                                   contents: S3.ObjectList,
+                                   versioning: boolean) => {
           const dirs = prefixes.map((prefix: S3.CommonPrefix) => {
             return this.makeDescriptorForDirectory(bucket, prefix);
           });
@@ -164,7 +163,7 @@ export interface S3StateModel {
             // TODO: I don't understand how these exist -- directories are phantoms!
             .filter((content: S3.Object) => !content.Key.endsWith(config.s3Delimiter))
             .map((content: S3.Object) => {
-              return this.makeDescriptorForFile(path, content);
+              return this.makeDescriptorForFile(path, content, versioning);
             });
           descs = dirs.concat(files);
           this.zone.run(() => {
@@ -233,13 +232,11 @@ export interface S3StateModel {
 
   private makeDescriptorForBucket(bucket: S3.Bucket,
                                   owner: S3.Owner,
-                                  location: string,
-                                  versioning: boolean): Descriptor {
+                                  location: string): Descriptor {
     return {
       color: 'var(--mat-brown-400)',
       icon: 'fab bitbucket',
       isBucket: true,
-      isBucketVersioned: versioning,
       name: bucket.Name,
       owner: owner.DisplayName,
       path: bucket.Name + config.s3Delimiter,
@@ -265,12 +262,14 @@ export interface S3StateModel {
   }
 
   private makeDescriptorForFile(path: string,
-                                content: S3.Object): Descriptor {
+                                content: S3.Object,
+                                versioning: boolean): Descriptor {
     const name = this.extractName(content.Key);
     return {
       color: this.makeColor(name),
       icon: this.makeIcon(name),
       isFile: true,
+      isFileVersioned: versioning,
       name: name,
       owner: content.Owner? content.Owner.DisplayName : null,
       path: path + name,

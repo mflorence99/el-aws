@@ -98,33 +98,28 @@ export class S3Service {
   /** Load all buckets, augmenting them with owner and location */
   loadBuckets(cb: (buckets: S3.Buckets, 
                    owner: S3.Owner,
-                   locations: string[],
-                   versionings: boolean[]) => void): void {
+                   locations: string[]) => void): void {
     this.s3.listBuckets((err, data: S3.ListBucketsOutput) => {
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString()}));
       else {
-        const funcs = async.reflectAll(data.Buckets.reduce((acc, bucket) => {
+        const funcs = data.Buckets.map(bucket => {
           const params = { Bucket: bucket.Name };
-          acc.push(async.apply(this.s3.getBucketLocation, params));
-          acc.push(async.apply(this.s3.getBucketVersioning, params));
-          return acc;
-        }, []));
+          return async.apply(this.s3.getBucketLocation, params);
+        });
         // now run them all in parrallel
-        async.parallelLimit(funcs, config.numParallel, (err, results: any[]) => {
-          const locations: string[] = [];
-          const versionings: boolean[] = [];
-          for  (let ix = 0; ix < results.length; ix += 2) {
-            const location = <S3.GetBucketLocationOutput>results[ix].value;
-            const versioning = <S3.GetBucketVersioningOutput>results[ix + 1].value;
-            // an empty string means us-east-1
-            // @see https://docs.aws.amazon.com/AmazonS3/
-            //       latest/API/RESTBucketGETlocation.html
-            locations.push(location.LocationConstraint || 'us-east-1');
-            // NOTE: once versioning has been set it can only be suspended, never turned off
-            versionings.push(!!versioning.Status);
+        async.parallelLimit(funcs, config.numParallel, (err, results: S3.GetBucketLocationOutput[]) => {
+          if (err)
+            this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
+          else {
+            const locations: string[] = results.map(result => {
+              // an empty string means us-east-1
+              // @see https://docs.aws.amazon.com/AmazonS3/
+              //       latest/API/RESTBucketGETlocation.html
+              return result.LocationConstraint || 'us-east-1';
+            });
+            cb(data.Buckets, data.Owner, locations);
           }
-          cb(data.Buckets, data.Owner, locations, versionings);
         });
       }
     });
@@ -134,18 +129,28 @@ export class S3Service {
   loadDirectory(path: string, 
                 cb: (bucket: string,
                      prefixes: S3.CommonPrefixList,
-                     contents: S3.ObjectList) => void): void {
+                     contents: S3.ObjectList,
+                     versioning: boolean) => void): void {
     const { bucket, prefix } = S3Service.extractBucketAndPrefix(path);
-    const params = {
-      Bucket: bucket,
-      Delimiter: config.s3Delimiter,
-      MaxKeys: config.s3MaxKeys,
-      Prefix: prefix
+    const funcs = {
+      objects: async.apply(this.s3.listObjectsV2, {
+        Bucket: bucket,
+        Delimiter: config.s3Delimiter,
+        MaxKeys: config.s3MaxKeys,
+        Prefix: prefix
+      }),
+      versioning: async.apply(this.s3.getBucketVersioning, { Bucket: bucket })
     };
-    this.s3.listObjectsV2(params, (err, data: S3.ListObjectsV2Output) => {
+    // now load them all in parallel
+    async.parallelLimit(funcs, config.numParallel, (err, results: any) => {
       if (err)
-        this.store.dispatch(new Message({ level: 'error', text: err.toString()}));
-      else cb(data.Name, data.CommonPrefixes, data.Contents);
+        this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
+      else {
+        const versioning: S3.GetBucketVersioningOutput = results.versioning;
+        const data: S3.ListObjectsV2Output = results.objects;
+        // NOTE: versioning once set can never be turned off
+        cb(data.Name, data.CommonPrefixes, data.Contents, !!versioning.Status);
+      }
     });
   }
 
