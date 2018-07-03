@@ -161,6 +161,10 @@ export class S3Service {
         return acc;
       }, { } as FileMetadata);
       // NOTE: headObject produces a conglomerate of data we need to separate
+      metadata.encryption = {
+        SSEAlgorithm: metadata.head.ServerSideEncryption,
+        KMSMasterKeyID: metadata.head.SSEKMSKeyId
+      };
       metadata.storage = metadata.head.StorageClass;
       console.groupEnd();
       cb(metadata);
@@ -257,12 +261,18 @@ export class S3Service {
     // NOTE: must copy object to take effect
     // NOTE: we can only do this for the latest version
     if (!version) {
-      const copy = {
+      const cparams: any = { };
+      if (metadata.storage)
+        cparams.StorageClass = metadata.storage;
+      if (nullSafe(metadata.encryption, 'SSEAlgorithm')) {
+        cparams.ServerSideEncryption = metadata.encryption.SSEAlgorithm;
+        cparams.SSEKMSKeyId = metadata.encryption.KMSMasterKeyID;
+      }
+      if (!isObjectEmpty(cparams)) {
         // @see https://github.com/aws/aws-sdk-js/issues/1821
-        CopySource: encodeURIComponent(path),
-        StorageClass: metadata.storage
-      };
-      funcs.push(async.apply(this.s3.copyObject, { ...params, ...copy }));
+        cparams.CopySource = encodeURIComponent(path);
+        funcs.push(async.apply(this.s3.copyObject, { ...params, ...cparams }));
+      }
     }
 
     // now update them all in parallel

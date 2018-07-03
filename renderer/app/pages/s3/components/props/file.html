@@ -30,6 +30,62 @@
 
   <mat-accordion>
 
+    <!-- ENCRYPTION -->
+
+    <mat-expansion-panel
+      formGroupName="encryption">
+
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Encryption
+          <div class="drawer-label">
+            {{ metadata?.encryption?.SSEAlgorithm || 'Default' }}
+          </div>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <div class="group">
+
+        <mat-radio-group
+          (change)="enableEncryption($event.value)"
+          [libRxfDisabled]="desc.isFileVersion"
+          class="group"
+          formControlName="SSEAlgorithm">
+
+          <mat-radio-button value="">
+            Default
+          </mat-radio-button>
+          <mat-radio-button value="AES256">
+            AES-256
+            <div class="drawer-label">
+              Use Server-Side Encryption with Amazon S3-Managed Keys (SSE-S3).
+            </div>
+          </mat-radio-button>
+          <mat-radio-button value="aws:kms">
+            AWS-KMS
+            <div class="drawer-label">
+              Use Server-Side Encryption with AWS KMS-Managed Keys (SSE-KMS).
+            </div>
+          </mat-radio-button>
+
+        </mat-radio-group>
+
+        <!-- NOTE: can't use *ngIf because of form validation -->
+
+        <mat-form-field
+          [ngStyle]="{display: (encryptionEnabled === 'aws:kms')? 'block' : 'none'}">
+          <input
+            [required]="encryptionEnabled === 'aws:kms'"
+            formControlName="KMSMasterKeyID"
+            placeholder="Select a key"
+            matInput
+            type="text">
+        </mat-form-field>
+
+      </div>
+
+    </mat-expansion-panel>
+
     <!-- STORAGE -->
 
     <mat-expansion-panel>

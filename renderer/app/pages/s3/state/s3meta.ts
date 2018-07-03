@@ -54,6 +54,7 @@ export interface BucketMetadata {
 
 export interface FileMetadata {
   acl?: S3.GetObjectAclOutput;
+  encryption?: S3.ServerSideEncryptionByDefault;
   head?: S3.HeadObjectOutput;
   loading?: boolean;
   storage?: S3.StorageClass;
