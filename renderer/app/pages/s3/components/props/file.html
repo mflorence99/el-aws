@@ -30,6 +30,56 @@
 
   <mat-accordion>
 
+    <!-- STORAGE -->
+
+    <mat-expansion-panel>
+
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Storage Class
+          <div class="drawer-label">
+            {{ metadata?.storage || desc.storage }}
+          </div>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <mat-radio-group
+        [libRxfDisabled]="desc.isFileVersion"
+        class="group"
+        formControlName="storage">
+
+        <mat-radio-button value="STANDARD">
+          Standard
+          <div class="drawer-label">
+            For frequently accessed data. Stores object data redundantly across multiple geographically separated Availability Zones.
+          </div>
+        </mat-radio-button>
+
+        <mat-radio-button value="STANDARD_IA">
+          Standard-IA
+          <div class="drawer-label">
+            For infrequently accessed data. Stores object data redundantly across multiple geographically separated Availability Zones. Minimum 30-day retention period and minimum 128 KB object size.
+          </div>
+        </mat-radio-button>
+
+        <mat-radio-button value="ONEZONE_IA">
+          One Zone-IA
+          <div class="drawer-label">
+            For infrequently accessed data. Stores object data in only one Availability Zone at a lower price than Standard-IA. Minimum 30-day retention period and minimum 128 KB object size.
+          </div>
+        </mat-radio-button>
+
+        <mat-radio-button value="REDUCED_REDUNDANCY">
+          Reduced redundancy
+          <div class="drawer-label">
+            For frequently accessed data. Stores noncritical, reproducible data at lower levels of redundancy than Standard.
+          </div>
+        </mat-radio-button>
+
+      </mat-radio-group>
+
+    </mat-expansion-panel>
+
     <!-- TAGGING -->
 
     <mat-expansion-panel

@@ -141,9 +141,9 @@ export interface S3StateModel {
     const state = getState();
     // NOTE: a path of just / is really the buckets themselves
     // NOTE: a path that doesn't end in / is a file
-    if (path === '/')
+    if (path === config.s3Delimiter)
       dispatch(new LoadBuckets({ force }));
-    else if (!path.endsWith('/'))
+    else if (!path.endsWith(config.s3Delimiter))
       dispatch(new LoadFileVersions({ path, force }));
     else {
       let descs = state[path];

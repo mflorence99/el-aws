@@ -5,12 +5,14 @@ import { DictionaryService } from './services/dictionary';
 import { HeaderComponent } from './header';
 import { NgModule } from '@angular/core';
 import { NgxsModule } from '@ngxs/store';
+import { PathService } from './services/path';
 import { RouterModule } from '@angular/router';
 import { Routes } from '@angular/router';
 import { S3CtrlComponent } from './ctrl';
 import { S3PageComponent } from './page';
 import { S3Service } from './services/s3';
 import { TreeComponent } from './tree';
+import { WatcherService } from './services/watcher';
 
 import { states } from './state/feature';
 
@@ -37,7 +39,9 @@ const ROUTES: Routes = [
 
 const SERVICES = [
   DictionaryService,
-  S3Service
+  PathService,
+  S3Service,
+  WatcherService
 ];
 
 @NgModule({

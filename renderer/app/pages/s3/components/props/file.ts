@@ -48,6 +48,7 @@ export class FilePropsComponent extends LifecycleComponent {
       this.store.dispatch(new LoadFileMetadata({ path: this.desc.path}));
       this.propsForm = this.formBuilder.group({
         path: '',
+        storage: '',
         tagging: this.formBuilder.group({
           TagSet: ''
         })
@@ -70,7 +71,10 @@ export class FilePropsComponent extends LifecycleComponent {
       if (this.propsForm) {
         this.propsForm.reset();
         if (this.metadata) {
-          this.propsForm.patchValue({ ...this.metadata, path: this.desc.path },
+          // UI assist
+          if (!this.metadata.storage)
+            this.metadata.storage = this.desc.storage;
+          this.propsForm.patchValue({ ...this.metadata, path: this.desc.path },  
             { emitEvent: false });
         }
       }

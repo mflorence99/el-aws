@@ -1,10 +1,13 @@
 import * as S3 from 'aws-sdk/clients/s3';
 
 import { Action } from '@ngxs/store';
+import { NgxsOnInit } from '@ngxs/store';
 import { NgZone } from '@angular/core';
+import { PathService } from '../services/path';
 import { S3Service } from '../services/s3';
 import { State } from '@ngxs/store';
 import { StateContext } from '@ngxs/store';
+import { WatcherService } from '../services/watcher';
 
 /** NOTE: actions must come first because of AST */
 
@@ -51,7 +54,9 @@ export interface BucketMetadata {
 
 export interface FileMetadata {
   acl?: S3.GetObjectAclOutput;
+  head?: S3.HeadObjectOutput;
   loading?: boolean;
+  storage?: S3.StorageClass;
   tagging?: S3.GetObjectTaggingOutput;
 }
 
@@ -62,10 +67,12 @@ export interface S3MetaStateModel {
 @State<S3MetaStateModel>({
   name: 's3meta',
   defaults: {}
-}) export class S3MetaState {
+}) export class S3MetaState implements NgxsOnInit {
 
   /** ctor */
-  constructor(private s3Svc: S3Service,
+  constructor(private path: PathService,
+              private s3Svc: S3Service,
+              private watcher: WatcherService,
               private zone: NgZone) { }
 
   @Action(BucketMetadataLoaded)
@@ -73,6 +80,8 @@ export interface S3MetaStateModel {
                        { payload }: BucketMetadataLoaded) {
     const { path, metadata } = payload;
     patchState({ [path]: metadata });
+    // watch for changes
+    this.watcher.watch(path);
   }
 
   @Action(FileMetadataLoaded)
@@ -80,6 +89,8 @@ export interface S3MetaStateModel {
                      { payload }: FileMetadataLoaded) {
     const { path, metadata } = payload;
     patchState({ [path]: metadata });
+    // watch for changes
+    this.watcher.watch(path);
   }
 
   @Action(LoadBucketMetadata)
@@ -125,9 +136,7 @@ export interface S3MetaStateModel {
                        { payload }: UpdateBucketMetadata) {
     const { path, metadata } = payload;
     patchState({ [path]: { ...metadata, loading: true } });
-    this.s3Svc.updateBucketMetadata(path, metadata, () => {
-      dispatch(new LoadBucketMetadata({ path, force: true }));
-    });
+    this.s3Svc.updateBucketMetadata(path, metadata);
   }
 
   @Action(UpdateFileMetadata)
@@ -135,8 +144,18 @@ export interface S3MetaStateModel {
                      { payload }: UpdateFileMetadata) {
     const { path, metadata } = payload;
     patchState({ [path]: { ...metadata, loading: true } });
-    this.s3Svc.updateFileMetadata(path, metadata, () => {
-      dispatch(new LoadFileMetadata({ path, force: true }));
+    this.s3Svc.updateFileMetadata(path, metadata);
+  }
+
+  // lifecycle methods
+
+  ngxsOnInit({ dispatch }: StateContext<S3MetaStateModel>) {
+    this.watcher.stream$.subscribe((path: string) => {
+      const { isBucket, isFile } = this.path.analyze(path);
+      if (isBucket)
+        dispatch(new LoadBucketMetadata( { path, force: true }));
+      else if (isFile)
+        dispatch(new LoadFileMetadata({ path, force: true }));
     });
   }
 

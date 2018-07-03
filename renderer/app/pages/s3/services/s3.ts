@@ -6,10 +6,12 @@ import { FileMetadata } from '../state/s3meta';
 import { Injectable } from '@angular/core';
 import { Message } from '../../../state/status';
 import { Observable } from 'rxjs';
+import { PathService } from '../services/path';
 import { PrefsState } from '../../../state/prefs';
 import { PrefsStateModel } from '../../../state/prefs';
 import { Select } from '@ngxs/store';
 import { Store } from '@ngxs/store';
+import { WatcherService } from './watcher';
 
 import { config } from '../../../config';
 import { isObjectEmpty } from 'ellib';
@@ -30,32 +32,11 @@ export class S3Service {
 
   private s3_: typeof S3;
 
-  /** Separate bucket, prefix aka Key or object */
-  static extractBucketAndPrefix(path: string): { bucket, prefix, version } {
-    // @see https://stackoverflow.com/questions/30726079/aws-s3-object-listing
-    let bucket, prefix, version = null;
-    const ix = path.indexOf(config.s3Delimiter);
-    if (ix === -1) {
-      bucket = path;
-      prefix = '';
-    }
-    else {
-      bucket = path.substring(0, ix);
-      prefix = path.substring(ix + 1);
-    }
-    if (prefix === config.s3Delimiter)
-      prefix = '';
-    const iy = prefix.indexOf('?versionid=');
-    if (iy !== -1) {
-      version = prefix.substring(iy + 11);
-      prefix = prefix.substring(0, iy);
-    }
-    return { bucket, prefix, version };
-  }
-
   /** ctor */
   constructor(private electron: ElectronService,
-              private store: Store) {
+              private path: PathService,
+              private store: Store,
+              private watcher: WatcherService) {
     this.s3_ = this.electron.remote.require('aws-sdk/clients/s3');
     this.prefs$.subscribe((prefs: PrefsStateModel) => {
       this.s3 = new this.s3_({ 
@@ -68,7 +49,7 @@ export class S3Service {
   /** Load bucket metadata */
   loadBucketMetadata(path: string,
                      cb: (metadata: BucketMetadata) => void): void {
-    const { bucket } = S3Service.extractBucketAndPrefix(path);
+    const { bucket } = this.path.analyze(path);
     const params = { Bucket: bucket };
     const funcs = async.reflectAll({
       accelerate: async.apply(this.s3.getBucketAccelerateConfiguration, params),
@@ -131,7 +112,7 @@ export class S3Service {
                      prefixes: S3.CommonPrefixList,
                      contents: S3.ObjectList,
                      versioning: boolean) => void): void {
-    const { bucket, prefix } = S3Service.extractBucketAndPrefix(path);
+    const { bucket, prefix } = this.path.analyze(path);
     const funcs = {
       objects: async.apply(this.s3.listObjectsV2, {
         Bucket: bucket,
@@ -157,7 +138,7 @@ export class S3Service {
   /** Load file metadata */
   loadFileMetadata(path: string,
                    cb: (metadata: FileMetadata) => void): void {
-    const { bucket, prefix, version } = S3Service.extractBucketAndPrefix(path);
+    const { bucket, prefix, version } = this.path.analyze(path);
     const params = {
       Bucket: bucket,
       Key: prefix,
@@ -165,6 +146,7 @@ export class S3Service {
     };
     const funcs = async.reflectAll({
       acl: async.apply(this.s3.getObjectAcl, params),
+      head: async.apply(this.s3.headObject, params),
       tagging: async.apply(this.s3.getObjectTagging, params)
     });
     // now load them all in parallel
@@ -178,6 +160,8 @@ export class S3Service {
         console.log(`%c${key} %c${JSON.stringify(acc[key])}`, 'color: black', 'color: grey');
         return acc;
       }, { } as FileMetadata);
+      // NOTE: headObject produces a conglomerate of data we need to separate
+      metadata.storage = metadata.head.StorageClass;
       console.groupEnd();
       cb(metadata);
     });
@@ -186,7 +170,7 @@ export class S3Service {
   /** Load the versions of a file */
   loadFileVersions(path: string,
                    cb: (versions: S3.ObjectVersionList) => void): void {
-    const { bucket, prefix } = S3Service.extractBucketAndPrefix(path);
+    const { bucket, prefix } = this.path.analyze(path);
     const params = {
       Bucket: bucket,
       Prefix: prefix
@@ -201,8 +185,8 @@ export class S3Service {
   /** Update bucket metadata */
   updateBucketMetadata(path: string,
                        metadata: BucketMetadata,
-                       cb: () => void): void {
-    const { bucket } = S3Service.extractBucketAndPrefix(path);
+                       cb?: () => void): void {
+    const { bucket } = this.path.analyze(path);
     const params = { Bucket: bucket };
     const funcs = [];
 
@@ -247,7 +231,10 @@ export class S3Service {
           console.log(`%c${key} %c${JSON.stringify(metadata[key])}`, 'color: black', 'color: grey');
         });
         console.groupEnd();
-        cb();
+        // TODO: we'd like the watcher to see this automagically
+        this.watcher.touch(path);
+        if (cb)
+          cb();
       }
     });
   }
@@ -255,8 +242,8 @@ export class S3Service {
   /** Update file metadata */
   updateFileMetadata(path: string,
                      metadata: FileMetadata,
-                     cb: () => void): void {
-    const { bucket, prefix } = S3Service.extractBucketAndPrefix(path);
+                     cb?: () => void): void {
+    const { bucket, prefix, version } = this.path.analyze(path);
     const params = { Bucket: bucket, Key: prefix };
     const funcs = [];
 
@@ -264,6 +251,19 @@ export class S3Service {
     if (metadata.tagging.TagSet && !isObjectEmpty(metadata.tagging.TagSet))
       funcs.push(async.apply(this.s3.putObjectTagging, { ...params, Tagging: metadata.tagging }));
     else funcs.push(async.apply(this.s3.deleteObjectTagging, params));
+
+    // EVERYTHING ELSE
+
+    // NOTE: must copy object to take effect
+    // NOTE: we can only do this for the latest version
+    if (!version) {
+      const copy = {
+        // @see https://github.com/aws/aws-sdk-js/issues/1821
+        CopySource: encodeURIComponent(path),
+        StorageClass: metadata.storage
+      };
+      funcs.push(async.apply(this.s3.copyObject, { ...params, ...copy }));
+    }
 
     // now update them all in parallel
     async.parallelLimit(funcs, config.numParallel, (err, results: any) => {
@@ -276,7 +276,10 @@ export class S3Service {
           console.log(`%c${key} %c${JSON.stringify(metadata[key])}`, 'color: black', 'color: grey');
         });
         console.groupEnd();
-        cb();
+        // TODO: we'd like the watcher to see this automagically
+        this.watcher.touch(path);
+        if (cb)
+          cb();
       }
     });
   }
