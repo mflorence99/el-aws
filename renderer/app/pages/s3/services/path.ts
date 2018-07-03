@@ -34,8 +34,11 @@ export class PathService {
   analyze(path: string): PathInfo {
     const info = { } as PathInfo;
     // special case: root path
-    if (!path || (path === config.s3Delimiter)) 
+    if (!path || (path === config.s3Delimiter)) {
+      info.isDirectory = true;
       info.isRoot = true;
+      info.directory = config.s3Delimiter;
+    }
     else {
       // eliminate any initial /
       if (path.startsWith(config.s3Delimiter))

@@ -5,6 +5,7 @@ import { Message } from '../../../state/status';
 import { NgxsOnInit } from '@ngxs/store';
 import { NgZone } from '@angular/core';
 import { Observable } from 'rxjs';
+import { PathService } from '../services/path';
 import { S3ColorState } from '../state/s3color';
 import { S3ColorStateModel } from '../state/s3color';
 import { S3Service } from '../services/s3';
@@ -14,6 +15,7 @@ import { SetColor } from '../state/s3color';
 import { State } from '@ngxs/store';
 import { StateContext } from '@ngxs/store';
 import { Store } from '@ngxs/store';
+import { WatcherService } from '../services/watcher';
 
 import { config } from '../../../config';
 
@@ -85,8 +87,10 @@ export interface S3StateModel {
   s3color = {} as S3ColorStateModel;
 
   /** ctor */
-  constructor(private s3Svc: S3Service,
+  constructor(private path: PathService,
+              private s3Svc: S3Service,
               private store: Store,
+              private watcher: WatcherService,
               private zone: NgZone) { }
 
   @Action(BucketsLoaded)
@@ -202,8 +206,21 @@ export interface S3StateModel {
 
   // lifecycle methods
 
-  ngxsOnInit({ dispatch }: StateContext<S3StateModel>) {
+  ngxsOnInit({ dispatch, getState }: StateContext<S3StateModel>) {
     this.s3color$.subscribe((s3color: S3ColorStateModel) => this.s3color = s3color);
+    this.watcher.stream$.subscribe((path: string) => {
+      const { directory, isDirectory, isFile } = this.path.analyze(path);
+      if (isDirectory)
+        dispatch(new LoadDirectory({ path, force: true }));
+      else if (isFile) {
+        dispatch(new LoadDirectory({ path: directory, force: true }));
+        // NOTE: we don't know directly if this file has versions
+        // but we do know that any entry in the parent directory is versioned
+        const descs = getState()[directory];
+        if (descs && (descs.length > 0) && descs[0].isFileVersioned)
+          dispatch(new LoadFileVersions({ path, force: true }));
+      }
+    });
   }
 
   // private methods

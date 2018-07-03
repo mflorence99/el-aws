@@ -3,6 +3,7 @@ import { LoadDirectory } from './s3';
 import { Selector } from '@ngxs/store';
 import { State } from '@ngxs/store';
 import { StateContext } from '@ngxs/store';
+import { WatcherService } from '../services/watcher';
 
 import { config } from '../../../config';
 import { isObjectEqual } from 'ellib'; 
@@ -94,6 +95,9 @@ export interface ViewWidths {
     return state.paths;
   }
 
+  /** ctor */
+  constructor(private watcher: WatcherService) { }
+
   @Action(AddPath)
   addPath({ dispatch, getState, patchState }: StateContext<S3ViewStateModel>,
           { payload }: AddPath) {
@@ -102,14 +106,22 @@ export interface ViewWidths {
     if (!state.paths.includes(path)) { 
       patchState({ paths: [...state.paths, path] });
       dispatch(new LoadDirectory({ path }));
+      // watch for changes
+      this.watcher.watch(path);
     }
   }
 
   @Action(ClearPaths)
-  clearPaths({ patchState }: StateContext<S3ViewStateModel>,
+  clearPaths({ getState, patchState }: StateContext<S3ViewStateModel>,
              { payload }: ClearPaths) {
+    const state = getState();
+    // stop watching for changes
+    state.paths.forEach(path => this.watcher.unwatch(path));
+    // clear state
     patchState({ paths: [config.s3Delimiter] });
     patchState({ lru: { } });
+    // watch for changes
+    this.watcher.watch(config.s3Delimiter);
   }
 
   @Action(ExpirePaths)
@@ -137,6 +149,8 @@ export interface ViewWidths {
       patchState({ paths });
       const { [path]: gonzo, ...lru } = state.lru;
       patchState({ lru });
+      // stop watching for changes
+      this.watcher.unwatch(path);
     }
   }
 
