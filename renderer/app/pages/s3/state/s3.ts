@@ -52,6 +52,7 @@ export class LoadFileVersions {
 }
 
 export interface Descriptor {
+  account: string;
   color: string;
   icon: string;
   isBucket?: boolean;
@@ -251,6 +252,7 @@ export interface S3StateModel {
                                   owner: S3.Owner,
                                   location: string): Descriptor {
     return {
+      account: owner.ID,
       color: 'var(--mat-brown-400)',
       icon: 'fab bitbucket',
       isBucket: true,
@@ -266,6 +268,7 @@ export interface S3StateModel {
   private makeDescriptorForDirectory(bucket: string,
                                      prefix: S3.CommonPrefix): Descriptor {
     return {
+      account: null,
       color: 'var(--mat-deep-orange-a100)',
       icon: 'fas folder',
       isDirectory: true,
@@ -283,6 +286,7 @@ export interface S3StateModel {
                                 versioning: boolean): Descriptor {
     const name = this.extractName(content.Key);
     return {
+      account: content.Owner ? content.Owner.ID : null, 
       color: this.makeColor(name),
       icon: this.makeIcon(name),
       isFile: true,
@@ -300,6 +304,7 @@ export interface S3StateModel {
                                        version: S3.ObjectVersion): Descriptor {
     const fileName = this.extractName(path);
     return {
+      account: null,
       color: 'var(--mat-blue-grey-400)',
       icon: this.makeIcon(fileName),
       isFileVersion: true,

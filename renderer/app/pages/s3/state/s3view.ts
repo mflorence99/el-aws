@@ -55,12 +55,13 @@ export interface LRUCache {
 }
 
 export interface S3ViewStateModel {
-  lru: LRUCache;
-  paths: string[];
-  sortColumn: string;
-  sortDir: number;
-  visibility: ViewVisibility;
-  widths: ViewWidths;
+  lru?: LRUCache;
+  paths?: string[];
+  sortColumn?: string;
+  sortDir?: number;
+  submitted?: boolean;
+  visibility?: ViewVisibility;
+  widths?: ViewWidths;
 }
 
 export interface ViewVisibility {

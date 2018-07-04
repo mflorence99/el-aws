@@ -37,8 +37,6 @@ export class BucketPropsComponent extends LifecycleComponent {
   propsForm: FormGroup;
 
   encryptionEnabled: string;
-  loggingEnabled: boolean;
-  websiteEnabled: string;
 
   tagLabelMapping: { [k: string]: string } = { '=0': 'No tags.', '=1': 'One tag.', 'other': '# tags.' };
 
@@ -53,8 +51,7 @@ export class BucketPropsComponent extends LifecycleComponent {
       this.desc = <Descriptor>context;
       this.store.dispatch(new LoadBucketMetadata({ path: this.desc.path }));
       this.propsForm = this.formBuilder.group({
-        path: '',
-        accelerate: this.formBuilder.group({
+        acceleration: this.formBuilder.group({
           Status: ''
         }),
         encryption: this.formBuilder.group({
@@ -70,12 +67,11 @@ export class BucketPropsComponent extends LifecycleComponent {
           })
         }),
         logging: this.formBuilder.group({
-          LoggingEnabled: this.formBuilder.group({
-            TargetBucket: '',
-            TargetPrefix: '',
-            TargetGrants: this.formBuilder.array([ ])
-          })
+          LoggingEnabled: '',
+          TargetBucket: '',
+          TargetPrefix: ''
         }),
+        path: '',
         tagging: this.formBuilder.group({
           TagSet: ''
         }),
@@ -83,16 +79,11 @@ export class BucketPropsComponent extends LifecycleComponent {
           Status: ''
         }),
         website: this.formBuilder.group({
-          RedirectAllRequestsTo: this.formBuilder.group({
-            HostName: '',
-            Protocol: ''
-          }),
-          IndexDocument: this.formBuilder.group({
-            Suffix: ''
-          }),
-          ErrorDocument: this.formBuilder.group({
-            Key: ''
-          })
+          ErrorDocument: '',
+          IndexDocument: '',
+          RedirectHostName: '',
+          RedirectProtocol: '',
+          WebsiteEnabled: ''
         })
       });
       this.newMetadata();
@@ -115,33 +106,6 @@ export class BucketPropsComponent extends LifecycleComponent {
     }
   }
 
-  /** Enforce AWS logging semantics in the UI */
-  enableLogging(state: boolean): void {
-    this.loggingEnabled = state;
-    const patch: any = { logging: { LoggingEnabled: { } } };
-    if (!this.loggingEnabled) 
-      patch.logging.LoggingEnabled = { TargetBucket: null, TargetPrefix: null };
-    this.propsForm.patchValue({ ...patch }, { emitEvent: false });
-  }
-
-  /** Enforce AWS website semantics in the UI */
-  enableWebsite(state: string): void {
-    this.websiteEnabled = state;
-    const patch: any = { website: { RedirectAllRequestsTo: { }, IndexDocument: { }, ErrorDocument: { } } };
-    if (this.websiteEnabled === 'Off') {
-      patch.website.RedirectAllRequestsTo = { HostName: null, Protocol: null };
-      patch.website.IndexDocument = { Suffix: null };
-      patch.website.ErrorDocument = { Key: null };
-    }
-    else if (this.websiteEnabled === 'On') 
-      patch.website.RedirectAllRequestsTo = { HostName: null, Protocol: null };
-    else if (this.websiteEnabled === 'Redirect') {
-      patch.website.IndexDocument = { Suffix: null };
-      patch.website.ErrorDocument = { Key: null };
-    }
-    this.propsForm.patchValue({ ...patch }, { emitEvent: false });
-  }
-
   // bind OnChange handlers
 
   @OnChange('s3meta') newMetadata() {
@@ -152,14 +116,7 @@ export class BucketPropsComponent extends LifecycleComponent {
         if (this.metadata) {
           // UI assist
           this.encryptionEnabled = nullSafe(this.metadata.encryption, 'ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm');
-          this.loggingEnabled = !!(nullSafe(this.metadata.logging, 'LoggingEnabled') && nullSafe(this.metadata.logging, 'LoggingEnabled.TargetBucket'));
-          this.websiteEnabled = 'Off';
-          if (nullSafe(this.metadata.website, 'IndexDocument'))
-            this.websiteEnabled = 'On';
-          else if (nullSafe(this.metadata.website, 'RedirectAllRequestsTo'))
-            this.websiteEnabled = 'Redirect';
-          this.propsForm.patchValue({ ...this.metadata, path: this.desc.path }, 
-                                    { emitEvent: false });
+          this.propsForm.patchValue(this.metadata, { emitEvent: false });
         }
       }
     }

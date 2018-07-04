@@ -1,9 +1,11 @@
 import { Actions } from '@ngxs/store';
 import { AutoUnsubscribe } from 'ellib';
+import { BucketMetadata } from './state/s3meta';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { ClearPaths } from './state/s3view';
 import { Component } from '@angular/core';
 import { EventEmitter } from '@angular/core';
+import { FileMetadata } from './state/s3meta';
 import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { LoadDirectory } from './state/s3';
@@ -45,9 +47,9 @@ import { ofAction } from '@ngxs/store';
 @AutoUnsubscribe()
 export class S3CtrlComponent extends LifecycleComponent {
 
-  @Input() bucketPropsForm: any = { };
-  @Input() filePropsForm: any = { };
-  @Input() viewForm: any = { };
+  @Input() bucketPropsForm = { } as BucketMetadata;
+  @Input() filePropsForm = { } as FileMetadata;
+  @Input() viewForm = { } as S3ViewStateModel;
 
   @Output() loaded = new EventEmitter<boolean>();
   @Output() openView = new EventEmitter<any>();

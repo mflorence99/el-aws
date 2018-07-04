@@ -34,8 +34,6 @@ export class FilePropsComponent extends LifecycleComponent {
   metadata = { } as FileMetadata;
   propsForm: FormGroup;
 
-  encryptionEnabled: string;
-
   tagLabelMapping: { [k: string]: string } = { '=0': 'No tags.', '=1': 'One tag.', 'other': '# tags.' };
 
   /** ctor */
@@ -49,12 +47,16 @@ export class FilePropsComponent extends LifecycleComponent {
       this.desc = <Descriptor>context;
       this.store.dispatch(new LoadFileMetadata({ path: this.desc.path}));
       this.propsForm = this.formBuilder.group({
-        path: '',
-        encryption: this.formBuilder.group({
-          SSEAlgorithm: '',
-          KMSMasterKeyID: ''
+        head: this.formBuilder.group({
+          encryption: this.formBuilder.group({
+            KMSMasterKeyID: '',
+            SSEAlgorithm: ''
+          }),
+          storage: this.formBuilder.group({
+            StorageClass: ''
+          }),
         }),
-        storage: '',
+        path: '',
         tagging: this.formBuilder.group({
           TagSet: ''
         })
@@ -69,16 +71,6 @@ export class FilePropsComponent extends LifecycleComponent {
     this.drawerPanel.close();
   }
 
-  /** Enforce AWS encryption semantics in the UI */
-  enableEncryption(state: string): void {
-    this.encryptionEnabled = state;
-    const patch: any = { encryption: { } };
-    if (this.encryptionEnabled === 'AES256') {
-      patch.encryption.KMSMasterKeyID = null;
-      this.propsForm.patchValue({ ...patch }, { emitEvent: false });
-    }
-  }
-
   // bind OnChange handlers
 
   @OnChange('s3meta') newMetadata() {
@@ -86,13 +78,8 @@ export class FilePropsComponent extends LifecycleComponent {
       this.metadata = <FileMetadata>this.s3meta[this.desc.path];
       if (this.propsForm) {
         this.propsForm.reset();
-        if (this.metadata) {
-          // UI assist
-          // if (!this.metadata.storage)
-          //   this.metadata.storage = this.desc.storage;
-          this.propsForm.patchValue({ ...this.metadata, path: this.desc.path },  
-            { emitEvent: false });
-        }
+        if (this.metadata) 
+          this.propsForm.patchValue(this.metadata, { emitEvent: false });
       }
     }
   }

@@ -36,7 +36,7 @@
     <!-- ACCELERATE -->
 
     <mat-expansion-panel
-      formGroupName="accelerate">
+      formGroupName="acceleration">
 
       <mat-expansion-panel-header>
         <mat-panel-title>
@@ -55,10 +55,13 @@
           Use endpoint <a>{{ desc.name }}.s3-accelerate.amazonaws.com</a> for faster data transfers, which will incur an additional fee.
         </div>
 
-        <mat-radio-button value="Enabled">
+        <mat-radio-button 
+          value="Enabled">
           Enable acceleration
         </mat-radio-button>
-        <mat-radio-button value="Suspended">
+
+        <mat-radio-button 
+          value="Suspended">
           Suspend acceleration
         </mat-radio-button>
 
@@ -149,7 +152,7 @@
         <mat-panel-title>
           Logging
           <div class="drawer-label">
-            {{ loggingEnabled? 'On' : 'Off' }}
+            {{ metadata?.logging?.LoggingEnabled || 'Off' }}
           </div>
         </mat-panel-title>
       </mat-expansion-panel-header>
@@ -157,18 +160,21 @@
       <div class="group">
 
         <mat-radio-group
-          (change)="enableLogging($event.value === 'on')"
-          [value]="loggingEnabled? 'on' : 'off'"
-          class="group">
+          class="group"
+          formControlName="LoggingEnabled">
 
           <div class="drawer-label">
             Set up access log records that provide details about access requests.
           </div>
 
-          <mat-radio-button value="off">
+          <mat-radio-button 
+            value="Off">
             Disable logging
           </mat-radio-button>
-          <mat-radio-button value="on">
+
+          <mat-radio-button 
+            #LoggingEnabled 
+            value="On">
             Enable logging
           </mat-radio-button>
 
@@ -178,18 +184,17 @@
 
         <div 
           class="group"
-          formGroupName="LoggingEnabled"
-          [ngStyle]="{display: loggingEnabled? 'block' : 'none'}">
+          [ngStyle]="{display: LoggingEnabled.checked? 'block' : 'none'}">
 
           <elaws-select-bucket
-            [required]="loggingEnabled"
+            [required]="LoggingEnabled.checked"
             formControlName="TargetBucket"
             placeholder="Select target bucket">
           </elaws-select-bucket>
 
           <mat-form-field>
             <input
-              [required]="loggingEnabled"
+              [required]="LoggingEnabled.checked"
               formControlName="TargetPrefix"
               placeholder="Enter target prefix"
               matInput
@@ -281,10 +286,13 @@
           class="group"
           formControlName="Status">
 
-          <mat-radio-button value="Enabled">
+          <mat-radio-button 
+            value="Enabled">
             Enable versioning
           </mat-radio-button>
-          <mat-radio-button value="Suspended">
+
+          <mat-radio-button 
+            value="Suspended">
             Suspend versioning
             <div class="drawer-label">
               This suspends the creation of object versions for all operations but preserves any existing object versions.
@@ -306,7 +314,7 @@
         <mat-panel-title>
           Website Hosting
           <div class="drawer-label">
-            {{ websiteEnabled }}
+            {{ metadata?.website?.WebsiteEnabled || 'Off' }}
           </div>
         </mat-panel-title>
       </mat-expansion-panel-header>
@@ -314,23 +322,27 @@
       <div class="group">
 
         <mat-radio-group
-          (change)="enableWebsite($event.value)"
-          [value]="websiteEnabled"
-          class="group">
+          class="group"
+          formControlName="WebsiteEnabled">
 
           <div class="drawer-label">
             Host a static website at <a>http://{{ desc.name }}.s3-website-{{ desc.storage }}.amazonaws.com</a> that doesn't require server-side technologies.
           </div>
 
-          <mat-radio-button value="Off">
+          <mat-radio-button 
+            value="Off">
             Disable website hosting
           </mat-radio-button>
 
-          <mat-radio-button value="On">
+          <mat-radio-button
+            #WebsiteOn 
+            value="On">
             Use this bucket to host a website
           </mat-radio-button>
 
-          <mat-radio-button value="Redirect">
+          <mat-radio-button 
+            #WebsiteRedirect
+            value="Redirect">
             Redirect requests
           </mat-radio-button>
 
@@ -339,66 +351,53 @@
         <!-- NOTE: can't use *ngIf because of form validation -->
 
         <div
-          [ngStyle]="{display: (websiteEnabled === 'On')? 'block' : 'none'}">
-
-          <div
-            formGroupName="IndexDocument">
-                      
-            <mat-form-field>
-              <input 
-                [required]="websiteEnabled === 'On'"
-                formControlName="Suffix"
-                placeholder="Index document"
-                matInput
-                type="text">
-            </mat-form-field>
-
-          </div>
-
-          <div
-            formGroupName="ErrorDocument">
-                      
-            <mat-form-field>
-              <input 
-                [required]="websiteEnabled === 'On'" 
-                formControlName="Key"
-                placeholder="Error document"
-                matInput
-                type="text">
-            </mat-form-field>
-
-          </div>
+          [ngStyle]="{display: WebsiteOn.checked? 'block' : 'none'}"
+          class="group">
+                    
+          <mat-form-field>
+            <input 
+              [required]="WebsiteOn.checked"
+              formControlName="IndexDocument"
+              placeholder="Index document"
+              matInput
+              type="text">
+          </mat-form-field>
+                    
+          <mat-form-field>
+            <input 
+              [required]="WebsiteOn.checked" 
+              formControlName="ErrorDocument"
+              placeholder="Error document"
+              matInput
+              type="text">
+          </mat-form-field>
 
         </div>
 
         <!-- NOTE: can't use *ngIf because of form validation -->
 
         <div
-          [ngStyle]="{display: (websiteEnabled === 'Redirect')? 'block' : 'none'}">
-
-          <div
-            formGroupName="RedirectAllRequestsTo">
+          [ngStyle]="{display: WebsiteRedirect.checked? 'block' : 'none'}"
+          class="group">
                       
-            <mat-form-field>
-              <input 
-                [required]="websiteEnabled === 'Redirect'"
-                formControlName="HostName"
-                placeholder="Target bucket or domain"
-                matInput
-                type="text">
-            </mat-form-field>
+          <mat-form-field>
+            <input 
+              [required]="WebsiteRedirect.checked"
+              formControlName="RedirectHostName"
+              placeholder="Target bucket or domain"
+              matInput
+              type="text">
+          </mat-form-field>
 
-            <mat-form-field>
-              <mat-select 
-                [required]="websiteEnabled === 'Redirect'"
-                formControlName="Protocol"
-                placeholder="Protocol">
-                <mat-option value="http">http</mat-option>
-                <mat-option value="https">https</mat-option>
-              </mat-select>
-            </mat-form-field>
-
-          </div>
+          <mat-form-field>
+            <mat-select 
+              [required]="WebsiteRedirect.checked"
+              formControlName="RedirectProtocol"
+              placeholder="Protocol">
+              <mat-option value="http">http</mat-option>
+              <mat-option value="https">https</mat-option>
+            </mat-select>
+          </mat-form-field>
 
         </div>
 

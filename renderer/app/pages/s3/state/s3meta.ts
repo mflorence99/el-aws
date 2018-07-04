@@ -42,23 +42,65 @@ export class UpdateFileMetadata {
 }
 
 export interface BucketMetadata {
-  accelerate: S3.GetBucketAccelerateConfigurationOutput;
+  acceleration: BucketMetadataAcceleration;
   acl?: S3.GetBucketAclOutput;
   encryption?: S3.GetBucketEncryptionOutput;
   loading?: boolean;
-  logging?: S3.GetBucketLoggingOutput;
-  tagging?: S3.GetBucketTaggingOutput;
-  versioning?: S3.GetBucketVersioningOutput;
-  website?: S3.GetBucketWebsiteOutput;
+  logging?: BucketMetadataLogging;
+  path?: string;
+  submitted?: boolean;
+  tagging?: BucketMetadataTagging;
+  versioning?: BucketMetadataVersioning;
+  website?: BucketMetadataWebsite;
+}
+
+export interface BucketMetadataAcceleration {
+  Status: S3.BucketAccelerateStatus;
+}
+
+export interface BucketMetadataLogging {
+  LoggingEnabled: string;
+  TargetBucket: S3.TargetBucket;
+  TargetPrefix: S3.TargetPrefix;
+}
+
+export interface BucketMetadataTagging {
+  TagSet: S3.TagSet;
+}
+
+export interface BucketMetadataVersioning {
+  Status: S3.BucketVersioningStatus;
+}
+
+export interface BucketMetadataWebsite {
+  ErrorDocument: S3.ObjectKey;
+  IndexDocument: S3.Suffix;
+  RedirectHostName: S3.HostName;
+  RedirectProtocol: S3.Protocol;
+  WebsiteEnabled: string;
 }
 
 export interface FileMetadata {
   acl?: S3.GetObjectAclOutput;
-  encryption?: S3.ServerSideEncryptionByDefault;
-  head?: S3.HeadObjectOutput;
+  head?: FileMetadataHead;
   loading?: boolean;
-  storage?: S3.StorageClass;
-  tagging?: S3.GetObjectTaggingOutput;
+  path?: string;
+  submitted?: boolean;
+  tagging?: FileMetadataTagging;
+}
+
+export interface FileMetadataHead {
+  encryption: {
+    KMSMasterKeyID?: S3.SSEKMSKeyId;
+    SSEAlgorithm: S3.ServerSideEncryption;
+  };
+  storage: {
+    StorageClass: S3.StorageClass;
+  };
+}
+
+export interface FileMetadataTagging {
+  TagSet: S3.TagSet;
 }
 
 export interface S3MetaStateModel {

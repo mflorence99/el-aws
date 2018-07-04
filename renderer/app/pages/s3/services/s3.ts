@@ -1,8 +1,15 @@
 import * as S3 from 'aws-sdk/clients/s3';
 
 import { BucketMetadata } from '../state/s3meta';
+import { BucketMetadataAcceleration } from '../state/s3meta';
+import { BucketMetadataLogging } from '../state/s3meta';
+import { BucketMetadataTagging } from '../state/s3meta';
+import { BucketMetadataVersioning } from '../state/s3meta';
+import { BucketMetadataWebsite } from '../state/s3meta';
 import { ElectronService } from 'ngx-electron';
 import { FileMetadata } from '../state/s3meta';
+import { FileMetadataHead } from '../state/s3meta';
+import { FileMetadataTagging } from '../state/s3meta';
 import { Injectable } from '@angular/core';
 import { Message } from '../../../state/status';
 import { Observable } from 'rxjs';
@@ -14,7 +21,6 @@ import { Store } from '@ngxs/store';
 import { WatcherService } from './watcher';
 
 import { config } from '../../../config';
-import { isObjectEmpty } from 'ellib';
 import { nullSafe } from 'ellib';
 
 import async from 'async-es';
@@ -52,13 +58,13 @@ export class S3Service {
     const { bucket } = this.path.analyze(path);
     const params = { Bucket: bucket };
     const funcs = async.reflectAll({
-      accelerate: async.apply(this.s3.getBucketAccelerateConfiguration, params),
+      acceleration: async.apply(this.getBucketAcceleration.bind(this), params),
       acl: async.apply(this.s3.getBucketAcl, params),
       encryption: async.apply(this.s3.getBucketEncryption, params),
-      logging: async.apply(this.s3.getBucketLogging, params),
-      tagging: async.apply(this.s3.getBucketTagging, params),
-      versioning: async.apply(this.s3.getBucketVersioning, params),
-      website: async.apply(this.s3.getBucketWebsite, params)
+      logging: async.apply(this.getBucketLogging.bind(this), params),
+      tagging: async.apply(this.getBucketTagging.bind(this), params),
+      versioning: async.apply(this.getBucketVersioning.bind(this), params),
+      website: async.apply(this.getBucketWebsite.bind(this), params)
     });
     // now load them all in parallel
     async.parallelLimit(funcs, config.numParallel, (err, results: any) => {
@@ -88,7 +94,7 @@ export class S3Service {
           const params = { Bucket: bucket.Name };
           return async.apply(this.s3.getBucketLocation, params);
         });
-        // now run them all in parrallel
+        // now run them all in parallel
         async.parallelLimit(funcs, config.numParallel, (err, results: S3.GetBucketLocationOutput[]) => {
           if (err)
             this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
@@ -146,8 +152,8 @@ export class S3Service {
     };
     const funcs = async.reflectAll({
       acl: async.apply(this.s3.getObjectAcl, params),
-      head: async.apply(this.s3.headObject, params),
-      tagging: async.apply(this.s3.getObjectTagging, params)
+      head: async.apply(this.getObjectHead.bind(this), params),
+      tagging: async.apply(this.getObjectTagging.bind(this), params)
     });
     // now load them all in parallel
     async.parallelLimit(funcs, config.numParallel, (err, results: any) => {
@@ -159,13 +165,7 @@ export class S3Service {
         acc[key] = results[key].value || { };
         console.log(`%c${key} %c${JSON.stringify(acc[key])}`, 'color: black', 'color: grey');
         return acc;
-      }, { } as FileMetadata);
-      // NOTE: headObject produces a conglomerate of data we need to separate
-      metadata.encryption = {
-        SSEAlgorithm: metadata.head.ServerSideEncryption,
-        KMSMasterKeyID: metadata.head.SSEKMSKeyId
-      };
-      metadata.storage = metadata.head.StorageClass;
+      }, { path } as FileMetadata);
       console.groupEnd();
       cb(metadata);
     });
@@ -192,38 +192,13 @@ export class S3Service {
                        cb?: () => void): void {
     const { bucket } = this.path.analyze(path);
     const params = { Bucket: bucket };
-    const funcs = [];
-
-    // Acceleration -- Note: can't turn off and Status must be present
-    if (metadata.accelerate.Status)
-      funcs.push(async.apply(this.s3.putBucketAccelerateConfiguration, { ...params, AccelerateConfiguration:  metadata.accelerate }));
-
-    // ENCRYPTION -- Note: if no algorithm, need to explcitly delete
-    const encAlgorithm = nullSafe(metadata.encryption, 'ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm');
-    if (encAlgorithm)
-      funcs.push(async.apply(this.s3.putBucketEncryption, { ...params, ...metadata.encryption }));
-    else funcs.push(async.apply(this.s3.deleteBucketEncryption, params));
-
-    // LOGGING -- Note: if no bucket etc, set to empty to disable logging
-    const logBucket = metadata.logging.LoggingEnabled.TargetBucket;
-    funcs.push(async.apply(this.s3.putBucketLogging, { ...params, BucketLoggingStatus: logBucket? metadata.logging : { } }));
-
-    // TAGGING -- Note: must have a TagSet, even if empty
-    if (metadata.tagging.TagSet && !isObjectEmpty(metadata.tagging.TagSet))
-      funcs.push(async.apply(this.s3.putBucketTagging, { ...params, Tagging: metadata.tagging }));
-    else funcs.push(async.apply(this.s3.deleteBucketTagging, params));
-
-    // VERSIONING -- Note: can't turn off and Status must be present
-    if (metadata.versioning.Status)
-      funcs.push(async.apply(this.s3.putBucketVersioning, { ...params, VersioningConfiguration: metadata.versioning }));
-
-    // WEBSITE
-    if (metadata.website.RedirectAllRequestsTo.HostName)
-      funcs.push(async.apply(this.s3.putBucketWebsite, { ...params, WebsiteConfiguration: { RedirectAllRequestsTo: metadata.website.RedirectAllRequestsTo } }));
-    else if (metadata.website.IndexDocument.Suffix)
-      funcs.push(async.apply(this.s3.putBucketWebsite, { ...params, WebsiteConfiguration: { IndexDocument: metadata.website.IndexDocument, ErrorDocument: metadata.website.ErrorDocument } }));
-    else funcs.push(async.apply(this.s3.deleteBucketWebsite, params));
-
+    const funcs = [
+      async.apply(this.putBucketAcceleration.bind(this), params, metadata.acceleration),
+      async.apply(this.putBucketLogging.bind(this), params, metadata.logging),
+      async.apply(this.putBucketTagging.bind(this), params, metadata.tagging),
+      async.apply(this.putBucketVersioning.bind(this), params, metadata.versioning),
+      async.apply(this.putBucketWebsite.bind(this), params, metadata.website)
+    ];
     // now update them all in parallel
     async.parallelLimit(funcs, config.numParallel, (err, results: any) => {
       if (err)
@@ -237,8 +212,7 @@ export class S3Service {
         console.groupEnd();
         // TODO: we'd like the watcher to see this automagically
         this.watcher.touch(path);
-        if (cb)
-          cb();
+        if (cb) cb();
       }
     });
   }
@@ -248,33 +222,15 @@ export class S3Service {
                      metadata: FileMetadata,
                      cb?: () => void): void {
     const { bucket, prefix, version } = this.path.analyze(path);
-    const params = { Bucket: bucket, Key: prefix };
-    const funcs = [];
-
-    // TAGGING -- Note: must have a TagSet, even if empty
-    if (metadata.tagging.TagSet && !isObjectEmpty(metadata.tagging.TagSet))
-      funcs.push(async.apply(this.s3.putObjectTagging, { ...params, Tagging: metadata.tagging }));
-    else funcs.push(async.apply(this.s3.deleteObjectTagging, params));
-
-    // EVERYTHING ELSE
-
-    // NOTE: must copy object to take effect
-    // NOTE: we can only do this for the latest version
-    if (!version) {
-      const cparams: any = { };
-      if (metadata.storage)
-        cparams.StorageClass = metadata.storage;
-      if (nullSafe(metadata.encryption, 'SSEAlgorithm')) {
-        cparams.ServerSideEncryption = metadata.encryption.SSEAlgorithm;
-        cparams.SSEKMSKeyId = metadata.encryption.KMSMasterKeyID;
-      }
-      if (!isObjectEmpty(cparams)) {
-        // @see https://github.com/aws/aws-sdk-js/issues/1821
-        cparams.CopySource = encodeURIComponent(path);
-        funcs.push(async.apply(this.s3.copyObject, { ...params, ...cparams }));
-      }
-    }
-
+    const params = { 
+      Bucket: bucket, 
+      Key: prefix,
+      VersionId: version
+    };
+    const funcs = [
+      async.apply(this.putObjectHead.bind(this), params, path, metadata.head),
+      async.apply(this.putObjectTagging.bind(this), params, metadata.tagging)
+    ];
     // now update them all in parallel
     async.parallelLimit(funcs, config.numParallel, (err, results: any) => {
       if (err)
@@ -288,10 +244,191 @@ export class S3Service {
         console.groupEnd();
         // TODO: we'd like the watcher to see this automagically
         this.watcher.touch(path);
-        if (cb)
-          cb();
+        if (cb) cb();
       }
     });
+  }
+
+  // NOTE: these methods are adaptors that wrap the S3 metadata to assist the UI
+
+  private getBucketAcceleration(params: any,
+                                cb: (err, data: BucketMetadataAcceleration) => void) {
+    this.s3.getBucketAccelerateConfiguration(params, (err, data: S3.GetBucketAccelerateConfigurationOutput) => {
+      cb(null, {
+        Status: nullSafe(data, 'Status')
+      });
+    });
+  }
+
+  private getBucketLogging(params: any,
+                           cb: (err, data: BucketMetadataLogging) => void) {
+    this.s3.getBucketLogging(params, (err, data: S3.GetBucketLoggingOutput) => {
+      cb(null, {
+        LoggingEnabled: nullSafe(data, 'LoggingEnabled')? 'On' : 'Off',
+        TargetBucket: nullSafe(data, 'LoggingEnabled.TargetBucket'),
+        TargetPrefix: nullSafe(data, 'LoggingEnabled.TargetPrefix')
+      });
+    });
+  }
+
+  private getBucketTagging(params: any,
+                           cb: (err, data: BucketMetadataTagging) => void) {
+    this.s3.getBucketTagging(params, (err, data: S3.GetBucketTaggingOutput) => {
+      cb(null, {
+        TagSet: data? data.TagSet : []
+      });
+    });
+  }
+
+  private getBucketVersioning(params: any,
+                              cb: (err, data: BucketMetadataVersioning) => void) {
+    this.s3.getBucketVersioning(params, (err, data: S3.GetBucketVersioningOutput) => {
+      cb(null, {
+        Status: nullSafe(data, 'Status')
+      });
+    });
+  }
+
+  private getBucketWebsite(params: any,
+                          cb: (err, data: BucketMetadataWebsite) => void) {
+    this.s3.getBucketWebsite(params, (err, data: S3.GetBucketWebsiteOutput) => {
+      cb(null, {
+        ErrorDocument: nullSafe(data, 'ErrorDocument.Key'),
+        IndexDocument: nullSafe(data, 'IndexDocument.Suffix'),
+        RedirectHostName: nullSafe(data, 'RedirectAllRequestsTo.HostName'),
+        RedirectProtocol: nullSafe(data, 'RedirectAllRequestsTo.Protocol'),
+        WebsiteEnabled: nullSafe(data, 'RedirectAllRequestsTo') ? 'Redirect' : (nullSafe(data, 'IndexDocument')? 'On' : 'Off')
+      });
+    });
+  }
+
+  private getObjectHead(params: any, 
+                        cb: (err, data: FileMetadataHead) => void) {
+    this.s3.headObject(params, (err, data: S3.HeadObjectOutput) => {
+      cb(null, {
+        encryption: { 
+          SSEAlgorithm: nullSafe(data, 'ServerSideEncryption'),
+          KMSMasterKeyID: nullSafe(data, 'SSEKMSKeyId')
+        },
+        storage: { 
+          StorageClass: nullSafe(data, 'StorageClass')
+        }
+      });
+    });
+  }
+
+  private getObjectTagging(params: any,
+                           cb: (err, data: FileMetadataTagging) => void) {
+    this.s3.getObjectTagging(params, (err, data: S3.GetObjectTaggingOutput) => {
+      cb(null, {
+        TagSet: data? data.TagSet : []
+      });
+    });
+  }
+
+  private putBucketAcceleration(params: any,
+                                acceleration: BucketMetadataAcceleration,
+                                cb: (err, data) => void): void {
+    if (acceleration.Status)
+      this.s3.putBucketAccelerateConfiguration({ ...params, AccelerateConfiguration: acceleration }, cb);
+    else cb(null, null);
+  }
+
+  private putBucketLogging(params: any,
+                           logging: BucketMetadataLogging,
+                           cb: (err, data) => void): void {
+    const status = { BucketLoggingStatus: { } };
+    if (logging.LoggingEnabled === 'On') {
+      status.BucketLoggingStatus = {
+        LoggingEnabled: {
+          TargetBucket: logging.TargetBucket,
+          TargetPrefix: logging.TargetPrefix
+        }
+      };
+    }
+    this.s3.putBucketLogging({ ...params, ...status }, cb);
+  }
+
+  private putBucketTagging(params: any,
+                           tagging: BucketMetadataTagging,
+                           cb: (err, data) => void): void {
+    let func;
+    if (tagging.TagSet && (tagging.TagSet.length > 0))
+      func = this.s3.putBucketTagging.bind(null, { ...params, Tagging: tagging });
+    else func = this.s3.deleteBucketTagging.bind(null, params);
+    func(cb);
+  }
+
+  private putBucketVersioning(params: any,
+                              versioning: BucketMetadataVersioning,
+                              cb: (err, data) => void): void {
+    if (versioning.Status)
+      this.s3.putBucketVersioning({ ...params, VersioningConfiguration: versioning }, cb);
+    else cb(null, null);
+  }
+
+  private putBucketWebsite(params: any,
+                           website: BucketMetadataWebsite,
+                           cb: (err, data) => void): void {
+    if (website.WebsiteEnabled === 'Off')
+      this.s3.deleteBucketWebsite(params, cb);
+    else {
+      const config = { WebsiteConfiguration: { } };
+      if (website.WebsiteEnabled === 'On') {
+        config.WebsiteConfiguration = {
+          ErrorDocument: { Key: website.ErrorDocument },
+          IndexDocument: { Suffix: website.IndexDocument }
+        };
+      }
+      else if (website.WebsiteEnabled === 'Redirect') {
+        config.WebsiteConfiguration = {
+          RedirectAllRewquestsTo: {
+            HostName: website.RedirectHostName,
+            Protocol: website.RedirectProtocol
+          }
+        };
+      }
+      this.s3.putBucketWebsite({ ...params, ...config }, cb);
+    }
+  }
+
+  private putObjectHead(params: any,
+                        path: string,
+                        head: FileMetadataHead,
+                        cb: (err, data) => void): void {
+    const copy: any = {
+      Bucket: params.Bucket,
+      // @see https://github.com/aws/aws-sdk-js/issues/1821
+      CopySource: encodeURIComponent(path),
+      Key: params.Key
+    };
+    // encryption changes
+    let changed = false;
+    if (head.encryption.SSEAlgorithm) {
+      changed = true;
+      copy.ServerSideEncryption = head.encryption.SSEAlgorithm;
+      if (copy.ServerSideEncryption === 'aws:kms')
+        copy.SSEKMSKeyId = head.encryption.KMSMasterKeyID;
+    }
+    // storage changes
+    if (head.storage.StorageClass) {
+      changed = true;
+      copy.StorageClass = head.storage.StorageClass;
+    }
+    // copy object if changed
+    if (changed)
+      this.s3.copyObject(copy, cb);
+    else cb(null, null);
+  }
+
+  private putObjectTagging(params: any,
+                           tagging: FileMetadataTagging,
+                           cb: (err, data) => void): void {
+    let func;
+    if (tagging.TagSet && (tagging.TagSet.length > 0))
+      func = this.s3.putObjectTagging.bind(null, { ...params, Tagging: tagging });
+    else func = this.s3.deleteObjectTagging.bind(null, params);
+    func(cb);
   }
 
 }

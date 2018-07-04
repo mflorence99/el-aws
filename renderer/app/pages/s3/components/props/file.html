@@ -30,111 +30,120 @@
 
   <mat-accordion>
 
-    <!-- ENCRYPTION -->
+    <ng-container 
+      formGroupName="head">
 
-    <mat-expansion-panel
-      formGroupName="encryption">
+      <!-- ENCRYPTION -->
 
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          Encryption
-          <div class="drawer-label">
-            {{ metadata?.encryption?.SSEAlgorithm || 'Default' }}
-          </div>
-        </mat-panel-title>
-      </mat-expansion-panel-header>
+      <mat-expansion-panel
+        formGroupName="encryption">
 
-      <div class="group">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Encryption
+            <div class="drawer-label">
+              {{ metadata?.encryption?.SSEAlgorithm || 'Default' }}
+            </div>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div class="group">
+
+          <mat-radio-group
+            class="group"
+            formControlName="SSEAlgorithm">
+
+            <mat-radio-button value="">
+              Default
+            </mat-radio-button>
+
+            <mat-radio-button 
+              #AES256 
+              value="AES256">
+              AES-256
+              <div class="drawer-label">
+                Use Server-Side Encryption with Amazon S3-Managed Keys (SSE-S3).
+              </div>
+            </mat-radio-button>
+
+            <mat-radio-button 
+              #AWSKMS 
+              value="aws:kms">
+              AWS-KMS
+              <div class="drawer-label">
+                Use Server-Side Encryption with AWS KMS-Managed Keys (SSE-KMS).
+              </div>
+            </mat-radio-button>
+
+          </mat-radio-group>
+
+          <!-- NOTE: can't use *ngIf because of form validation -->
+
+          <mat-form-field
+            [ngStyle]="{display: AWSKMS.checked? 'block' : 'none'}">
+            <input
+              [required]="AWSKMS.checked"
+              formControlName="KMSMasterKeyID"
+              placeholder="Select a key"
+              matInput
+              type="text">
+          </mat-form-field>
+
+        </div>
+
+      </mat-expansion-panel>
+
+      <!-- STORAGE -->
+
+      <mat-expansion-panel
+        formGroupName="storage">
+
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Storage Class
+            <div class="drawer-label">
+              {{ metadata?.storage || desc.storage }}
+            </div>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
 
         <mat-radio-group
-          (change)="enableEncryption($event.value)"
-          [libRxfDisabled]="desc.isFileVersion"
           class="group"
-          formControlName="SSEAlgorithm">
+          formControlName="StorageClass">
 
-          <mat-radio-button value="">
-            Default
-          </mat-radio-button>
-          <mat-radio-button value="AES256">
-            AES-256
+          <mat-radio-button value="STANDARD">
+            Standard
             <div class="drawer-label">
-              Use Server-Side Encryption with Amazon S3-Managed Keys (SSE-S3).
+              For frequently accessed data. Stores object data redundantly across multiple geographically separated Availability Zones.
             </div>
           </mat-radio-button>
-          <mat-radio-button value="aws:kms">
-            AWS-KMS
+
+          <mat-radio-button value="STANDARD_IA">
+            Standard-IA
             <div class="drawer-label">
-              Use Server-Side Encryption with AWS KMS-Managed Keys (SSE-KMS).
+              For infrequently accessed data. Stores object data redundantly across multiple geographically separated Availability Zones. Minimum 30-day retention period and minimum 128 KB object size.
+            </div>
+          </mat-radio-button>
+
+          <mat-radio-button value="ONEZONE_IA">
+            One Zone-IA
+            <div class="drawer-label">
+              For infrequently accessed data. Stores object data in only one Availability Zone at a lower price than Standard-IA. Minimum 30-day retention period and minimum 128 KB object size.
+            </div>
+          </mat-radio-button>
+
+          <mat-radio-button value="REDUCED_REDUNDANCY">
+            Reduced redundancy
+            <div class="drawer-label">
+              For frequently accessed data. Stores noncritical, reproducible data at lower levels of redundancy than Standard.
             </div>
           </mat-radio-button>
 
         </mat-radio-group>
 
-        <!-- NOTE: can't use *ngIf because of form validation -->
+      </mat-expansion-panel>
 
-        <mat-form-field
-          [ngStyle]="{display: (encryptionEnabled === 'aws:kms')? 'block' : 'none'}">
-          <input
-            [required]="encryptionEnabled === 'aws:kms'"
-            formControlName="KMSMasterKeyID"
-            placeholder="Select a key"
-            matInput
-            type="text">
-        </mat-form-field>
-
-      </div>
-
-    </mat-expansion-panel>
-
-    <!-- STORAGE -->
-
-    <mat-expansion-panel>
-
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          Storage Class
-          <div class="drawer-label">
-            {{ metadata?.storage || desc.storage }}
-          </div>
-        </mat-panel-title>
-      </mat-expansion-panel-header>
-
-      <mat-radio-group
-        [libRxfDisabled]="desc.isFileVersion"
-        class="group"
-        formControlName="storage">
-
-        <mat-radio-button value="STANDARD">
-          Standard
-          <div class="drawer-label">
-            For frequently accessed data. Stores object data redundantly across multiple geographically separated Availability Zones.
-          </div>
-        </mat-radio-button>
-
-        <mat-radio-button value="STANDARD_IA">
-          Standard-IA
-          <div class="drawer-label">
-            For infrequently accessed data. Stores object data redundantly across multiple geographically separated Availability Zones. Minimum 30-day retention period and minimum 128 KB object size.
-          </div>
-        </mat-radio-button>
-
-        <mat-radio-button value="ONEZONE_IA">
-          One Zone-IA
-          <div class="drawer-label">
-            For infrequently accessed data. Stores object data in only one Availability Zone at a lower price than Standard-IA. Minimum 30-day retention period and minimum 128 KB object size.
-          </div>
-        </mat-radio-button>
-
-        <mat-radio-button value="REDUCED_REDUNDANCY">
-          Reduced redundancy
-          <div class="drawer-label">
-            For frequently accessed data. Stores noncritical, reproducible data at lower levels of redundancy than Standard.
-          </div>
-        </mat-radio-button>
-
-      </mat-radio-group>
-
-    </mat-expansion-panel>
+    </ng-container>
 
     <!-- TAGGING -->
 
