@@ -42,9 +42,9 @@ export class UpdateFileMetadata {
 }
 
 export interface BucketMetadata {
-  acceleration: BucketMetadataAcceleration;
-  acl?: S3.GetBucketAclOutput;
-  encryption?: S3.GetBucketEncryptionOutput;
+  acceleration?: BucketMetadataAcceleration;
+  acl?: BucketMetadataAcl;
+  encryption?: BucketMetadataEncryption;
   loading?: boolean;
   logging?: BucketMetadataLogging;
   path?: string;
@@ -56,6 +56,25 @@ export interface BucketMetadata {
 
 export interface BucketMetadataAcceleration {
   Status: S3.BucketAccelerateStatus;
+}
+
+export interface BucketMetadataAcl {
+  Grants: BucketMetadataAclGrant[];
+  Owner: S3.ID;
+  Summary: 'Private' | 'Public';
+}
+
+export interface BucketMetadataAclGrant {
+  Grantee: 'Private access' | 'Public access' | 'S3 log delivery';
+  ReadAcl: boolean;
+  ReadObjects: boolean;
+  WriteAcl: boolean;
+  WriteObjects: boolean;
+}
+
+export interface BucketMetadataEncryption {
+  KMSMasterKeyID?: S3.SSEKMSKeyId;
+  SSEAlgorithm: S3.ServerSideEncryption;
 }
 
 export interface BucketMetadataLogging {
@@ -81,12 +100,26 @@ export interface BucketMetadataWebsite {
 }
 
 export interface FileMetadata {
-  acl?: S3.GetObjectAclOutput;
+  acl?: FileMetadataAcl;
   head?: FileMetadataHead;
   loading?: boolean;
   path?: string;
   submitted?: boolean;
   tagging?: FileMetadataTagging;
+}
+
+export interface FileMetadataAcl {
+  Grants: FileMetadataAclGrant[];
+  Owner: S3.ID;
+  Summary: 'Private' | 'Public';
+}
+
+export interface FileMetadataAclGrant {
+  Grantee: 'Private access' | 'Public access';
+  ReadAcl: boolean;
+  ReadObjects: boolean;
+  WriteAcl: boolean;
+  WriteObjects: boolean;
 }
 
 export interface FileMetadataHead {

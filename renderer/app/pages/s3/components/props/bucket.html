@@ -41,7 +41,9 @@
       <mat-expansion-panel-header>
         <mat-panel-title>
           Acceleration    
-          <div class="drawer-label">
+          <div 
+            [ngClass]="{invalid: !propsForm.get('acceleration').valid}"
+            class="drawer-label">
             {{ metadata?.acceleration?.Status || 'Off' }}
           </div>
         </mat-panel-title>
@@ -77,68 +79,68 @@
       <mat-expansion-panel-header>
         <mat-panel-title>
           Encryption
-          <div class="drawer-label">
-            {{ encryptionEnabled || 'None' }}
+          <div 
+            [ngClass]="{invalid: !propsForm.get('encryption').valid}"
+            class="drawer-label">
+            {{ metadata?.encryption?.SSEAlgorithm || 'None' }}
           </div>
         </mat-panel-title>
       </mat-expansion-panel-header>
 
-      <div formGroupName="ServerSideEncryptionConfiguration">
-        <div formArrayName="Rules">
-          <div [formGroupName]="0">
-            <div 
-              class="group"
-              formGroupName="ApplyServerSideEncryptionByDefault">
+      <div class="group">
 
-              <mat-radio-group
-                (change)="enableEncryption($event.value)"
-                class="group"
-                formControlName="SSEAlgorithm">
+        <mat-radio-group
+          class="group"
+          formControlName="SSEAlgorithm">
 
-                <div class="drawer-label">
-                  Automatically encrypt objects when stored in Amazon S3.
-                  <b>Note</b> this property does not affect existing objects in your bucket.
-                </div>
-
-                <mat-radio-button value="">
-                  None
-                </mat-radio-button>
-                <mat-radio-button value="AES256">
-                  AES-256
-                  <div class="drawer-label">
-                    Use Server-Side Encryption with Amazon S3-Managed Keys (SSE-S3).
-                  </div>
-                </mat-radio-button>
-                <mat-radio-button value="aws:kms">
-                  AWS-KMS
-                  <div class="drawer-label">
-                    Use Server-Side Encryption with AWS KMS-Managed Keys (SSE-KMS).
-                  </div>
-                </mat-radio-button>
-
-              </mat-radio-group>
-
-              <!-- NOTE: can't use *ngIf because of form validation -->
-
-              <mat-form-field
-                [ngStyle]="{display: (encryptionEnabled === 'aws:kms')? 'block' : 'none'}">
-                <input
-                  [required]="encryptionEnabled === 'aws:kms'"
-                  formControlName="KMSMasterKeyID"
-                  placeholder="Select a key"
-                  matInput
-                  type="text">
-              </mat-form-field>
-
-              <div
-                *ngIf="encryptionEnabled" 
-                class="drawer-label">
-                Amazon S3 evaluates and applies bucket policies before applying bucket encryption settings. Even if you enable bucket encryption settings, your PUT requests without encryption information will be rejected if you have bucket policies to reject such PUT requests. Check your bucket policy and modify it if required.
-              </div>
-
-            </div>
+          <div class="drawer-label">
+            Automatically encrypt objects when stored in Amazon S3.
+            <b>Note</b> this property does not affect existing objects in your bucket.
           </div>
+
+          <mat-radio-button 
+            value="None">
+            None
+          </mat-radio-button>
+
+          <mat-radio-button 
+            #AES256 
+            value="AES256">
+            AES-256
+            <div class="drawer-label">
+              Use Server-Side Encryption with Amazon S3-Managed Keys (SSE-S3).
+            </div>
+          </mat-radio-button>
+
+          <mat-radio-button 
+            #AWSKMS 
+            value="aws:kms">
+            AWS-KMS
+            <div class="drawer-label">
+              Use Server-Side Encryption with AWS KMS-Managed Keys (SSE-KMS).
+            </div>
+          </mat-radio-button>
+
+        </mat-radio-group>
+
+        <!-- NOTE: can't use *ngIf because of form validation -->
+
+        <mat-form-field
+          [@showHide]="AWSKMS.checked? 'shown' : 'hidden'">
+          <input
+            [required]="AWSKMS.checked"
+            formControlName="KMSMasterKeyID"
+            placeholder="Select a key"
+            matInput
+            type="text">
+        </mat-form-field>
+
+        <div
+          [@showHide]="(AES256.checked || AWSKMS.checked)? 'shown' : 'hidden'"
+          class="drawer-label">
+          Amazon S3 evaluates and applies bucket policies before applying bucket encryption settings. Even if you enable bucket encryption settings, your PUT requests without encryption information will be rejected if you have bucket policies to reject such PUT requests. Check your bucket policy and modify it if required.
         </div>
+
       </div>
 
     </mat-expansion-panel>
@@ -151,7 +153,9 @@
       <mat-expansion-panel-header>
         <mat-panel-title>
           Logging
-          <div class="drawer-label">
+          <div 
+            [ngClass]="{invalid: !propsForm.get('logging').valid}"
+            class="drawer-label">
             {{ metadata?.logging?.LoggingEnabled || 'Off' }}
           </div>
         </mat-panel-title>
@@ -183,8 +187,8 @@
         <!-- NOTE: can't use *ngIf because of form validation -->
 
         <div 
-          class="group"
-          [ngStyle]="{display: LoggingEnabled.checked? 'block' : 'none'}">
+          [@showHide]="LoggingEnabled.checked? 'shown' : 'hidden'"
+          class="group">
 
           <elaws-select-bucket
             [required]="LoggingEnabled.checked"
@@ -211,6 +215,88 @@
 
     </mat-expansion-panel>
 
+    <!-- PERMISSIONS aka Acl -->
+
+    <mat-expansion-panel
+      formGroupName="acl">
+
+      <input
+        formControlName="Owner"
+        type="hidden">
+
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Permissions    
+          <div 
+            [ngClass]="{invalid: !propsForm.get('acl').valid || (metadata?.acl?.Summary === 'Public')}"
+            class="drawer-label">
+            {{ metadata?.acl?.Summary || 'Private' }}
+          </div>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <div class="group">
+
+        <div class="acl">
+
+          <div>&nbsp;</div>
+          <div style="grid-column-start: span 2">&nbsp;</div>
+          <div style="justify-self: center; grid-column-start: span 2"><b>ACL</b></div>
+
+          <div>&nbsp;</div>
+          <div><b>+R</b></div>
+          <div><b>+W</b></div>
+          <div><b>+R</b></div>
+          <div><b>+W</b></div>
+
+          <ng-container 
+            *ngFor="let Grant of metadata?.acl?.Grants; let i = index;"
+            formArrayName="Grants">
+
+            <ng-container
+              [formGroupName]="i">
+
+              <div>{{ Grant.Grantee }}</div>
+
+              <input
+                formControlName="Grantee"
+                type="hidden">
+
+              <mat-checkbox
+                formControlName="ReadObjects">
+              </mat-checkbox>
+
+
+              <mat-checkbox
+                formControlName="WriteObjects">
+              </mat-checkbox>
+
+
+              <mat-checkbox
+                formControlName="ReadAcl">
+              </mat-checkbox>
+
+
+              <mat-checkbox
+                formControlName="WriteAcl">
+              </mat-checkbox>
+
+            </ng-container>
+
+          </ng-container>
+
+        </div>
+
+        <div 
+          *ngIf="metadata?.acl?.Summary === 'Public'"
+          class="drawer-label">
+          You have provided public access to this bucket. We highly recommend that you never grant any kind of public access to your S3 bucket. 
+        </div>
+
+      </div>
+
+    </mat-expansion-panel>
+
     <!-- TAGGING -->
 
     <mat-expansion-panel
@@ -219,7 +305,9 @@
       <mat-expansion-panel-header>
         <mat-panel-title>
           Tags
-          <div class="drawer-label">
+          <div 
+            [ngClass]="{invalid: !propsForm.get('tagging').valid}"
+            class="drawer-label">
             {{ metadata?.tagging?.TagSet?.length? (metadata.tagging.TagSet.length | i18nPlural: tagLabelMapping) : 'None' }}
           </div>
         </mat-panel-title>
@@ -270,7 +358,9 @@
       <mat-expansion-panel-header>
         <mat-panel-title>
           Versioning
-          <div class="drawer-label">
+          <div 
+            [ngClass]="{invalid: !propsForm.get('versioning').valid}"
+            class="drawer-label">
             {{ metadata?.versioning?.Status || 'Off' }}
           </div>
         </mat-panel-title>
@@ -313,7 +403,9 @@
       <mat-expansion-panel-header>
         <mat-panel-title>
           Website Hosting
-          <div class="drawer-label">
+          <div 
+            [ngClass]="{invalid: !propsForm.get('website').valid}"
+            class="drawer-label">
             {{ metadata?.website?.WebsiteEnabled || 'Off' }}
           </div>
         </mat-panel-title>
@@ -351,7 +443,7 @@
         <!-- NOTE: can't use *ngIf because of form validation -->
 
         <div
-          [ngStyle]="{display: WebsiteOn.checked? 'block' : 'none'}"
+          [@showHide]="WebsiteOn.checked? 'shown' : 'hidden'"
           class="group">
                     
           <mat-form-field>
@@ -377,7 +469,7 @@
         <!-- NOTE: can't use *ngIf because of form validation -->
 
         <div
-          [ngStyle]="{display: WebsiteRedirect.checked? 'block' : 'none'}"
+          [@showHide]="WebsiteRedirect.checked? 'shown' : 'hidden'"
           class="group">
                       
           <mat-form-field>

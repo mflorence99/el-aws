@@ -2,12 +2,17 @@ import * as S3 from 'aws-sdk/clients/s3';
 
 import { BucketMetadata } from '../state/s3meta';
 import { BucketMetadataAcceleration } from '../state/s3meta';
+import { BucketMetadataAcl } from '../state/s3meta';
+import { BucketMetadataAclGrant } from '../state/s3meta';
+import { BucketMetadataEncryption } from '../state/s3meta';
 import { BucketMetadataLogging } from '../state/s3meta';
 import { BucketMetadataTagging } from '../state/s3meta';
 import { BucketMetadataVersioning } from '../state/s3meta';
 import { BucketMetadataWebsite } from '../state/s3meta';
 import { ElectronService } from 'ngx-electron';
 import { FileMetadata } from '../state/s3meta';
+import { FileMetadataAcl } from '../state/s3meta';
+import { FileMetadataAclGrant } from '../state/s3meta';
 import { FileMetadataHead } from '../state/s3meta';
 import { FileMetadataTagging } from '../state/s3meta';
 import { Injectable } from '@angular/core';
@@ -59,8 +64,8 @@ export class S3Service {
     const params = { Bucket: bucket };
     const funcs = async.reflectAll({
       acceleration: async.apply(this.getBucketAcceleration.bind(this), params),
-      acl: async.apply(this.s3.getBucketAcl, params),
-      encryption: async.apply(this.s3.getBucketEncryption, params),
+      acl: async.apply(this.getBucketAcl.bind(this), params),
+      encryption: async.apply(this.getBucketEncryption.bind(this), params),
       logging: async.apply(this.getBucketLogging.bind(this), params),
       tagging: async.apply(this.getBucketTagging.bind(this), params),
       versioning: async.apply(this.getBucketVersioning.bind(this), params),
@@ -76,7 +81,7 @@ export class S3Service {
         acc[key] = results[key].value || { };
         console.log(`%c${key} %c${JSON.stringify(acc[key])}`, 'color: black', 'color: grey');
         return acc;
-      }, { } as BucketMetadata);
+      }, { path } as BucketMetadata);
       console.groupEnd();
       cb(metadata);
     });
@@ -151,7 +156,7 @@ export class S3Service {
       VersionId: version
     };
     const funcs = async.reflectAll({
-      acl: async.apply(this.s3.getObjectAcl, params),
+      acl: async.apply(this.getObjectAcl.bind(this), params),
       head: async.apply(this.getObjectHead.bind(this), params),
       tagging: async.apply(this.getObjectTagging.bind(this), params)
     });
@@ -194,6 +199,8 @@ export class S3Service {
     const params = { Bucket: bucket };
     const funcs = [
       async.apply(this.putBucketAcceleration.bind(this), params, metadata.acceleration),
+      async.apply(this.putBucketAcl.bind(this), params, metadata.acl),
+      async.apply(this.putBucketEncryption.bind(this), params, metadata.encryption),
       async.apply(this.putBucketLogging.bind(this), params, metadata.logging),
       async.apply(this.putBucketTagging.bind(this), params, metadata.tagging),
       async.apply(this.putBucketVersioning.bind(this), params, metadata.versioning),
@@ -228,6 +235,7 @@ export class S3Service {
       VersionId: version
     };
     const funcs = [
+      async.apply(this.putObjectAcl.bind(this), params, metadata.acl),
       async.apply(this.putObjectHead.bind(this), params, path, metadata.head),
       async.apply(this.putObjectTagging.bind(this), params, metadata.tagging)
     ];
@@ -256,6 +264,35 @@ export class S3Service {
     this.s3.getBucketAccelerateConfiguration(params, (err, data: S3.GetBucketAccelerateConfigurationOutput) => {
       cb(null, {
         Status: nullSafe(data, 'Status')
+      });
+    });
+  }
+
+  private getBucketAcl(params: any,
+                       cb: (err, data: BucketMetadataAcl) => void) {
+    this.s3.getBucketAcl(params, (err, data: S3.GetBucketAclOutput) => {
+      const acl: BucketMetadataAcl = {
+        Grants: [
+          { Grantee: 'Private access', ReadAcl: false, ReadObjects: false, WriteAcl: false, WriteObjects: false },
+          { Grantee: 'Public access', ReadAcl: false, ReadObjects: false, WriteAcl: false, WriteObjects: false },
+          { Grantee: 'S3 log delivery', ReadAcl: false, ReadObjects: false, WriteAcl: false, WriteObjects: false }
+        ], 
+        Owner: null,
+        Summary: 'Private'
+      };
+      if (data) 
+        this.buildAcl(acl, data);
+      cb(null, acl);
+    });
+  }
+
+  private getBucketEncryption(params: any,
+                              cb: (err, data: BucketMetadataEncryption) => void) {
+    this.s3.getBucketEncryption(params, (err, data: S3.GetBucketEncryptionOutput) => {
+      const config = nullSafe(data, 'ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault');
+      cb(null, {
+        KMSMasterKeyID: nullSafe(config, 'KMSMasterKeyID'),
+        SSEAlgorithm: nullSafe(config, 'SSEAlgorithm') || 'None'
       });
     });
   }
@@ -302,6 +339,23 @@ export class S3Service {
     });
   }
 
+  private getObjectAcl(params: any,
+                       cb: (err, data: FileMetadataAcl) => void) {
+    this.s3.getObjectAcl(params, (err, data: S3.GetObjectAclOutput) => {
+      const acl: FileMetadataAcl = {
+        Grants: [
+          { Grantee: 'Private access', ReadAcl: false, ReadObjects: false, WriteAcl: false, WriteObjects: false },
+          { Grantee: 'Public access', ReadAcl: false, ReadObjects: false, WriteAcl: false, WriteObjects: false }
+        ],
+        Owner: null,
+        Summary: 'Private'
+      };
+      if (data)
+        this.buildAcl(acl, data);
+      cb(null, acl);
+    });
+  }
+
   private getObjectHead(params: any, 
                         cb: (err, data: FileMetadataHead) => void) {
     this.s3.headObject(params, (err, data: S3.HeadObjectOutput) => {
@@ -326,12 +380,41 @@ export class S3Service {
     });
   }
 
+  // NOTE: these methods are adaptors that unwrap the UI-assist data back to real S3 
+
   private putBucketAcceleration(params: any,
                                 acceleration: BucketMetadataAcceleration,
                                 cb: (err, data) => void): void {
     if (acceleration.Status)
       this.s3.putBucketAccelerateConfiguration({ ...params, AccelerateConfiguration: acceleration }, cb);
     else cb(null, null);
+  }
+
+  private putBucketAcl(params: any,
+                       acl: BucketMetadataAcl,
+                       cb: (err, data) => void): void {
+    const policy = this.buildPolicy(acl);
+    this.s3.putBucketAcl({ ...params, AccessControlPolicy: { ...policy } }, cb);
+  }
+
+  private putBucketEncryption(params: any,
+                              encryption: BucketMetadataEncryption,
+                              cb: (err, data) => void): void {
+    if (encryption.SSEAlgorithm === 'None')
+      this.s3.deleteBucketEncryption(params, cb);
+    else {
+      const config = { 
+        ServerSideEncryptionConfiguration: {
+          Rules: [{
+            ApplyServerSideEncryptionByDefault: {
+              SSEAlgorithm: encryption.SSEAlgorithm,
+              KMSMasterKeyID: (encryption.SSEAlgorithm === 'aws:kms') ? encryption.KMSMasterKeyID : null
+            }
+          }]
+        }
+      };
+      this.s3.putBucketEncryption({ ...params, ...config }, cb);
+    }
   }
 
   private putBucketLogging(params: any,
@@ -392,6 +475,13 @@ export class S3Service {
     }
   }
 
+  private putObjectAcl(params: any,
+                       acl: FileMetadataAcl,
+                       cb: (err, data) => void): void {
+    const policy = this.buildPolicy(acl);
+    this.s3.putObjectAcl({ ...params, AccessControlPolicy: { ...policy } }, cb);
+  }
+
   private putObjectHead(params: any,
                         path: string,
                         head: FileMetadataHead,
@@ -429,6 +519,78 @@ export class S3Service {
       func = this.s3.putObjectTagging.bind(null, { ...params, Tagging: tagging });
     else func = this.s3.deleteObjectTagging.bind(null, params);
     func(cb);
+  }
+
+  // helpers
+
+  private buildAcl(acl: BucketMetadataAcl | FileMetadataAcl,
+                   data: S3.GetBucketAclOutput | S3.GetObjectAclOutput): void {
+    const allUsers = 'http://acs.amazonaws.com/groups/global/AllUsers';
+    const logDelivery = 'http://acs.amazonaws.com/groups/s3/LogDelivery';
+    acl.Owner = data.Owner.ID;
+    data.Grants.forEach((Grant: S3.Grant) => {
+      let target: BucketMetadataAclGrant | FileMetadataAclGrant;
+      if ((Grant.Grantee.ID === acl.Owner) && (Grant.Grantee.Type === 'CanonicalUser'))
+        target = acl.Grants[0];
+      else if ((Grant.Grantee.URI === allUsers) && (Grant.Grantee.Type === 'Group')) {
+        acl.Summary = 'Public';
+        target = acl.Grants[1];
+      }
+      else if ((Grant.Grantee.URI === logDelivery) && (Grant.Grantee.Type === 'Group'))
+        target = acl.Grants[2];
+      if (Grant.Permission === 'FULL_CONTROL') {
+        target.ReadAcl = true;
+        target.ReadObjects = true;
+        target.WriteAcl = true;
+        target.WriteObjects = true;
+      }
+      else if (Grant.Permission === 'READ')
+        target.ReadObjects = true;
+      else if (Grant.Permission === 'READ_ACP')
+        target.ReadAcl = true;
+      else if (Grant.Permission === 'WRITE')
+        target.WriteObjects = true;
+      else if (Grant.Permission === 'WRITE_ACP')
+        target.WriteAcl = true;
+    });
+  }
+
+  private buildPolicy(acl: BucketMetadataAcl | BucketMetadataAcl): S3.AccessControlPolicy {
+    const policy: S3.AccessControlPolicy = {
+      Grants: [] as S3.Grants,
+      Owner: { ID: acl.Owner }
+    };
+    acl.Grants.forEach((Grant: BucketMetadataAclGrant) => {
+      const model: S3.Grant = {
+        Grantee: { Type: '' },
+        Permission: ''
+      };
+      if (Grant.Grantee === 'Private access') {
+        model.Grantee.ID = acl.Owner;
+        model.Grantee.Type = 'CanonicalUser';
+      }
+      else if (Grant.Grantee === 'Public access') {
+        model.Grantee.Type = 'Group';
+        model.Grantee.URI = 'http://acs.amazonaws.com/groups/global/AllUsers';
+      }
+      else if (Grant.Grantee === 'S3 log delivery') {
+        model.Grantee.Type = 'Group';
+        model.Grantee.URI = 'http://acs.amazonaws.com/groups/s3/LogDelivery';
+      }
+      if (Grant.ReadAcl && Grant.ReadObjects && Grant.WriteAcl && Grant.WriteObjects)
+        policy.Grants.push({ ...model, Permission: 'FULL_CONTROL' });
+      else {
+        if (Grant.ReadAcl)
+          policy.Grants.push({ ...model, Permission: 'READ_ACP' });
+        if (Grant.ReadObjects)
+          policy.Grants.push({ ...model, Permission: 'READ' });
+        if (Grant.WriteAcl)
+          policy.Grants.push({ ...model, Permission: 'WRITE_ACP' });
+        if (Grant.WriteObjects)
+          policy.Grants.push({ ...model, Permission: 'WRITE' });
+      }
+    });
+    return policy;
   }
 
 }

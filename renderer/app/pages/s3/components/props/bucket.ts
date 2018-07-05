@@ -14,13 +14,14 @@ import { PrefsStateModel } from '../../../../state/prefs';
 import { S3MetaStateModel } from '../../state/s3meta';
 import { Store } from '@ngxs/store';
 
-import { nullSafe } from 'ellib';
+import { showHideAnimation } from 'ellib';
 
 /**
  * Bucket props component
  */
 
 @Component({
+  animations: [showHideAnimation()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'elaws-bucket-props',
   templateUrl: 'bucket.html',
@@ -54,17 +55,18 @@ export class BucketPropsComponent extends LifecycleComponent {
         acceleration: this.formBuilder.group({
           Status: ''
         }),
+        acl: this.formBuilder.group({
+          Grants: this.formBuilder.array([
+            // NOTE: exactly 3 times
+            this.formBuilder.group({ Grantee: '', ReadAcl: '', ReadObjects: '', WriteAcl: '', WriteObjects: '' }),
+            this.formBuilder.group({ Grantee: '', ReadAcl: '', ReadObjects: '', WriteAcl: '', WriteObjects: '' }),
+            this.formBuilder.group({ Grantee: '', ReadAcl: '', ReadObjects: '', WriteAcl: '', WriteObjects: '' })
+          ]),
+          Owner: ''
+        }),
         encryption: this.formBuilder.group({
-          ServerSideEncryptionConfiguration: this.formBuilder.group({
-            Rules: this.formBuilder.array([
-              this.formBuilder.group({
-                ApplyServerSideEncryptionByDefault: this.formBuilder.group({
-                  SSEAlgorithm: '',
-                  KMSMasterKeyID: ''
-                })
-              })
-            ])
-          })
+          SSEAlgorithm: '',
+          KMSMasterKeyID: ''
         }),
         logging: this.formBuilder.group({
           LoggingEnabled: '',
@@ -96,16 +98,6 @@ export class BucketPropsComponent extends LifecycleComponent {
     this.drawerPanel.close();
   }
 
-  /** Enforce AWS encryption semantics in the UI */
-  enableEncryption(state: string): void {
-    this.encryptionEnabled = state;
-    const patch: any = { encryption: { ServerSideEncryptionConfiguration: { Rules: [{ ApplyServerSideEncryptionByDefault: { } } ]} } };
-    if (this.encryptionEnabled === 'AES256') {
-      patch.encryption.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.KMSMasterKeyID = null;
-      this.propsForm.patchValue({ ...patch }, { emitEvent: false });
-    }
-  }
-
   // bind OnChange handlers
 
   @OnChange('s3meta') newMetadata() {
@@ -113,11 +105,8 @@ export class BucketPropsComponent extends LifecycleComponent {
       this.metadata = <BucketMetadata>this.s3meta[this.desc.path];
       if (this.propsForm) { 
         this.propsForm.reset();
-        if (this.metadata) {
-          // UI assist
-          this.encryptionEnabled = nullSafe(this.metadata.encryption, 'ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm');
+        if (this.metadata) 
           this.propsForm.patchValue(this.metadata, { emitEvent: false });
-        }
       }
     }
   }

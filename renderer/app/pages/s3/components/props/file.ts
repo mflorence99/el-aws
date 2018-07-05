@@ -14,11 +14,14 @@ import { PrefsStateModel } from '../../../../state/prefs';
 import { S3MetaStateModel } from '../../state/s3meta';
 import { Store } from '@ngxs/store';
 
+import { showHideAnimation } from 'ellib';
+
 /**
  * File props component
  */
 
 @Component({
+  animations: [showHideAnimation()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'elaws-file-props',
   templateUrl: 'file.html',
@@ -47,6 +50,14 @@ export class FilePropsComponent extends LifecycleComponent {
       this.desc = <Descriptor>context;
       this.store.dispatch(new LoadFileMetadata({ path: this.desc.path}));
       this.propsForm = this.formBuilder.group({
+        acl: this.formBuilder.group({
+          Grants: this.formBuilder.array([
+            // NOTE: exactly twice
+            this.formBuilder.group({ Grantee: '', ReadAcl: '', ReadObjects: '', WriteAcl: '', WriteObjects: '' }),
+            this.formBuilder.group({ Grantee: '', ReadAcl: '', ReadObjects: '', WriteAcl: '', WriteObjects: '' })
+          ]),
+          Owner: ''
+        }),
         head: this.formBuilder.group({
           encryption: this.formBuilder.group({
             KMSMasterKeyID: '',

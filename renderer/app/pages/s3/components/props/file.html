@@ -41,7 +41,9 @@
         <mat-expansion-panel-header>
           <mat-panel-title>
             Encryption
-            <div class="drawer-label">
+            <div 
+            [ngClass]="{invalid: !propsForm.get('head.encryption').valid}"
+            class="drawer-label">
               {{ metadata?.encryption?.SSEAlgorithm || 'Default' }}
             </div>
           </mat-panel-title>
@@ -80,7 +82,7 @@
           <!-- NOTE: can't use *ngIf because of form validation -->
 
           <mat-form-field
-            [ngStyle]="{display: AWSKMS.checked? 'block' : 'none'}">
+            [@showHide]="AWSKMS.checked? 'shown' : 'hidden'">
             <input
               [required]="AWSKMS.checked"
               formControlName="KMSMasterKeyID"
@@ -101,7 +103,9 @@
         <mat-expansion-panel-header>
           <mat-panel-title>
             Storage Class
-            <div class="drawer-label">
+            <div 
+            [ngClass]="{invalid: !propsForm.get('head.storage').valid}"
+            class="drawer-label">
               {{ metadata?.storage || desc.storage }}
             </div>
           </mat-panel-title>
@@ -145,6 +149,82 @@
 
     </ng-container>
 
+    <!-- PERMISSIONS aka Acl -->
+
+    <mat-expansion-panel
+      formGroupName="acl">
+
+      <input
+        formControlName="Owner"
+        type="hidden">
+
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          Permissions    
+          <div 
+            [ngClass]="{invalid: !propsForm.get('acl').valid || (metadata?.acl?.Summary === 'Public')}"
+            class="drawer-label">
+            {{ metadata?.acl?.Summary || 'Private' }}
+          </div>
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <div class="group">
+
+        <div class="acl">
+
+          <div>&nbsp;</div>
+          <div style="grid-column-start: span 2">&nbsp;</div>
+          <div style="justify-self: center; grid-column-start: span 2"><b>ACL</b></div>
+
+          <div>&nbsp;</div>
+          <div><b>+R</b></div>
+          <div><b>+W</b></div>
+          <div><b>+R</b></div>
+          <div><b>+W</b></div>
+
+          <ng-container 
+            *ngFor="let Grant of metadata?.acl?.Grants; let i = index;"
+            formArrayName="Grants">
+
+            <ng-container
+              [formGroupName]="i">
+
+              <div>{{ Grant.Grantee }}</div>
+
+              <input
+                formControlName="Grantee"
+                type="hidden">
+
+              <mat-checkbox
+                formControlName="ReadObjects">
+              </mat-checkbox>
+
+
+              <mat-checkbox
+                formControlName="WriteObjects">
+              </mat-checkbox>
+
+
+              <mat-checkbox
+                formControlName="ReadAcl">
+              </mat-checkbox>
+
+
+              <mat-checkbox
+                formControlName="WriteAcl">
+              </mat-checkbox>
+
+            </ng-container>
+
+          </ng-container>
+
+        </div>
+
+      </div>
+
+    </mat-expansion-panel>
+
     <!-- TAGGING -->
 
     <mat-expansion-panel
@@ -153,7 +233,9 @@
       <mat-expansion-panel-header>
         <mat-panel-title>
           Tags
-          <div class="drawer-label">
+          <div 
+            [ngClass]="{invalid: !propsForm.get('tagging').valid}"
+            class="drawer-label">
             {{ metadata?.tagging?.TagSet?.length? (metadata.tagging.TagSet.length | i18nPlural: tagLabelMapping) : 'None' }}
           </div>
         </mat-panel-title>
