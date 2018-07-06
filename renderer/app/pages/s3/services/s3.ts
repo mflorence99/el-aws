@@ -208,6 +208,8 @@ export class S3Service {
     ];
     // now update them all in parallel
     async.parallelLimit(funcs, config.numParallel, (err, results: any) => {
+      // TODO: we'd like the watcher to see this automagically
+      this.watcher.touch(path);
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
       else {
@@ -217,8 +219,6 @@ export class S3Service {
           console.log(`%c${key} %c${JSON.stringify(metadata[key])}`, 'color: black', 'color: grey');
         });
         console.groupEnd();
-        // TODO: we'd like the watcher to see this automagically
-        this.watcher.touch(path);
         if (cb) cb();
       }
     });
@@ -241,6 +241,8 @@ export class S3Service {
     ];
     // now update them all in parallel
     async.parallelLimit(funcs, config.numParallel, (err, results: any) => {
+      // TODO: we'd like the watcher to see this automagically
+      this.watcher.touch(path);
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
       else {
@@ -250,8 +252,6 @@ export class S3Service {
           console.log(`%c${key} %c${JSON.stringify(metadata[key])}`, 'color: black', 'color: grey');
         });
         console.groupEnd();
-        // TODO: we'd like the watcher to see this automagically
-        this.watcher.touch(path);
         if (cb) cb();
       }
     });
@@ -385,25 +385,38 @@ export class S3Service {
   private putBucketAcceleration(params: any,
                                 acceleration: BucketMetadataAcceleration,
                                 cb: (err, data) => void): void {
-    if (acceleration.Status)
-      this.s3.putBucketAccelerateConfiguration({ ...params, AccelerateConfiguration: acceleration }, cb);
+    if (acceleration.Status) {
+      const config = { ...params, AccelerateConfiguration: acceleration };
+      this.s3.putBucketAccelerateConfiguration(config, (err, data) => {
+        this.trace('putBucketAccelerateConfiguration', config, err, data);
+        cb(err, data);
+      });
+    }
     else cb(null, null);
   }
 
   private putBucketAcl(params: any,
                        acl: BucketMetadataAcl,
                        cb: (err, data) => void): void {
-    const policy = this.buildPolicy(acl);
-    this.s3.putBucketAcl({ ...params, AccessControlPolicy: { ...policy } }, cb);
+    const config = { ...params, AccessControlPolicy: { ...this.buildPolicy(acl) }};
+    this.s3.putBucketAcl(config, (err, data) => {
+      this.trace('putBucketAcl', config, err, data);
+      cb(err, data);
+    });
   }
 
   private putBucketEncryption(params: any,
                               encryption: BucketMetadataEncryption,
                               cb: (err, data) => void): void {
-    if (encryption.SSEAlgorithm === 'None')
-      this.s3.deleteBucketEncryption(params, cb);
+    if (encryption.SSEAlgorithm === 'None') {
+      this.s3.deleteBucketEncryption(params, (err, data) => {
+        this.trace('deleteBucketEncryption', params, err, data);
+        cb(err, data);
+      });
+    }
     else {
       const config = { 
+        ...params,
         ServerSideEncryptionConfiguration: {
           Rules: [{
             ApplyServerSideEncryptionByDefault: {
@@ -413,50 +426,79 @@ export class S3Service {
           }]
         }
       };
-      this.s3.putBucketEncryption({ ...params, ...config }, cb);
+      this.s3.putBucketEncryption(config, (err, data) => {
+        this.trace('putBucketEncryption', config, err, data);
+        cb(err, data);
+      });
     }
   }
 
   private putBucketLogging(params: any,
                            logging: BucketMetadataLogging,
                            cb: (err, data) => void): void {
-    const status = { BucketLoggingStatus: { } };
+    const config = {
+      ...params, 
+      BucketLoggingStatus: { } 
+    };
     if (logging.LoggingEnabled === 'On') {
-      status.BucketLoggingStatus = {
+      config.BucketLoggingStatus = {
         LoggingEnabled: {
           TargetBucket: logging.TargetBucket,
           TargetPrefix: logging.TargetPrefix
         }
       };
     }
-    this.s3.putBucketLogging({ ...params, ...status }, cb);
+    this.s3.putBucketLogging(config, (err, data) => {
+      this.trace('putBucketLogging', config, err, data);
+      cb(err, data);
+    });
   }
 
   private putBucketTagging(params: any,
                            tagging: BucketMetadataTagging,
                            cb: (err, data) => void): void {
-    let func;
-    if (tagging.TagSet && (tagging.TagSet.length > 0))
-      func = this.s3.putBucketTagging.bind(null, { ...params, Tagging: tagging });
-    else func = this.s3.deleteBucketTagging.bind(null, params);
-    func(cb);
+    if (tagging.TagSet && (tagging.TagSet.length > 0)) {
+      const config = { ...params, Tagging: tagging };
+      this.s3.putBucketTagging(config, (err, data) => {
+        this.trace('putBucketTagging', config, err, data);
+        cb(err, data);
+      });
+    }
+    else {
+      this.s3.deleteBucketTagging(params, (err, data) => {
+        this.trace('deleteBucketTagging', params, err, data);
+        cb(err, data);
+      });
+    }
   }
 
   private putBucketVersioning(params: any,
                               versioning: BucketMetadataVersioning,
                               cb: (err, data) => void): void {
-    if (versioning.Status)
-      this.s3.putBucketVersioning({ ...params, VersioningConfiguration: versioning }, cb);
+    if (versioning.Status) {
+      const config = { ...params, VersioningConfiguration: versioning };
+      this.s3.putBucketVersioning(config, (err, data) => {
+        this.trace('putBucketVersioning', config, err, data);
+        cb(err, data);
+      });
+    }
     else cb(null, null);
   }
 
   private putBucketWebsite(params: any,
                            website: BucketMetadataWebsite,
                            cb: (err, data) => void): void {
-    if (website.WebsiteEnabled === 'Off')
-      this.s3.deleteBucketWebsite(params, cb);
+    if (website.WebsiteEnabled === 'Off') {
+      this.s3.deleteBucketWebsite(params, (err, data) => {
+        this.trace('deleteBucketWebsite', params, err, data);
+        cb(err, data);
+      });
+    }
     else {
-      const config = { WebsiteConfiguration: { } };
+      const config = { 
+        ...params,
+        WebsiteConfiguration: { } 
+      };
       if (website.WebsiteEnabled === 'On') {
         config.WebsiteConfiguration = {
           ErrorDocument: { Key: website.ErrorDocument },
@@ -471,54 +513,76 @@ export class S3Service {
           }
         };
       }
-      this.s3.putBucketWebsite({ ...params, ...config }, cb);
+      this.s3.putBucketWebsite(config, (err, data) => {
+        this.trace('putBucketWebsite', config, err, data);
+        cb(err, data);
+      });
     }
   }
 
   private putObjectAcl(params: any,
                        acl: FileMetadataAcl,
                        cb: (err, data) => void): void {
-    const policy = this.buildPolicy(acl);
-    this.s3.putObjectAcl({ ...params, AccessControlPolicy: { ...policy } }, cb);
+    const config = { ...params, AccessControlPolicy: { ...this.buildPolicy(acl) } };
+    this.s3.putObjectAcl(config, (err, data) => {
+      this.trace('putObjectAcl', config, err, data);
+      cb(err, data);
+    });
   }
 
   private putObjectHead(params: any,
                         path: string,
                         head: FileMetadataHead,
                         cb: (err, data) => void): void {
-    const copy: any = {
-      Bucket: params.Bucket,
-      // @see https://github.com/aws/aws-sdk-js/issues/1821
-      CopySource: encodeURIComponent(path),
-      Key: params.Key
-    };
-    // encryption changes
-    let changed = false;
-    if (head.encryption.SSEAlgorithm) {
-      changed = true;
-      copy.ServerSideEncryption = head.encryption.SSEAlgorithm;
-      if (copy.ServerSideEncryption === 'aws:kms')
-        copy.SSEKMSKeyId = head.encryption.KMSMasterKeyID;
+    if (params.VersionId)
+      cb(null, null);
+    else {
+      const copy: any = {
+        Bucket: params.Bucket,
+        // @see https://github.com/aws/aws-sdk-js/issues/1821
+        CopySource: encodeURIComponent(path),
+        Key: params.Key
+      };
+      // encryption changes
+      let changed = false;
+      if (head.encryption.SSEAlgorithm) {
+        changed = true;
+        copy.ServerSideEncryption = head.encryption.SSEAlgorithm;
+        if (copy.ServerSideEncryption === 'aws:kms')
+          copy.SSEKMSKeyId = head.encryption.KMSMasterKeyID;
+      }
+      // storage changes
+      if (head.storage.StorageClass) {
+        changed = true;
+        copy.StorageClass = head.storage.StorageClass;
+      }
+      // copy object if changed
+      if (changed) {
+        this.s3.copyObject(copy, (err, data) => {
+          this.trace('copyObject', copy, err, data);
+          cb(err, data);
+        });
+      }
+      else cb(null, null);
     }
-    // storage changes
-    if (head.storage.StorageClass) {
-      changed = true;
-      copy.StorageClass = head.storage.StorageClass;
-    }
-    // copy object if changed
-    if (changed)
-      this.s3.copyObject(copy, cb);
-    else cb(null, null);
   }
 
   private putObjectTagging(params: any,
                            tagging: FileMetadataTagging,
                            cb: (err, data) => void): void {
-    let func;
-    if (tagging.TagSet && (tagging.TagSet.length > 0))
-      func = this.s3.putObjectTagging.bind(null, { ...params, Tagging: tagging });
-    else func = this.s3.deleteObjectTagging.bind(null, params);
-    func(cb);
+    if (tagging.TagSet && (tagging.TagSet.length > 0)) {
+      const config = { ...params, Tagging: tagging };
+      this.s3.putObjectTagging(config, (err, data) => {
+        this.trace('putObjectTagging', config, err, data);
+        cb(err, data);
+      });
+    }
+    else {
+      this.s3.deleteObjectTagging(params, (err, data) => {
+        this.trace('deleteObjectTagging', params, err, data);
+        cb(err, data);
+      });
+    }
   }
 
   // helpers
@@ -591,6 +655,18 @@ export class S3Service {
       }
     });
     return policy;
+  }
+
+  private trace(op: string,
+                params: any,
+                err: any,
+                data: any): void {
+    console.group(`%c${op} %c${JSON.stringify(params)}`, 'color: #880e4f', 'color: gray');
+    if (err)
+      console.log(`%cERR %c${JSON.stringify(err)}`, 'color: red', 'color: gray');
+    if (data)
+      console.log(`%cDATA %c${JSON.stringify(data)}`, 'color: black', 'color: gray');
+    console.groupEnd();
   }
 
 }

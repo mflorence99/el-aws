@@ -1,3 +1,4 @@
+import { AlertComponent } from './alert';
 import { BarrelModule } from '../../barrel';
 import { NgModule } from '@angular/core';
 import { PrefsComponent } from './prefs';
@@ -19,6 +20,7 @@ fontAwesome.add(fab, far, fas);
  */
 
 const COMPONENTS = [
+  AlertComponent,
   PrefsComponent,
   RootCtrlComponent,
   RootPageComponent,

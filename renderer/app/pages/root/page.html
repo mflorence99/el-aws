@@ -29,6 +29,17 @@
 
   </lib-drawer-panel>
 
+  <lib-drawer-panel
+    #alertDrawer
+    position="bottom">
+
+    <elaws-alert
+      [status]="ctrl.status$ | async"
+      #alert>
+    </elaws-alert>
+
+  </lib-drawer-panel>
+
 </lib-drawer-container> 
 
 <elaws-root-ctrl
