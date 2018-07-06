@@ -9,6 +9,7 @@ import { BucketMetadataLogging } from '../state/s3meta';
 import { BucketMetadataTagging } from '../state/s3meta';
 import { BucketMetadataVersioning } from '../state/s3meta';
 import { BucketMetadataWebsite } from '../state/s3meta';
+import { CreateBucketRequest } from '../state/s3';
 import { ElectronService } from 'ngx-electron';
 import { FileMetadata } from '../state/s3meta';
 import { FileMetadataAcl } from '../state/s3meta';
@@ -58,6 +59,28 @@ export class S3Service {
   }
 
   /** Load bucket metadata */
+  createBucket(request: CreateBucketRequest,
+               cb?: () => void): void {
+    const params: S3.CreateBucketRequest = {
+      ACL: request.ACL,
+      Bucket: request.Bucket,
+      CreateBucketConfiguration: {
+        LocationConstraint: request.Region
+      }
+    };
+    // now create bucket
+    this.s3.createBucket(params, (err, data) => {
+      this.trace('createBucket', params, err, data);
+      // TODO: we'd like the watcher to see this automagically
+      this.watcher.touch(config.s3Delimiter);
+      if (err)
+        this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
+      else if (cb)
+        cb();
+    });
+  }
+
+  /** Load bucket metadata */
   loadBucketMetadata(path: string,
                      cb: (metadata: BucketMetadata) => void): void {
     const { bucket } = this.path.analyze(path);
@@ -72,13 +95,13 @@ export class S3Service {
       website: async.apply(this.getBucketWebsite.bind(this), params)
     });
     // now load them all in parallel
-    async.parallelLimit(funcs, config.numParallel, (err, results: any) => {
+    async.parallelLimit(funcs, config.numParallel, (err, data) => {
       // NOTE: we are ignoring errors and only recording metadata actually found
       // reason: a bucket with no tags for example errors on the tagging call
       // TODO: while developing, log this nicely
       console.group(`%cloadBucketMetadata('${bucket}')`, `color: #004d40`);
       const metadata = Object.keys(funcs).reduce((acc, key) => {
-        acc[key] = results[key].value || { };
+        acc[key] = data[key].value || { };
         console.log(`%c${key} %c${JSON.stringify(acc[key])}`, 'color: black', 'color: grey');
         return acc;
       }, { path } as BucketMetadata);
@@ -161,13 +184,13 @@ export class S3Service {
       tagging: async.apply(this.getObjectTagging.bind(this), params)
     });
     // now load them all in parallel
-    async.parallelLimit(funcs, config.numParallel, (err, results: any) => {
+    async.parallelLimit(funcs, config.numParallel, (err, data) => {
       // NOTE: we are ignoring errors and only recording metadata actually found
       // reason: a file with no tags for example errors on the tagging call
       // TODO: while developing, log this nicely
       console.group(`%cloadFileMetadata('${path}')`, `color: #006064`);
       const metadata = Object.keys(funcs).reduce((acc, key) => {
-        acc[key] = results[key].value || { };
+        acc[key] = data[key].value || { };
         console.log(`%c${key} %c${JSON.stringify(acc[key])}`, 'color: black', 'color: grey');
         return acc;
       }, { path } as FileMetadata);

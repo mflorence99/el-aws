@@ -2,10 +2,12 @@
   *ngIf="hydrated">
 
   <div
+    (click)="onSelect($event, desc)"
     (contextmenu)="onContextMenu($event, desc)"
     [contextMenu]="contextMenu"
     [contextMenuSubject]="desc"
-    [ngClass]="{gridlines: prefs.showGridLines}"
+    [ngClass]="{gridlines: prefs.showGridLines,
+                selected: selection.paths.includes(desc.path)}"
     class="row">
 
     <div

@@ -4,6 +4,7 @@ import { BucketPropsComponent } from './props/bucket';
 import { CellComponent } from './cell';
 import { ColumnComponent } from './column';
 import { ComponentsModule as CommonComponentsModule } from '../../../components/module';
+import { CreateBucketComponent } from './props/create';
 import { FilePropsComponent } from './props/file';
 import { NgModule } from '@angular/core';
 import { RowComponent } from './row';
@@ -18,6 +19,7 @@ const COMPONENTS = [
   BranchComponent,
   BucketPropsComponent,
   CellComponent,
+  CreateBucketComponent,
   ColumnComponent,
   FilePropsComponent,
   RowComponent,

@@ -6,6 +6,7 @@
   </elaws-header>
 
   <elaws-tree
+    (createBucket)="createBucketDrawer.open()"
     (editBucketProps)="bucketPropsDrawer.open($event)"
     (editFileProps)="filePropsDrawer.open($event)"
     [hydratorMargin]="'100px'" 
@@ -13,6 +14,7 @@
     [prefs]="ctrl.prefs$ | async"
     [s3]="ctrl.s3$ | async"
     [s3meta]="ctrl.s3meta$ | async"
+    [selection]="ctrl.selection$ | async"
     [view]="ctrl.view$ | async"
     #tree
     libHydrator>
@@ -27,6 +29,16 @@
       [s3meta]="ctrl.s3meta$ | async"
       #bucketProps>
     </elaws-bucket-props>  
+
+  </lib-drawer-panel>
+
+  <lib-drawer-panel
+    #createBucketDrawer
+    position="left"> 
+
+    <elaws-create-bucket
+      #createBucket>
+    </elaws-create-bucket>  
 
   </lib-drawer-panel>
 
@@ -58,6 +70,7 @@
 <elaws-s3-ctrl
   (openView)="viewDrawer.open()"
   [bucketPropsForm]="bucketProps.propsForm?.valueChanges | async"
+  [createBucketForm]="createBucket.createForm?.valueChanges | async"
   [filePropsForm]="fileProps.propsForm?.valueChanges | async"
   [viewForm]="view.viewForm.valueChanges | async"
   #ctrl>

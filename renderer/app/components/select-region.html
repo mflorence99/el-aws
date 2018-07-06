@@ -1,0 +1,26 @@
+<div
+  [formGroup]="selectRegionForm">
+
+  <mat-form-field>
+
+    <mat-select
+      [libRxfDisabled]="disabled"
+      [libRxfRequired]="required"
+      [placeholder]="placeholder"
+      formControlName="selectRegion">
+
+      <ng-container
+        *ngFor="let region of regions">
+
+        <mat-option
+          [value]="region">
+          {{ region }}
+        </mat-option>
+
+      </ng-container>
+
+    </mat-select>
+
+  </mat-form-field>
+
+</div>

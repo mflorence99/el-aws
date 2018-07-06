@@ -15,6 +15,7 @@ import { OnChange } from 'ellib';
 import { Output } from '@angular/core';
 import { PrefsStateModel } from '../../state/prefs';
 import { S3MetaStateModel } from './state/s3meta';
+import { S3SelectionStateModel } from './state/s3selection';
 import { S3StateModel } from './state/s3';
 import { S3ViewStateModel } from './state/s3view';
 import { Store } from '@ngxs/store';
@@ -39,10 +40,12 @@ import { debounce } from 'ellib';
 export class TreeComponent extends LifecycleComponent {
 
   @Input() prefs = {} as PrefsStateModel;
-  @Input() view = {} as S3ViewStateModel;
   @Input() s3 = {} as S3StateModel;
   @Input() s3meta = {} as S3MetaStateModel;
+  @Input() selection = {} as S3SelectionStateModel;
+  @Input() view = {} as S3ViewStateModel;
 
+  @Output() createBucket = new EventEmitter<void>();
   @Output() editBucketProps = new EventEmitter<Descriptor>();
   @Output() editFileProps = new EventEmitter<Descriptor>();
 
@@ -135,17 +138,28 @@ export class TreeComponent extends LifecycleComponent {
             command: string): void {
     const desc = event.item || <Descriptor>{ isDirectory: true, path: this.view.paths[0] };
     switch (command) {
+
+      // these commands are singular
+
+      case 'create':
+        this.createBucket.emit();
+        break;
+
       case 'properties':
         if (desc.isBucket)
           this.editBucketProps.emit(desc);
         else if (desc.isFile || desc.isFileVersion)
           this.editFileProps.emit(desc);
         break;
+
       case 'url':
         const url = `${this.prefs.endpoints.s3}${config.s3Delimiter}${desc.path}`;
         this.electron.clipboard.writeText(url);
         this.store.dispatch(new Message({ text: `${url} copied to clipboard` }));
         break;
+
+      // these commands affect the entire selection
+
     }
   }
 

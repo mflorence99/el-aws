@@ -10,6 +10,7 @@
     [path]="view.paths[0]"
     [prefs]="prefs"
     [s3]="s3"
+    [selection]="selection"
     [view]="view">
   </elaws-branch>
 
@@ -28,6 +29,12 @@
 </main>
 
 <context-menu>
+
+  <ng-template
+    contextMenuItem
+    (execute)="onExecute($event, 'create')">
+    <div>Create bucket...</div>
+  </ng-template>
 
   <ng-template
     contextMenuItem

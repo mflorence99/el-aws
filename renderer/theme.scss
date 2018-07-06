@@ -43,4 +43,5 @@ $custom-theme: mat-dark-theme($custom-primary, $custom-accent, $custom-warn);
 body {
   background-color: var(--background-color);
   color: var(--text-color);
+  user-select: none;
 }

@@ -1,13 +1,15 @@
 import { BarrelModule } from '../barrel';
 import { KeyValueComponent } from './key-value';
 import { NgModule } from '@angular/core';
+import { SelectRegionComponent } from './select-region';
 
 /**
  * All our components
  */
 
 const COMPONENTS = [
-  KeyValueComponent
+  KeyValueComponent,
+  SelectRegionComponent
 ];
 
 @NgModule({

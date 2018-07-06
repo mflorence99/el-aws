@@ -26,6 +26,11 @@ export class BucketsLoaded {
   constructor(public readonly payload: { path: string, descs: Descriptor[] }) { }
 }
 
+export class CreateBucket {
+  static readonly type = '[S3] create bucket';
+  constructor(public readonly payload: { request: CreateBucketRequest }) { }
+}
+
 export class DirectoryLoaded {
   static readonly type = '[S3] directory loaded';
   constructor(public readonly payload: { path: string, descs: Descriptor[] }) { }
@@ -49,6 +54,13 @@ export class LoadDirectory {
 export class LoadFileVersions {
   static readonly type = '[S3] load file versions';
   constructor(public readonly payload: { path: string, force?: boolean }) { }
+}
+
+export interface CreateBucketRequest {
+  ACL: S3.BucketCannedACL;
+  Bucket: S3.BucketName;
+  Region: S3.BucketLocationConstraint;
+  submitted?: boolean;
 }
 
 export interface Descriptor {
@@ -99,6 +111,18 @@ export interface S3StateModel {
                 { payload }: BucketsLoaded) {
     const { path, descs } = payload;
     patchState({ [path]: descs });
+  }
+
+  @Action(CreateBucket)
+  createBucket({ dispatch }: StateContext<S3StateModel>,
+               { payload }: CreateBucket) {
+    const { request } = payload;
+    dispatch(new Message({ text: `Creating bucket ${request.Bucket}` }));
+    this.s3Svc.createBucket(request, () => {
+      this.zone.run(() => {
+        dispatch(new Message({ text: `Bucket ${request.Bucket} created` }));
+      });
+    });
   }
 
   @Action(DirectoryLoaded)

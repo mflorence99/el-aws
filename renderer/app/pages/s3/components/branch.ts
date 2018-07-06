@@ -6,12 +6,12 @@ import { Dictionary } from '../services/dictionary';
 import { Input } from '@angular/core';
 import { OnInit } from '@angular/core';
 import { PrefsStateModel } from '../../../state/prefs';
+import { S3SelectionStateModel } from '../state/s3selection';
 import { S3StateModel } from '../state/s3';
 import { S3ViewStateModel } from '../state/s3view';
 import { Store } from '@ngxs/store';
 import { TreeComponent } from '../tree';
 import { UpdatePathLRU } from '../state/s3view';
-
 
 /**
  * S3 branch component
@@ -33,6 +33,7 @@ export class BranchComponent implements OnInit {
   @Input() level = 0;
   @Input() path: string;
   @Input() prefs = {} as PrefsStateModel;
+  @Input() selection = {} as S3SelectionStateModel;
   @Input() view = {} as S3ViewStateModel;
 
   /** ctor */

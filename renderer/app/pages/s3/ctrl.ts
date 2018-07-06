@@ -4,6 +4,8 @@ import { BucketMetadata } from './state/s3meta';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { ClearPaths } from './state/s3view';
 import { Component } from '@angular/core';
+import { CreateBucket } from './state/s3';
+import { CreateBucketRequest } from './state/s3';
 import { EventEmitter } from '@angular/core';
 import { FileMetadata } from './state/s3meta';
 import { Input } from '@angular/core';
@@ -17,6 +19,8 @@ import { PrefsStateModel } from '../../state/prefs';
 import { Reset } from '../../state/window';
 import { S3MetaState } from './state/s3meta';
 import { S3MetaStateModel } from './state/s3meta';
+import { S3SelectionState } from './state/s3selection';
+import { S3SelectionStateModel } from './state/s3selection';
 import { S3State } from './state/s3';
 import { S3StateModel } from './state/s3';
 import { S3ViewState } from './state/s3view';
@@ -48,6 +52,7 @@ import { ofAction } from '@ngxs/store';
 export class S3CtrlComponent extends LifecycleComponent {
 
   @Input() bucketPropsForm = { } as BucketMetadata;
+  @Input() createBucketForm = { } as CreateBucketRequest;
   @Input() filePropsForm = { } as FileMetadata;
   @Input() viewForm = { } as S3ViewStateModel;
 
@@ -57,6 +62,7 @@ export class S3CtrlComponent extends LifecycleComponent {
   @Select(PrefsState) prefs$: Observable<PrefsStateModel>;
   @Select(S3State) s3$: Observable<S3StateModel>;
   @Select(S3MetaState) s3meta$: Observable<S3MetaStateModel>;
+  @Select(S3SelectionState) selection$: Observable<S3SelectionStateModel>;
   @Select(S3ViewState) view$: Observable<S3ViewStateModel>;
 
   subToReset: Subscription;
@@ -89,6 +95,17 @@ export class S3CtrlComponent extends LifecycleComponent {
       nextTick(() => {
         const path = this.bucketPropsForm.path;
         this.store.dispatch(new UpdateBucketMetadata({ path, metadata: this.bucketPropsForm }));
+      });
+    }
+  }
+
+  @OnChange('createBucketForm') createBucket(): void {
+    if (this.createBucketForm && this.createBucketForm.submitted) {
+      // TODO: why do we need this in Electron? and only running live?
+      // at worst, running in NgZone should work -- but otherwise a DOM
+      // event is necessary to force change detection
+      nextTick(() => {
+        this.store.dispatch(new CreateBucket({ request: this.createBucketForm }));
       });
     }
   }

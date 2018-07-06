@@ -53,6 +53,10 @@ div.drop-target {
     background-color: var(--mat-grey-800) !important;
   }
 
+  &.selected {
+    background-color: var(--mat-blue-grey-800);
+  }
+
 }
 
 .wrapper {

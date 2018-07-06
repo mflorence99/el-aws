@@ -1,0 +1,67 @@
+<h3 class="drawer-header">
+
+  <div class="icon">
+
+    <fa-icon
+      [icon]="['fab', 'bitbucket']"
+      style="color: var(--mat-brown-400)"
+      size="lg">
+    </fa-icon>
+
+  </div>
+
+  <div class="title">
+    Create Bucket
+  </div>
+
+</h3>
+
+<form
+  (submit)="close()"
+  [formGroup]="createForm"
+  [libRxfSubmit]="createForm"
+  novalidate>
+
+  <div class="group">
+              
+    <mat-form-field>
+      <input 
+        [required]="true" 
+        formControlName="Bucket"
+        placeholder="Enter bucket name"
+        matInput
+        type="text">
+    </mat-form-field>
+
+    <elaws-select-region
+      [required]="true"
+      formControlName="Region"
+      placeholder="Select region">
+    </elaws-select-region>
+
+  </div>
+
+  <div class="okAndCancel">
+
+    <a
+      (click)="close()"
+      mat-button>
+      Cancel
+    </a>
+
+    <button
+      [disabled]="createForm.invalid"
+      color="primary"
+      mat-raised-button
+      type="submit">
+      OK
+    </button>
+
+    <mat-spinner
+      *ngIf="metadata?.loading"
+      diameter="24">
+    </mat-spinner>
+
+  </div>
+
+</form>

@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy } from '@angular/core';
 import { Component } from '@angular/core';
 import { ControlValueAccessor } from '@angular/forms';
-import { Descriptor } from '../state/s3';
 import { ElementRef } from '@angular/core';
 import { FocusMonitor } from '@angular/cdk/a11y';
 import { FormBuilder } from '@angular/forms';
@@ -10,22 +9,19 @@ import { HostBinding } from '@angular/core';
 import { Input } from '@angular/core';
 import { MatFormFieldControl } from '@angular/material';
 import { NgControl } from '@angular/forms';
-import { Observable } from 'rxjs/Observable';
 import { OnDestroy } from '@angular/core';
 import { Optional } from '@angular/core';
-import { S3State } from '../state/s3';
-import { Select } from '@ngxs/store';
 import { Self } from '@angular/core';
 import { Subject } from 'rxjs';
 
 import { coerceBooleanProperty } from '@angular/cdk/coercion';
-import { config } from '../../../config';
+import { config } from '../config';
 import { debounceTime } from 'rxjs/operators';
 import { filter } from 'rxjs/operators';
 import { tap } from 'rxjs/operators';
 
 /**
- * Use <mat-select> to pick a bucket
+ * Use <mat-select> to pick a region
  *
  * NOTE: quite complicated to follow Angular Material custom control spec
  *
@@ -34,29 +30,29 @@ import { tap } from 'rxjs/operators';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'elaws-select-bucket',
-  templateUrl: 'select-bucket.html',
-  styleUrls: ['select-bucket.scss']
+  selector: 'elaws-select-region',
+  templateUrl: 'select-region.html',
+  styleUrls: ['select-region.scss']
 })
 
-export class SelectBucketComponent implements ControlValueAccessor,
-                                              MatFormFieldControl<string>,
-                                              OnDestroy {
+export class SelectRegionComponent implements ControlValueAccessor,
+                                                MatFormFieldControl<string>,
+                                                OnDestroy {
 
   static nextID = 0;
 
   @HostBinding('attr.aria-describedby') describedBy = '';
-  @HostBinding() id = `elaws-select-bucket-${SelectBucketComponent.nextID++}`;
+  @HostBinding() id = `elaws-select-region-${SelectRegionComponent.nextID++}`;
 
-  @Select(S3State.getBuckets) buckets$: Observable<Descriptor[]>;
+  regions = Object.keys(config.regions);
 
   // @see MatFormFieldControl
-  controlType = 'elaws-select-bucket';
+  controlType = 'elaws-select-region';
   focused = false;
   shouldLabelFloat = false;
   stateChanges = new Subject<void>();
 
-  selectBucketForm: FormGroup;
+  selectRegionForm: FormGroup;
 
   // disabled accessor / mutator
 
@@ -72,13 +68,13 @@ export class SelectBucketComponent implements ControlValueAccessor,
   // empty accessor
 
   get empty(): boolean {
-    return !this.selectBucketForm.value.selectBucket;
+    return !this.selectRegionForm.value.selectRegion;
   }
 
   // errorState accessor
 
   get errorState(): boolean {
-    return this.selectBucketForm.invalid;
+    return this.selectRegionForm.invalid;
   }
 
   // placeholder accessor / mutator
@@ -106,11 +102,11 @@ export class SelectBucketComponent implements ControlValueAccessor,
   // value accessor / mutator
 
   @Input() get value(): string {
-    return this.selectBucketForm.value.selectBucket;
+    return this.selectRegionForm.value.selectRegion;
   }
 
   set value(value: string) {
-    this.selectBucketForm.setValue({ selectBucket: value });
+    this.selectRegionForm.setValue({ selectRegion: value });
     this.stateChanges.next();
   }
 
@@ -125,13 +121,13 @@ export class SelectBucketComponent implements ControlValueAccessor,
               private focusMonitor: FocusMonitor,
               private formBuilder: FormBuilder,
               @Optional() @Self() public ngControl: NgControl) {
-    this.selectBucketForm = this.formBuilder.group({
-      selectBucket: ''
+    this.selectRegionForm = this.formBuilder.group({
+      selectRegion: ''
     });
     if (this.ngControl != null)
       this.ngControl.valueAccessor = this;
     // monitor for value
-    this.selectBucketForm.valueChanges
+    this.selectRegionForm.valueChanges
       .pipe(
         tap(values => {
           if (this.errorState)
