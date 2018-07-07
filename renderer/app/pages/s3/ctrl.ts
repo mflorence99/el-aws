@@ -33,6 +33,7 @@ import { UpdateBucketMetadata } from './state/s3meta';
 import { UpdateFileMetadata } from './state/s3meta';
 import { UpdateVisibility } from './state/s3view';
 import { ViewVisibility } from './state/s3view';
+import { WatcherService } from './services/watcher';
 
 import { nextTick } from 'ellib';
 import { ofAction } from '@ngxs/store';
@@ -70,7 +71,8 @@ export class S3CtrlComponent extends LifecycleComponent {
 
   /** ctor */
   constructor(private actions$: Actions,
-              private store: Store) {
+              private store: Store,
+              private watcher: WatcherService) {
     super();
     // listen for open prefs
     this.subToShowPagePrefs = this.actions$.pipe(ofAction(ShowPagePrefs))
@@ -82,7 +84,10 @@ export class S3CtrlComponent extends LifecycleComponent {
     // TODO: expire here doesn't work because it's ALWAYS 15 mins between sessions
     // this.store.dispatch(new ExpirePaths());
     const paths = this.store.selectSnapshot(S3ViewState.getPaths);
-    paths.forEach(path => this.store.dispatch(new LoadDirectory({ path })));
+    paths.forEach(path => {
+      this.watcher.watch(path);
+      this.store.dispatch(new LoadDirectory({ path }));
+    });
   }
 
   // bind OnChange handlers

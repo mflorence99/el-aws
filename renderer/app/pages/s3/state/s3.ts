@@ -6,6 +6,7 @@ import { NgxsOnInit } from '@ngxs/store';
 import { NgZone } from '@angular/core';
 import { Observable } from 'rxjs';
 import { PathService } from '../services/path';
+import { Progress } from '../../../state/status';
 import { S3ColorState } from '../state/s3color';
 import { S3ColorStateModel } from '../state/s3color';
 import { S3Service } from '../services/s3';
@@ -18,6 +19,7 @@ import { Store } from '@ngxs/store';
 import { WatcherService } from '../services/watcher';
 
 import { config } from '../../../config';
+import { pluralize } from 'ellib';
 
 /** NOTE: actions must come first because of AST */
 
@@ -29,6 +31,16 @@ export class BucketsLoaded {
 export class CreateBucket {
   static readonly type = '[S3] create bucket';
   constructor(public readonly payload: { request: CreateBucketRequest }) { }
+}
+
+export class DeleteBucket {
+  static readonly type = '[S3] delete bucket';
+  constructor(public readonly payload: { path: string }) { }
+}
+
+export class DeleteObjects {
+  static readonly type = '[S3] delete objects';
+  constructor(public readonly payload: { paths: string[] }) { }
 }
 
 export class DirectoryLoaded {
@@ -117,10 +129,45 @@ export interface S3StateModel {
   createBucket({ dispatch }: StateContext<S3StateModel>,
                { payload }: CreateBucket) {
     const { request } = payload;
-    dispatch(new Message({ text: `Creating bucket ${request.Bucket}` }));
+    dispatch(new Message({ text: `Creating bucket ${request.Bucket} ...` }));
     this.s3Svc.createBucket(request, () => {
       this.zone.run(() => {
         dispatch(new Message({ text: `Bucket ${request.Bucket} created` }));
+      });
+    });
+  }
+
+  @Action(DeleteBucket)
+  deleteBucket({ dispatch }: StateContext<S3StateModel>,
+               { payload }: DeleteBucket) {
+    const { path } = payload;
+    dispatch(new Message({ text: `Deleting bucket ${path} ...` }));
+    this.s3Svc.deleteBucket(path, () => {
+      this.zone.run(() => {
+        dispatch(new Message({ text: `Deleted bucket ${path}` }));
+      });
+    });
+  }
+
+  @Action(DeleteObjects)
+  deleteObjects({ dispatch }: StateContext<S3StateModel>,
+                { payload }: DeleteObjects) {
+    const { paths } = payload;
+    dispatch(new Message({ text: `Deleting objects ...` }));
+    dispatch(new Progress({ state: 'running' }));
+    this.s3Svc.deleteObjects(paths, () => {
+      this.zone.run(() => {
+        let text = '';
+        if (paths.length === 1)
+          text = `${paths[0]} deleted`;
+        else if (paths.length > 1) {
+          const others = pluralize(paths.length, {
+            '=1': 'one other', 'other': '# others'
+          });
+          text = `${paths[0]} and ${others} selected`;
+        }
+        dispatch(new Message({ text }));
+        dispatch(new Progress({ state: 'completed' }));
       });
     });
   }
@@ -234,8 +281,10 @@ export interface S3StateModel {
   ngxsOnInit({ dispatch, getState }: StateContext<S3StateModel>) {
     this.s3color$.subscribe((s3color: S3ColorStateModel) => this.s3color = s3color);
     this.watcher.stream$.subscribe((path: string) => {
-      const { directory, isDirectory, isFile } = this.path.analyze(path);
-      if (isDirectory)
+      const { directory, isDirectory, isFile, isRoot } = this.path.analyze(path);
+      if (isRoot)
+        dispatch(new LoadDirectory({ path: config.s3Delimiter, force: true }));
+      else if (isDirectory)
         dispatch(new LoadDirectory({ path, force: true }));
       else if (isFile) {
         dispatch(new LoadDirectory({ path: directory, force: true }));

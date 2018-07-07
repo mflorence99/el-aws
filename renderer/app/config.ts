@@ -29,6 +29,8 @@ export class Config {
 
   resetDelay: 1500;
 
+  // @see https://stackoverflow.com/questions/50480924/regex-for-s3-bucket-name
+  s3BucketValidationPattern = /(?=^.{3,63}$)(?!^(\d+\.)+\d+$)(^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)*([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$)/;
   s3Delimiter = '/';
   s3MaxKeys = 100;
   s3PathPurgeAge = 15 * 60 * 1000;
@@ -201,6 +203,8 @@ export class Config {
     '.npmrc': 'fab node-js',
     'dockerfile': 'fab docker',
   };
+
+  s3WatcherThrottle = 100;
 
   setBoundsThrottle = 250;
 

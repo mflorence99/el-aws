@@ -3,6 +3,8 @@ import { ChangeDetectionStrategy } from '@angular/core';
 import { ChangeDetectorRef } from '@angular/core';
 import { Component } from '@angular/core';
 import { ContextMenuComponent } from 'ngx-contextmenu';
+import { DeleteBucket } from './state/s3';
+import { DeleteObjects } from './state/s3';
 import { Descriptor } from './state/s3';
 import { Dictionary } from './services/dictionary';
 import { DictionaryService } from './services/dictionary';
@@ -14,6 +16,8 @@ import { Message } from '../../state/status';
 import { OnChange } from 'ellib';
 import { Output } from '@angular/core';
 import { PrefsStateModel } from '../../state/prefs';
+import { RemovePath } from './state/s3view';
+import { RemovePaths } from './state/s3view';
 import { S3MetaStateModel } from './state/s3meta';
 import { S3SelectionStateModel } from './state/s3selection';
 import { S3StateModel } from './state/s3';
@@ -131,6 +135,11 @@ export class TreeComponent extends LifecycleComponent {
     return desc && desc.isFileVersion;
   }
 
+  /** Is context menu bound to an object? */
+  isObject(desc: Descriptor): boolean {
+    return desc && (desc.isFile || desc.isFileVersion);
+  }
+
   // event handlers
 
   onExecute(event: {event?: MouseEvent,
@@ -143,6 +152,11 @@ export class TreeComponent extends LifecycleComponent {
 
       case 'create':
         this.createBucket.emit();
+        break;
+
+      case 'delete-bucket':
+        this.store.dispatch(new DeleteBucket({ path: desc.path }));
+        this.store.dispatch(new RemovePath({ path: desc.path }));
         break;
 
       case 'properties':
@@ -159,6 +173,11 @@ export class TreeComponent extends LifecycleComponent {
         break;
 
       // these commands affect the entire selection
+
+      case 'delete-objects':
+        this.store.dispatch(new DeleteObjects({ paths: this.selection.paths }));
+        this.store.dispatch(new RemovePaths({ paths: this.selection.paths }));
+        break;
 
     }
   }

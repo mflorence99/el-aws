@@ -1,5 +1,6 @@
 import { AlertComponent } from './alert';
 import { BarrelModule } from '../../barrel';
+import { ComponentsModule } from '../../components/module';
 import { NgModule } from '@angular/core';
 import { PrefsComponent } from './prefs';
 import { RootCtrlComponent } from './ctrl';
@@ -30,7 +31,8 @@ const COMPONENTS = [
 ];
 
 const MODULES = [
-  BarrelModule
+  BarrelModule,
+  ComponentsModule
 ];
 
 @NgModule({

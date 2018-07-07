@@ -37,6 +37,7 @@
     position="left"> 
 
     <elaws-create-bucket
+      [prefs]="ctrl.prefs$ | async"
       #createBucket>
     </elaws-create-bucket>  
 

@@ -33,32 +33,41 @@
       </mat-expansion-panel-header>
 
       <div 
-        class="group"
-        formGroupName="endpoints">
+        class="group">
+
+        <ng-container
+          formGroupName="endpoints">
         
-        <mat-form-field>
-          <input
-            formControlName="ddb"
-            matInput
-            placeholder="DDB endpoint"
-            type="text">
-        </mat-form-field>
-        
-        <mat-form-field>
-          <input
-            formControlName="ec2"
-            matInput
-            placeholder="EC2 endpoint"
-            type="text">
-        </mat-form-field>
-        
-        <mat-form-field>
-          <input
-            formControlName="s3"
-            matInput
-            placeholder="S3 endpoint"
-            type="text">
-        </mat-form-field>
+          <mat-form-field>
+            <input
+              formControlName="ddb"
+              matInput
+              placeholder="DDB endpoint"
+              type="text">
+          </mat-form-field>
+          
+          <mat-form-field>
+            <input
+              formControlName="ec2"
+              matInput
+              placeholder="EC2 endpoint"
+              type="text">
+          </mat-form-field>
+          
+          <mat-form-field>
+            <input
+              formControlName="s3"
+              matInput
+              placeholder="S3 endpoint"
+              type="text">
+          </mat-form-field>
+
+        </ng-container>
+
+        <elaws-select-region
+          formControlName="region"
+          placeholder="Default region">
+        </elaws-select-region>
 
       </div>
 

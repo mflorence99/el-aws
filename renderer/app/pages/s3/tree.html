@@ -38,9 +38,33 @@
 
   <ng-template
     contextMenuItem
+    (execute)="onExecute($event, 'delete-bucket')"
+    [enabled]="isBucket.bind(this)">
+    <div>Delete bucket</div>
+  </ng-template>
+
+  <ng-template
+    contextMenuItem
+    (execute)="onExecute($event, 'delete-objects')"
+    [enabled]="isObject.bind(this)">
+    <div>Delete object(s)</div>
+  </ng-template>
+
+  <ng-template
+    contextMenuItem
+    divider="true">
+  </ng-template>
+
+  <ng-template
+    contextMenuItem
     (execute)="onExecute($event, 'properties')"
     [enabled]="hasProperties.bind(this)">
     <div>Properties...</div>
+  </ng-template>
+
+  <ng-template
+    contextMenuItem
+    divider="true">
   </ng-template>
 
   <ng-template

@@ -26,7 +26,6 @@
               
     <mat-form-field>
       <input 
-        [required]="true" 
         formControlName="Bucket"
         placeholder="Enter bucket name"
         matInput
@@ -34,10 +33,36 @@
     </mat-form-field>
 
     <elaws-select-region
-      [required]="true"
       formControlName="Region"
       placeholder="Select region">
     </elaws-select-region>
+
+    <mat-radio-group
+      class="group"
+      formControlName="ACL">
+
+      <div>Permissions</div>
+
+      <div class="drawer-label">
+        Select a canned ACL. Settings can be changed later through the Properties menu.
+      </div>
+
+      <mat-radio-button 
+        value="private">
+        Private
+      </mat-radio-button>
+
+      <mat-radio-button 
+        value="public-read">
+        Public (read only)
+      </mat-radio-button>
+
+      <mat-radio-button 
+        value="public-read-write">
+        Public (read/write)
+      </mat-radio-button>
+
+    </mat-radio-group>
 
   </div>
 

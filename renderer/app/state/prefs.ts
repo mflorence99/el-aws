@@ -24,6 +24,7 @@ export interface PrefsStateModel {
     s3: string;
   };
   quantityFormat?: QuantityFmt;
+  region: string;
   showGridLines?: boolean;
   sortDirectories?: SortOrder;
   submitted?: boolean;
@@ -41,6 +42,7 @@ export interface PrefsStateModel {
       s3: ''
     },
     quantityFormat: 'bytes',
+    region: 'us-east-1',
     showGridLines: true,
     sortDirectories: 'first',
     timeFormat: 'none'

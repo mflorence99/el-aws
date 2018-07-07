@@ -1,4 +1,5 @@
 import { BarrelModule } from '../../barrel';
+import { ComponentsModule } from '../../components/module';
 import { NgModule } from '@angular/core';
 import { SetupComponent } from './setup';
 import { SetupCtrlComponent } from './ctrl';
@@ -15,7 +16,8 @@ const COMPONENTS = [
 ];
 
 const MODULES = [
-  BarrelModule
+  BarrelModule,
+  ComponentsModule
 ];
 
 @NgModule({

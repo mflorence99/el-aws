@@ -15,6 +15,7 @@ export interface PathInfo {
   isFile: boolean;
   isFileVersion: boolean;
   isRoot: boolean;
+  parent: string;
   prefix: string;
   version: string;
 }
@@ -66,13 +67,20 @@ export class PathService {
           info.directory = path;
           if (!info.prefix) 
             info.isBucket = true;
+          else {
+            ix = path.substring(0, path.length - 1).lastIndexOf(config.s3Delimiter);
+            if (ix === -1)
+              info.parent = info.bucket + config.s3Delimiter;
+            else info.parent = path.substring(0, ix + 1);
+          }
         }
-        // or a directory and a file
+        // or a file
         else {
           info.isFile = true;
           ix = path.lastIndexOf(config.s3Delimiter);
           info.directory = path.substring(0, ix + 1);
           info.filename = path.substring(ix + 1);
+          info.parent = info.isFileVersion? path : info.directory;
         }
       }
     }

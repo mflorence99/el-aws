@@ -19,6 +19,7 @@ import { FileMetadataTagging } from '../state/s3meta';
 import { Injectable } from '@angular/core';
 import { Message } from '../../../state/status';
 import { Observable } from 'rxjs';
+import { PathInfo } from '../services/path';
 import { PathService } from '../services/path';
 import { PrefsState } from '../../../state/prefs';
 import { PrefsStateModel } from '../../../state/prefs';
@@ -53,26 +54,79 @@ export class S3Service {
     this.prefs$.subscribe((prefs: PrefsStateModel) => {
       this.s3 = new this.s3_({ 
         endpoint: prefs.endpoints.s3,
+        region: prefs.region,
         s3ForcePathStyle: true
       });
     });
   }
 
-  /** Load bucket metadata */
+  /** Create a new bucket */
   createBucket(request: CreateBucketRequest,
                cb?: () => void): void {
     const params: S3.CreateBucketRequest = {
       ACL: request.ACL,
-      Bucket: request.Bucket,
-      CreateBucketConfiguration: {
-        LocationConstraint: request.Region
-      }
+      Bucket: request.Bucket
     };
+    // NOTE: us-east-1 must be coded as null for historical reasons
+    if (request.Region !== 'us-east-1') {
+      params.CreateBucketConfiguration = {
+        LocationConstraint: request.Region
+      };
+    }
     // now create bucket
     this.s3.createBucket(params, (err, data) => {
       this.trace('createBucket', params, err, data);
       // TODO: we'd like the watcher to see this automagically
       this.watcher.touch(config.s3Delimiter);
+      if (err)
+        this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
+      else if (cb)
+        cb();
+    });
+  }
+
+  /** Delete a bucket (which must be empty!) */
+  deleteBucket(path: string,
+               cb?: () => void): void {
+    const { bucket } = this.path.analyze(path);
+    const params: S3.DeleteBucketRequest = { Bucket: bucket };
+    // now delete bucket
+    this.s3.deleteBucket(params, (err, data) => {
+      this.trace('deleteBucket', params, err, data);
+      // TODO: we'd like the watcher to see this automagically
+      this.watcher.touch(config.s3Delimiter);
+      if (err)
+        this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
+      else if (cb)
+        cb();
+    });
+  }
+
+  /** Delete a set of objects */
+  deleteObjects(paths: string[],
+                cb?: () => void): void {
+    const funcs = paths
+      .map(path => this.path.analyze(path))
+      .filter((info: PathInfo) => info.isFile)
+      .map((info: PathInfo) => {
+        return {
+          Bucket: info.bucket,
+          Key: info.prefix,
+          VersionId: info.version
+        } as S3.DeleteObjectRequest;
+      })
+      .reduce((acc, params) => {
+        acc.push(async.apply(this.s3.deleteObject, params));
+        return acc;
+      }, []);
+    // now delete them all in parallel
+    async.parallelLimit(funcs, config.numParallel, (err, data) => {
+      this.trace('deleteObjects', paths, err, data);
+      // TODO: we'd like the watcher to see this automagically
+      paths.forEach(path => {
+        const { parent } = this.path.analyze(path);
+        this.watcher.touch(parent);
+      });
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
       else if (cb)
@@ -119,7 +173,7 @@ export class S3Service {
         this.store.dispatch(new Message({ level: 'error', text: err.toString()}));
       else {
         const funcs = data.Buckets.map(bucket => {
-          const params = { Bucket: bucket.Name };
+          const params: S3.GetBucketLocationRequest = { Bucket: bucket.Name };
           return async.apply(this.s3.getBucketLocation, params);
         });
         // now run them all in parallel
@@ -153,7 +207,7 @@ export class S3Service {
         Delimiter: config.s3Delimiter,
         MaxKeys: config.s3MaxKeys,
         Prefix: prefix
-      }),
+      } as S3.ListObjectsV2Request),
       versioning: async.apply(this.s3.getBucketVersioning, { Bucket: bucket })
     };
     // now load them all in parallel
@@ -203,7 +257,7 @@ export class S3Service {
   loadFileVersions(path: string,
                    cb: (versions: S3.ObjectVersionList) => void): void {
     const { bucket, prefix } = this.path.analyze(path);
-    const params = {
+    const params: S3.ListObjectVersionsRequest = {
       Bucket: bucket,
       Prefix: prefix
     };

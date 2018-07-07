@@ -30,6 +30,11 @@ export class RemovePath {
   constructor(public readonly payload: { path: string }) { }
 }
 
+export class RemovePaths {
+  static readonly type = '[S3View] remove paths';
+  constructor(public readonly payload: { paths: string[] }) { }
+}
+
 export class UpdatePathLRU {
   static readonly type = '[S3View] update path LRU';
   constructor(public readonly payload: { path: string }) { }
@@ -131,28 +136,37 @@ export interface ViewWidths {
     const state = getState();
     const paths = [...Object.keys(state.lru)];
     const now = Date.now();
-    paths.forEach(path => {
+    const expired = paths.filter(path => {
       const ts = state.lru[path];
-      if (ts < (now - config.s3PathPurgeAge))
-        dispatch(new RemovePath({ path }));
+      return (ts < (now - config.s3PathPurgeAge));
     });
+    dispatch(new RemovePaths({ paths: expired }));
   }
 
   @Action(RemovePath)
-  removePath({ getState, patchState }: StateContext<S3ViewStateModel>,
+  removePath({ dispatch }: StateContext<S3ViewStateModel>,
              { payload }: RemovePath) {
     const { path } = payload;
+    dispatch(new RemovePaths({ paths: [path] }));
+  }
+
+  @Action(RemovePaths)
+  removePaths({ getState, patchState }: StateContext<S3ViewStateModel>,
+              { payload }: RemovePaths) {
+    const { paths } = payload;
     const state = getState();
-    const ix = state.paths.indexOf(path);
-    if (ix !== -1) {
-      const paths = state.paths.slice(0);
-      paths.splice(ix, 1);
-      patchState({ paths });
-      const { [path]: gonzo, ...lru } = state.lru;
-      patchState({ lru });
-      // stop watching for changes
-      this.watcher.unwatch(path);
-    }
+    paths.forEach(path => {
+      const ix = state.paths.indexOf(path);
+      if (ix !== -1) {
+        const paths = state.paths.slice(0);
+        paths.splice(ix, 1);
+        patchState({ paths });
+        const { [path]: gonzo, ...lru } = state.lru;
+        patchState({ lru });
+        // stop watching for changes
+        this.watcher.unwatch(path);
+      }
+    });
   }
 
   @Action(UpdatePathLRU)

@@ -1,6 +1,11 @@
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 import { Subject } from 'rxjs';
 
+import { concatMap } from 'rxjs/operators';
+import { config } from '../../../config';
+import { distinctUntilChanged } from 'rxjs/operators';
+import { windowTime } from 'rxjs/operators';
 /**
  * Watcher service
  * 
@@ -10,14 +15,27 @@ import { Subject } from 'rxjs';
 @Injectable()
 export class WatcherService {
 
-  stream$ = new Subject<string>();
+  stream$: Observable<string>;
   
   private watched: { [path: string]: boolean } = { };
+  private watcher$: Subject<string>;
+
+  /** ctor */
+  constructor() {
+    this.watcher$ = new Subject<string>();
+    // @see https://stackoverflow.com/questions/50928751/rxjs-distinctuntilchanged-with-timer
+    this.stream$ = this.watcher$.pipe(
+      windowTime(config.s3WatcherThrottle),
+      concatMap(obs => obs.pipe(
+        distinctUntilChanged()
+      ))
+    );
+  }
 
   /** Touch a path */
   touch(path: string): void {
     if (this.watched[path])
-      this.stream$.next(path);
+      this.watcher$.next(path);
   }
 
   /** Stop watchin a path */
