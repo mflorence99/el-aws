@@ -1,6 +1,7 @@
 import { BarrelModule } from '../barrel';
 import { KeyValueComponent } from './key-value';
 import { NgModule } from '@angular/core';
+import { SelectPeriodComponent } from './select-period';
 import { SelectRegionComponent } from './select-region';
 
 /**
@@ -9,6 +10,7 @@ import { SelectRegionComponent } from './select-region';
 
 const COMPONENTS = [
   KeyValueComponent,
+  SelectPeriodComponent,
   SelectRegionComponent
 ];
 

@@ -1,0 +1,65 @@
+<h3 class="drawer-header">
+
+  <div class="icon">
+
+    <fa-icon
+      [icon]="desc.icon.split(' ')"
+      [ngStyle]="{color: desc.color}"
+      *ngIf="desc.icon"
+      size="lg">
+    </fa-icon>
+
+  </div>
+
+  <div class="title">
+    {{ desc.name | libBreakable }}
+    <div class="subtitle">
+      Filter
+    </div>
+  </div>
+
+</h3>
+
+<form
+  (submit)="close()"
+  [formGroup]="filterForm"
+  [libRxfSubmit]="filterForm"
+  *ngIf="filterForm"
+  novalidate>
+
+  <input
+    formControlName="bucket"
+    type="hidden">
+            
+  <mat-form-field>
+    <input 
+      formControlName="match"
+      placeholder="Enter match glob eg: **/*.csv"
+      matInput
+      type="text">
+  </mat-form-field>
+
+  <elaws-select-period
+    formControlName="period"
+    placeholder="Select date range to show">
+  </elaws-select-period>
+
+  <div class="okAndCancel">
+
+    <a
+      (click)="close()"
+      mat-button>
+      Cancel
+    </a>
+
+    <button
+      [disabled]="filterForm.invalid || !filter"
+      color="primary"
+      mat-raised-button
+      type="submit">
+      OK
+    </button>
+
+  </div>
+
+</form>

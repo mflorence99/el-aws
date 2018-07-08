@@ -4,7 +4,7 @@ import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { MatTabGroup } from '@angular/material';
 import { Navigate } from '@ngxs/router-plugin';
-import { Navigator } from '../../components/navigator';
+import { Navigator } from '../../services/navigator';
 import { OnChange } from 'ellib';
 import { RouterStateModel } from '@ngxs/router-plugin';
 import { SetRoute } from '../../state/window';

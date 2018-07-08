@@ -17,6 +17,9 @@ import { Output } from '@angular/core';
 import { PrefsState } from '../../state/prefs';
 import { PrefsStateModel } from '../../state/prefs';
 import { Reset } from '../../state/window';
+import { S3Filter } from './state/s3filter';
+import { S3FilterState } from './state/s3filter';
+import { S3FilterStateModel } from './state/s3filter';
 import { S3MetaState } from './state/s3meta';
 import { S3MetaStateModel } from './state/s3meta';
 import { S3SelectionState } from './state/s3selection';
@@ -26,6 +29,7 @@ import { S3StateModel } from './state/s3';
 import { S3ViewState } from './state/s3view';
 import { S3ViewStateModel } from './state/s3view';
 import { Select } from '@ngxs/store';
+import { SetFilter } from './state/s3filter';
 import { ShowPagePrefs } from '../../state/window';
 import { Store } from '@ngxs/store';
 import { Subscription } from 'rxjs/Subscription';
@@ -52,6 +56,7 @@ import { ofAction } from '@ngxs/store';
 @AutoUnsubscribe()
 export class S3CtrlComponent extends LifecycleComponent {
 
+  @Input() bucketFilterForm = { } as S3Filter;
   @Input() bucketPropsForm = { } as BucketMetadata;
   @Input() createBucketForm = { } as CreateBucketRequest;
   @Input() filePropsForm = { } as FileMetadata;
@@ -62,6 +67,7 @@ export class S3CtrlComponent extends LifecycleComponent {
 
   @Select(PrefsState) prefs$: Observable<PrefsStateModel>;
   @Select(S3State) s3$: Observable<S3StateModel>;
+  @Select(S3FilterState) s3filter$: Observable<S3FilterStateModel>;
   @Select(S3MetaState) s3meta$: Observable<S3MetaStateModel>;
   @Select(S3SelectionState) selection$: Observable<S3SelectionStateModel>;
   @Select(S3ViewState) view$: Observable<S3ViewStateModel>;
@@ -91,6 +97,18 @@ export class S3CtrlComponent extends LifecycleComponent {
   }
 
   // bind OnChange handlers
+
+  @OnChange('bucketFilterForm') saveBucketFilter(): void {
+    if (this.bucketFilterForm && this.bucketFilterForm.submitted) {
+      // TODO: why do we need this in Electron? and only running live?
+      // at worst, running in NgZone should work -- but otherwise a DOM
+      // event is necessary to force change detection
+      nextTick(() => {
+        const bucket = this.bucketFilterForm.bucket;
+        this.store.dispatch(new SetFilter({ bucket, filter: this.bucketFilterForm }));
+      });
+    }
+  }
 
   @OnChange('bucketPropsForm') saveBucketProps(): void {
     if (this.bucketPropsForm && this.bucketPropsForm.submitted) {

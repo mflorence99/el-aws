@@ -25,7 +25,7 @@ import { showHideAnimation } from 'ellib';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'elaws-bucket-props',
   templateUrl: 'bucket.html',
-  styleUrls: ['bucket.scss']
+  styleUrls: ['props.scss']
 })
 
 export class BucketPropsComponent extends LifecycleComponent {

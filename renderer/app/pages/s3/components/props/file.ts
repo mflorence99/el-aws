@@ -25,7 +25,7 @@ import { showHideAnimation } from 'ellib';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'elaws-file-props',
   templateUrl: 'file.html',
-  styleUrls: ['file.scss']
+  styleUrls: ['props.scss']
 })
 
 export class FilePropsComponent extends LifecycleComponent {

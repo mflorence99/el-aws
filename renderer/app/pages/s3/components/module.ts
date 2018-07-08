@@ -1,5 +1,6 @@
 import { BarrelModule } from '../../../barrel';
 import { BranchComponent } from './branch';
+import { BucketFilterComponent } from './props/filter';
 import { BucketPropsComponent } from './props/bucket';
 import { CellComponent } from './cell';
 import { ColumnComponent } from './column';
@@ -18,6 +19,7 @@ import { ViewComponent } from './view';
 const COMPONENTS = [
   BranchComponent,
   BucketPropsComponent,
+  BucketFilterComponent,
   CellComponent,
   CreateBucketComponent,
   ColumnComponent,

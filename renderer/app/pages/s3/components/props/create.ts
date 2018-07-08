@@ -18,7 +18,7 @@ import { config } from '../../../../config';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'elaws-create-bucket',
   templateUrl: 'create.html',
-  styleUrls: ['create.scss']
+  styleUrls: ['props.scss']
 })
 
 export class CreateBucketComponent implements OnInit {

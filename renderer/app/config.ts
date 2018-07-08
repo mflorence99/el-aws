@@ -8,6 +8,23 @@ export class Config {
 
   numParallel = 16;
 
+  periods = {
+    'TODAY': 'Today',
+    'YESTERDAY': 'Yesterday',
+    'LAST_2_DAYS': 'Last 2 days',
+    'LAST_3_DAYS': 'Last 3 days',
+    'LAST_7_DAYS': 'Last 7 days',
+    'THIS_WEEK': 'This week',
+    'LAST_WEEK': 'Last week',
+    'THIS_MONTH': 'This month',
+    'LAST_MONTH': 'Last month',
+    'THIS_QUARTER': 'This quarter',
+    'LAST_QUARTER': 'Last quarter',
+    'THIS_YEAR': 'This year',
+    'LAST_YEAR': 'Last year',
+    'ANYTIME': 'Anytime'
+  };
+
   regions = {
     'us-east-1': 'US East (N. Virginia)',
     'us-east-2': 'US East (Ohio)',
@@ -30,7 +47,7 @@ export class Config {
   resetDelay: 1500;
 
   // @see https://stackoverflow.com/questions/50480924/regex-for-s3-bucket-name
-  s3BucketValidationPattern = /(?=^.{3,63}$)(?!^(\d+\.)+\d+$)(^(([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)*([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$)/;
+  s3BucketValidationPattern = /(?=^.{3,63}$)(?!^(\d+\.)+\d+$)(^(({[}a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)*([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$)/;
   s3Delimiter = '/';
   s3MaxDescs = 200;
   s3MaxKeys = 100;

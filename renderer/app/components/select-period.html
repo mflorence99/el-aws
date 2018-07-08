@@ -1,0 +1,26 @@
+<div
+  [formGroup]="selectPeriodForm">
+
+  <mat-form-field>
+
+    <mat-select
+      [libRxfDisabled]="disabled"
+      [libRxfRequired]="required"
+      [placeholder]="placeholder"
+      formControlName="selectPeriod">
+
+      <ng-container
+        *ngFor="let period of periodKeys">
+
+        <mat-option
+          [value]="period">
+          {{ periods[period] }}
+        </mat-option>
+
+      </ng-container>
+
+    </mat-select>
+
+  </mat-form-field>
+
+</div>

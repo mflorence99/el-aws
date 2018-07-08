@@ -57,6 +57,13 @@
 
   <ng-template
     contextMenuItem
+    (execute)="onExecute($event, 'filter')"
+    [enabled]="isBucket.bind(this)">
+    <div>Filter...</div>
+  </ng-template>
+
+  <ng-template
+    contextMenuItem
     (execute)="onExecute($event, 'properties')"
     [enabled]="hasProperties.bind(this)">
     <div>Properties...</div>

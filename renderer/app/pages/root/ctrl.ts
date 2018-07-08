@@ -10,7 +10,7 @@ import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { Message } from '../../state/status';
 import { Navigate } from '@ngxs/router-plugin';
-import { Navigator } from '../../components/navigator';
+import { Navigator } from '../../services/navigator';
 import { Observable } from 'rxjs';
 import { OnChange } from 'ellib';
 import { PrefsState } from '../../state/prefs';

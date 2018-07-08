@@ -1,6 +1,8 @@
 import { AppState } from '../../../state/app';
 import { S3ColorState } from './s3color';
 import { S3ColorStateModel } from './s3color';
+import { S3FilterState } from './s3filter';
+import { S3FilterStateModel } from './s3filter';
 import { S3MetaState } from './s3meta';
 import { S3MetaStateModel } from './s3meta';
 import { S3SelectionState } from './s3selection';
@@ -13,6 +15,7 @@ import { S3ViewStateModel } from './s3view';
 export interface FeatureState extends AppState {
   s3: S3StateModel;
   s3color: S3ColorStateModel;
+  s3filter: S3FilterStateModel;
   s3meta: S3MetaStateModel;
   s3selection: S3SelectionStateModel;
   s3view: S3ViewStateModel;
@@ -21,6 +24,7 @@ export interface FeatureState extends AppState {
 export const states = [
   S3State,
   S3ColorState,
+  S3FilterState,
   S3MetaState,
   S3SelectionState,
   S3ViewState

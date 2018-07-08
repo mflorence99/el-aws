@@ -4,12 +4,14 @@ import { BrowserModule } from '@angular/platform-browser';
 import { ContextMenuModule } from 'ngx-contextmenu';
 import { DDBGuard } from './guards/ddb';
 import { EC2Guard } from './guards/ec2';
+import { NavigatorService } from './services/navigator';
 import { NgModule } from '@angular/core';
 import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
 import { NgxsModule } from '@ngxs/store';
 import { NgxsReduxDevtoolsPluginModule } from '@ngxs/devtools-plugin';
 import { NgxsRouterPluginModule } from '@ngxs/router-plugin';
 import { NgxsStoragePluginModule } from '@ngxs/storage-plugin';
+import { PeriodResolverService } from './services/period-resolver';
 import { RootPageComponent } from './pages/root/page';
 import { RootPageModule } from './pages/root/module';
 import { RouterModule } from '@angular/router';
@@ -71,6 +73,8 @@ const ROUTES: Routes = [
 const SERVICES = [
   DDBGuard,
   EC2Guard,
+  NavigatorService,
+  PeriodResolverService,
   S3Guard,
   SetupGuard
 ];
@@ -95,7 +99,7 @@ const SERVICES = [
     }),
     NgxsRouterPluginModule.forRoot(),
     NgxsStoragePluginModule.forRoot({
-      key: ['prefs', 's3color', 's3view', 'window'],
+      key: ['prefs', 's3color', 's3filter', 's3view', 'window'],
       storage: StorageOption.LocalStorage
     }),
     NgxsReduxDevtoolsPluginModule.forRoot({disabled: !window['DEV_MODE']}),

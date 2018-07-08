@@ -1,5 +1,7 @@
+import { Injectable } from '@angular/core';
+
 /**
- * Abstract avigator definition
+ * Abstract Navigator definition
  */
 
 export interface Navigator {
@@ -13,4 +15,15 @@ export interface Navigator {
   icon: string[];
   route: string;
   title: string;
+}
+
+/**
+ * Navigator service
+ * 
+ * NOTE: placeholder for now
+ */
+
+@Injectable()
+export class NavigatorService {
+
 }

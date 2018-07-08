@@ -51,6 +51,7 @@ export class TreeComponent extends LifecycleComponent {
   @Input() view = {} as S3ViewStateModel;
 
   @Output() createBucket = new EventEmitter<void>();
+  @Output() editBucketFilter = new EventEmitter<Descriptor>();
   @Output() editBucketProps = new EventEmitter<Descriptor>();
   @Output() editFileProps = new EventEmitter<Descriptor>();
 
@@ -166,6 +167,10 @@ export class TreeComponent extends LifecycleComponent {
           this.electron.ipcRenderer.send('download', url);
           this.store.dispatch(new Message({ text: `Downloading ${desc.name} ...` }));
         });
+        break;
+
+      case 'filter':
+        this.editBucketFilter.emit(desc);
         break;
 
       case 'properties':
