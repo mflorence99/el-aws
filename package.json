@@ -45,6 +45,7 @@
     "async-es": "2",
     "aws-sdk": "2",
     "core-js": "2",
+    "electron-dl": "1",
     "ellib": "latest",
     "hammerjs": "2",
     "ngx-contextmenu": "5",

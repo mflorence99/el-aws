@@ -7,7 +7,9 @@ import AWS = require('aws-sdk');
  * Electron event dispatcher
  */
 
-const { BrowserWindow, app } = require('electron');
+const { BrowserWindow, app, ipcMain } = require('electron');
+const { download } = require('electron-dl');
+
 const isDev = process.env['DEV_MODE'] === '1';
 
 // create credentials
@@ -18,6 +20,7 @@ AWS.config.credentials = {
 
 // event dispatcher
 
+let theDownloadItem = null;
 let theWindow = null;
 
 app.on('ready', () => {
@@ -61,4 +64,30 @@ app.on('ready', () => {
     theWindow.webContents.send('bounds', theWindow.getBounds());
   theWindow.on('move', sendBounds);
   theWindow.on('resize', sendBounds);
+});
+
+ipcMain.on('cancel', () => {
+  if (theDownloadItem)
+    theDownloadItem.cancel();
+});
+
+ipcMain.on('download', (event, url) => {
+  let progress = 0;
+  download(theWindow, url, {
+    onCancel: (dl) => {
+      theWindow.webContents.send('progress', 100);
+      theDownloadItem = null;
+    },
+    onProgress: (scale) => {
+      // NOTE: minimize noise by sending only a max of 100 events
+      const percent = Math.round(scale * 100);
+      if (percent >= progress) {
+        theWindow.webContents.send('progress', percent);
+        progress = percent;
+      }
+    },
+    onStarted: (dl) => theDownloadItem = dl,
+    openFolderWhenDone: true
+  }).then(() => theDownloadItem = null)
+    .catch((err) => console.log('An error occurred: ', err));
 });

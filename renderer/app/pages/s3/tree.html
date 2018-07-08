@@ -69,6 +69,13 @@
 
   <ng-template
     contextMenuItem
+    (execute)="onExecute($event, 'download')"
+    [enabled]="isObject.bind(this)">
+    <div>Download</div>
+  </ng-template>
+
+  <ng-template
+    contextMenuItem
     (execute)="onExecute($event, 'url')"
     [enabled]="hasURL.bind(this)">
     <div>Copy URL to clipboard</div>

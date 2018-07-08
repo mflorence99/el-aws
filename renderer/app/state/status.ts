@@ -75,7 +75,7 @@ export interface StatusStateModel {
   progress({ patchState }: StateContext<StatusStateModel>,
     { payload }: Progress) {
     const { path, scale, state } = payload;
-    patchState({ progress: { scale: scale ? scale : 0, state: state ? state : 'scaled' } });
+    patchState({ progress: { scale: scale? scale : 0, state: state ? state : 'scaled' } });
     if (path)
       patchState({ message: { level: 'info', text: path } });
   }

@@ -48,6 +48,11 @@ export class DirectoryLoaded {
   constructor(public readonly payload: { path: string, descs: Descriptor[] }) { }
 }
 
+export class ExtendDirectory {
+  static readonly type = '[S3] extend directory';
+  constructor(public readonly payload: { path: string, token: string, versioning: boolean }) { }
+}
+
 export class FileVersionsLoaded {
   static readonly type = '[S3] file versions loaded';
   constructor(public readonly payload: { path: string, descs: Descriptor[] }) { }
@@ -179,6 +184,38 @@ export interface S3StateModel {
     patchState({ [path]: descs });
   }
 
+  @Action(ExtendDirectory)
+  extendDirectory({ dispatch, getState }: StateContext<S3StateModel>,
+                  { payload }: ExtendDirectory) {
+    const { path, token, versioning } = payload;
+    this.s3Svc.extendDirectory(path, token, versioning,
+                                (bucket: S3.BucketName,
+                                 prefixes: S3.CommonPrefixList,
+                                 contents: S3.ObjectList,
+                                 truncated: S3.IsTruncated,
+                                 token: S3.Token,
+                                 versioning: boolean) => {
+      const dirs = prefixes.map((prefix: S3.CommonPrefix) => {
+        return this.makeDescriptorForDirectory(bucket, prefix);
+      });
+      const files = contents
+        // TODO: I don't understand how these exist -- directories are phantoms!
+        .filter((content: S3.Object) => !content.Key.endsWith(config.s3Delimiter))
+        .map((content: S3.Object) => {
+          return this.makeDescriptorForFile(path, content, versioning);
+        });
+      const state = getState();
+      const descs = dirs.concat(files).concat(state[path]);
+      this.zone.run(() => {
+        dispatch(new DirectoryLoaded({ path, descs }));
+        dispatch(new Message({ text: `Extended ${path}` }));
+        // keep going if there's more
+        if (truncated && token && (descs.length < config.s3MaxDescs))
+          dispatch(new ExtendDirectory({ path, token, versioning }));
+      });
+    });
+  }
+
   @Action(FileVersionsLoaded)
   fileVersionsLoaded({ patchState }: StateContext<S3StateModel>,
                      { payload }: FileVersionsLoaded) {
@@ -228,9 +265,11 @@ export interface S3StateModel {
       else {
         dispatch(new Message({ text: `Loading ${path} ...` }));
         this.s3Svc.loadDirectory(path, 
-                                  (bucket: string,
+                                  (bucket: S3.BucketName,
                                    prefixes: S3.CommonPrefixList,
                                    contents: S3.ObjectList,
+                                   truncated: S3.IsTruncated,
+                                   token: S3.Token,
                                    versioning: boolean) => {
           const dirs = prefixes.map((prefix: S3.CommonPrefix) => {
             return this.makeDescriptorForDirectory(bucket, prefix);
@@ -245,6 +284,9 @@ export interface S3StateModel {
           this.zone.run(() => {
             dispatch(new DirectoryLoaded({ path, descs }));
             dispatch(new Message({ text: `Loaded ${path}` }));
+            // keep going if there's more
+            if (truncated && token && (descs.length < config.s3MaxDescs))
+              dispatch(new ExtendDirectory({ path, token, versioning }));
           });
         });
       }

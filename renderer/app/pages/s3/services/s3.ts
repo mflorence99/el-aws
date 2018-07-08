@@ -134,6 +134,48 @@ export class S3Service {
     });
   }
 
+  /** Extend the contents of a "directory" */
+  extendDirectory(path: string,
+                  token: string,
+                  versioning: boolean,
+                  cb: (bucket: S3.BucketName,
+                       prefixes: S3.CommonPrefixList,
+                       contents: S3.ObjectList,
+                       truncated: S3.IsTruncated,
+                       token: S3.Token,
+                       versioning: boolean) => void): void {
+    const { bucket, prefix } = this.path.analyze(path);
+    const params: S3.ListObjectsV2Request = {
+      Bucket: bucket,
+      ContinuationToken: token,
+      Delimiter: config.s3Delimiter,
+      FetchOwner: true,
+      MaxKeys: config.s3MaxKeys,
+      Prefix: prefix
+    };
+    this.s3.listObjectsV2(params, (err, data) => {
+      if (err)
+        this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
+      else cb(data.Name, data.CommonPrefixes, data.Contents, data.IsTruncated, data.NextContinuationToken, versioning);
+    });
+  }
+
+  /** Make a signed URL for object retrieval */
+  getSignedURL(path: string,
+               cb: (url: string) => void): void {
+    const { bucket, prefix } = this.path.analyze(path);
+    const params = {
+      Bucket: bucket,
+      Expires: config.s3SignedURLExpiry / 1000,
+      Key: prefix
+    };
+    this.s3.getSignedUrl('getObject', params, (err, url) => {
+      if (err)
+        this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
+      else cb(url);    
+    });
+  }
+
   /** Load bucket metadata */
   loadBucketMetadata(path: string,
                      cb: (metadata: BucketMetadata) => void): void {
@@ -196,15 +238,18 @@ export class S3Service {
 
   /** Load the contents of a "directory" */
   loadDirectory(path: string, 
-                cb: (bucket: string,
+                cb: (bucket: S3.BucketName,
                      prefixes: S3.CommonPrefixList,
                      contents: S3.ObjectList,
+                     truncated: S3.IsTruncated,
+                     token: S3.Token, 
                      versioning: boolean) => void): void {
     const { bucket, prefix } = this.path.analyze(path);
     const funcs = {
       objects: async.apply(this.s3.listObjectsV2, {
         Bucket: bucket,
         Delimiter: config.s3Delimiter,
+        FetchOwner: true,
         MaxKeys: config.s3MaxKeys,
         Prefix: prefix
       } as S3.ListObjectsV2Request),
@@ -218,7 +263,7 @@ export class S3Service {
         const versioning: S3.GetBucketVersioningOutput = results.versioning;
         const data: S3.ListObjectsV2Output = results.objects;
         // NOTE: versioning once set can never be turned off
-        cb(data.Name, data.CommonPrefixes, data.Contents, !!versioning.Status);
+        cb(data.Name, data.CommonPrefixes, data.Contents, data.IsTruncated, data.NextContinuationToken, !!versioning.Status);
       }
     });
   }

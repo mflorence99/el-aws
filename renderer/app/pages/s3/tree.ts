@@ -20,6 +20,7 @@ import { RemovePath } from './state/s3view';
 import { RemovePaths } from './state/s3view';
 import { S3MetaStateModel } from './state/s3meta';
 import { S3SelectionStateModel } from './state/s3selection';
+import { S3Service } from './services/s3';
 import { S3StateModel } from './state/s3';
 import { S3ViewStateModel } from './state/s3view';
 import { Store } from '@ngxs/store';
@@ -66,6 +67,7 @@ export class TreeComponent extends LifecycleComponent {
   constructor(private cdf: ChangeDetectorRef,
               private dictSvc: DictionaryService,
               private electron: ElectronService,
+              private s3Svc: S3Service,
               private store: Store) {
     super();
     this.updateDescriptors = debounce(this._updateDescriptors, config.s3TreeRefreshThrottle);
@@ -159,6 +161,13 @@ export class TreeComponent extends LifecycleComponent {
         this.store.dispatch(new RemovePath({ path: desc.path }));
         break;
 
+      case 'download':
+        this.s3Svc.getSignedURL(desc.path, url => {
+          this.electron.ipcRenderer.send('download', url);
+          this.store.dispatch(new Message({ text: `Downloading ${desc.name} ...` }));
+        });
+        break;
+
       case 'properties':
         if (desc.isBucket)
           this.editBucketProps.emit(desc);
@@ -167,9 +176,10 @@ export class TreeComponent extends LifecycleComponent {
         break;
 
       case 'url':
-        const url = `${this.prefs.endpoints.s3}${config.s3Delimiter}${desc.path}`;
-        this.electron.clipboard.writeText(url);
-        this.store.dispatch(new Message({ text: `${url} copied to clipboard` }));
+        this.s3Svc.getSignedURL(desc.path, url => {
+          this.electron.clipboard.writeText(url);
+          this.store.dispatch(new Message({ text: `Copied ${url} to clipboard` }));
+        });
         break;
 
       // these commands affect the entire selection

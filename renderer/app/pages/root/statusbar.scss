@@ -13,6 +13,11 @@ footer {
   grid-template-columns: 1fr auto auto;
   height: 100%;
 
+  .canceler {
+    color: var(--error-color);
+    cursor: pointer;
+  }
+
   .error,
   .info,
   .warning {

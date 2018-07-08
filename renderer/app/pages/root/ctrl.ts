@@ -1,3 +1,5 @@
+import { Actions } from '@ngxs/store';
+import { Canceled } from '../../state/status';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { Component } from '@angular/core';
 import { DDBGuard } from '../../guards/ddb';
@@ -6,12 +8,14 @@ import { ElectronService } from 'ngx-electron';
 import { Injector } from '@angular/core';
 import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
+import { Message } from '../../state/status';
 import { Navigate } from '@ngxs/router-plugin';
 import { Navigator } from '../../components/navigator';
 import { Observable } from 'rxjs';
 import { OnChange } from 'ellib';
 import { PrefsState } from '../../state/prefs';
 import { PrefsStateModel } from '../../state/prefs';
+import { Progress } from '../../state/status';
 import { RouterState } from '@ngxs/router-plugin';
 import { RouterStateModel } from '@ngxs/router-plugin';
 import { S3Guard } from '../../guards/s3';
@@ -31,6 +35,7 @@ import { debounce } from 'ellib';
 import { map } from 'rxjs/operators';
 import { nextTick } from 'ellib';
 import { of } from 'rxjs';
+import { ofAction } from '@ngxs/store';
 import { take } from 'rxjs/operators';
 
 /**
@@ -92,7 +97,8 @@ export class RootCtrlComponent extends LifecycleComponent {
   ];
 
   /** ctor */
-  constructor(private electron: ElectronService,
+  constructor(private actions$: Actions,
+              private electron: ElectronService,
               private injector: Injector,
               private store: Store) {
     super();
@@ -117,7 +123,17 @@ export class RootCtrlComponent extends LifecycleComponent {
     // record the bounds when they change
     this.electron.ipcRenderer.on('bounds', debounce((event, bounds) => {
       this.store.dispatch(new SetBounds(bounds));
-    }, config.setBoundsThrottle));   
+    }, config.setBoundsThrottle)); 
+    // handle general Cancel in case of long running main process action 
+    this.actions$.pipe(ofAction(Canceled))
+      .subscribe(() => this.electron.ipcRenderer.send('cancel'));
+    // handle general progress indication from main process 
+    this.electron.ipcRenderer.on('progress', (event, progress) => {
+      const state = (progress === 100)? 'completed' : 'scaled';
+      this.store.dispatch(new Progress({ scale: progress, state }));
+      if (progress === 100)
+        this.store.dispatch(new Message({ text: '' }));
+    });  
   }     
 
   // bind OnChange handlers
