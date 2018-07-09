@@ -49,7 +49,7 @@ export class Config {
   // @see https://stackoverflow.com/questions/50480924/regex-for-s3-bucket-name
   s3BucketValidationPattern = /(?=^.{3,63}$)(?!^(\d+\.)+\d+$)(^(({[}a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)*([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$)/;
   s3Delimiter = '/';
-  s3MaxDescs = 500;
+  s3MaxDescs = 200;
   s3MaxDirExtensions = 10;
   s3MaxKeys = 100;
   s3PathPurgeAge = 15 * 60 * 1000;

@@ -205,10 +205,10 @@ export interface S3StateModel {
         .map((content: S3.Object) => {
           return this.makeDescriptorForFile(path, content, versioning);
         });
-      const state = getState();
-      const descs = dirs.concat(files).concat(state[path]);
+      const descs = dirs.concat(files);
       this.zone.run(() => {
-        dispatch(new DirectoryLoaded({ path, descs }));
+        if (descs.length > 0)
+          dispatch(new DirectoryLoaded({ path, descs: descs.concat(getState()[path]) }));
         dispatch(new Message({ text: `Extended ${path}` }));
         // keep going if there's more
         if (truncated && token && (descs.length < config.s3MaxDescs) && (extensionNum < config.s3MaxDirExtensions))
@@ -287,7 +287,7 @@ export interface S3StateModel {
             dispatch(new Message({ text: `Loaded ${path}` }));
             // keep going if there's more
             if (truncated && token && (descs.length < config.s3MaxDescs))
-              dispatch(new ExtendDirectory({ path, token, versioning, extensionNum: 0 }));
+              dispatch(new ExtendDirectory({ path, token, versioning, extensionNum: 1 }));
           });
         });
       }
