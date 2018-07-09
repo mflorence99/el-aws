@@ -6,16 +6,19 @@ import { ClearPaths } from './state/s3view';
 import { Component } from '@angular/core';
 import { CreateBucket } from './state/s3';
 import { CreateBucketRequest } from './state/s3';
+import { ElectronService } from 'ngx-electron';
 import { EventEmitter } from '@angular/core';
 import { FileMetadata } from './state/s3meta';
 import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { LoadDirectory } from './state/s3';
+import { Message } from '../../state/status';
 import { Observable } from 'rxjs/Observable';
 import { OnChange } from 'ellib';
 import { Output } from '@angular/core';
 import { PrefsState } from '../../state/prefs';
 import { PrefsStateModel } from '../../state/prefs';
+import { Progress } from '../../state/status';
 import { Reset } from '../../state/window';
 import { S3Filter } from './state/s3filter';
 import { S3FilterState } from './state/s3filter';
@@ -24,6 +27,7 @@ import { S3MetaState } from './state/s3meta';
 import { S3MetaStateModel } from './state/s3meta';
 import { S3SelectionState } from './state/s3selection';
 import { S3SelectionStateModel } from './state/s3selection';
+import { S3Service } from './services/s3';
 import { S3State } from './state/s3';
 import { S3StateModel } from './state/s3';
 import { S3ViewState } from './state/s3view';
@@ -78,6 +82,8 @@ export class S3CtrlComponent extends LifecycleComponent {
 
   /** ctor */
   constructor(private actions$: Actions,
+              private electron: ElectronService,
+              private s3Svc: S3Service,
               private store: Store,
               private watcher: WatcherService) {
     super();
@@ -95,7 +101,24 @@ export class S3CtrlComponent extends LifecycleComponent {
       this.watcher.watch(path);
       this.store.dispatch(new LoadDirectory({ path }));
     });
-  }
+    // respond to upload request
+    this.electron.ipcRenderer.on('s3upload', (event, base, source) => {
+      const path = this.electron.remote.require('path');
+      const filename = path.basename(source);
+      const fs = this.electron.remote.require('fs');
+      const stream = fs.createReadStream(source);
+      this.store.dispatch(new Message({ text: `Uploading ${source} ...` }));
+      this.s3Svc.uploadObject(`${base}${filename}`, stream,
+        progress => {
+          const state = (progress === 100) ? 'completed' : 'scaled';
+          this.store.dispatch(new Progress({ scale: progress, state }));
+        },
+        () => {
+          this.store.dispatch(new Message({ text: `Uploaded ${source}` }));
+          this.watcher.touch(base);
+        });
+    });
+  }    
 
   // bind OnChange handlers
 

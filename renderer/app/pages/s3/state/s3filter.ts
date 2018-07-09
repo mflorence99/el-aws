@@ -27,7 +27,7 @@ export interface S3FilterStateModel {
 
   static filterDefaults(filter?: any | null): S3Filter {
     filter = { ...(filter || { } as S3Filter) };
-    filter.match = filter.match || '*';
+    filter.match = filter.match || '**/*';
     filter.period = filter.period || 'ANYTIME';
     return filter;
   }

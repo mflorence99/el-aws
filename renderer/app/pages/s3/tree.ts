@@ -62,6 +62,8 @@ export class TreeComponent extends LifecycleComponent {
   descriptorsByPath: { [path: string]: Descriptor[] } = {};
   dictionary: Dictionary[] = [];
 
+  newName: string;
+
   subToActions: Subscription;
 
   private updateDescriptors: Function;
@@ -79,6 +81,11 @@ export class TreeComponent extends LifecycleComponent {
   /** Are all buckets loaded? */
   areBucketsLoaded(): boolean {
     return !!this.s3[config.s3Delimiter];
+  }
+
+  /** Is new name allowed? */
+  canNewName(): boolean {
+    return this.newName && (this.newName.length > 0);
   }
 
   /** Is this an object that has properties? */
@@ -145,11 +152,32 @@ export class TreeComponent extends LifecycleComponent {
     return desc && (desc.isFile || desc.isFileVersion);
   }
 
+  /** Helper for ternary expr in template */
+  noop(): void { }
+
+  /** Prepare for a new name */
+  prepareNewName(initial: string,
+    ctrl: HTMLInputElement): string {
+    if (!ctrl.getAttribute('_init')) {
+      ctrl.setAttribute('_init', 'true');
+      setTimeout(() => {
+        ctrl.value = this.newName = initial;
+        const ix = initial.lastIndexOf('.');
+        if (ix === -1)
+          ctrl.select();
+        else ctrl.setSelectionRange(0, ix);
+        ctrl.focus();
+      }, config.s3PrepareNewNameDelay);
+    }
+    return this.newName;
+  }
+
   // event handlers
 
   onExecute(event: {event?: MouseEvent,
                     item: Descriptor},
             command: string): void {
+    let base;
     const desc = event.item || <Descriptor>{ isDirectory: true, path: this.view.paths[0] };
     switch (command) {
 
@@ -166,7 +194,7 @@ export class TreeComponent extends LifecycleComponent {
 
       case 'download':
         this.s3Svc.getSignedURL(desc.path, url => {
-          this.electron.ipcRenderer.send('download', url);
+          this.electron.ipcRenderer.send('s3download', url);
           this.store.dispatch(new Message({ text: `Downloading ${desc.name} ...` }));
         });
         break;
@@ -175,11 +203,32 @@ export class TreeComponent extends LifecycleComponent {
         this.editBucketFilter.emit(desc);
         break;
 
+      case 'new-dir':
+        base = desc.path;
+        if (desc.isFile || desc.isFileVersion) {
+          const ix = desc.path.lastIndexOf(config.s3Delimiter);
+          base = desc.path.substring(0, ix + 1);
+        }
+        const dir = `${base}${this.newName}${config.s3Delimiter}`;
+        this.s3Svc.createDirectory(dir, () => {
+          this.store.dispatch(new Message({ text: `Created directory ${dir}` }));
+        });
+        break;
+
       case 'properties':
         if (desc.isBucket)
           this.editBucketProps.emit(desc);
         else if (desc.isFile || desc.isFileVersion)
           this.editFileProps.emit(desc);
+        break;
+
+      case 'upload':
+        base = desc.path;
+        if (desc.isFile || desc.isFileVersion) {
+          const ix = desc.path.lastIndexOf(config.s3Delimiter);
+          base = desc.path.substring(0, ix + 1);
+        }
+        this.electron.ipcRenderer.send('s3upload', base);
         break;
 
       case 'url':
@@ -197,6 +246,14 @@ export class TreeComponent extends LifecycleComponent {
         break;
 
     }
+    // if event is missing, that means we were invoked programatically
+    // so we need to close the menu ourselves
+    if (!event.event)
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+  }
+
+  onNewName(name: string): void {
+    this.newName = name;
   }
 
   // bind OnChange handlers

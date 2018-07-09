@@ -7,7 +7,7 @@ import AWS = require('aws-sdk');
  * Electron event dispatcher
  */
 
-const { BrowserWindow, app, ipcMain } = require('electron');
+const { BrowserWindow, app, dialog, ipcMain } = require('electron');
 const { download } = require('electron-dl');
 
 const isDev = process.env['DEV_MODE'] === '1';
@@ -71,7 +71,7 @@ ipcMain.on('cancel', () => {
     theDownloadItem.cancel();
 });
 
-ipcMain.on('download', (event, url) => {
+ipcMain.on('s3download', (event, url) => {
   let progress = 0;
   download(theWindow, url, {
     onCancel: (dl) => {
@@ -90,4 +90,13 @@ ipcMain.on('download', (event, url) => {
     openFolderWhenDone: true
   }).then(() => theDownloadItem = null)
     .catch((err) => console.log('An error occurred: ', err));
+});
+
+ipcMain.on('s3upload', (event, base) => {
+  dialog.showOpenDialog(theWindow, {
+    title: 'Select File to Upload'
+  }, source => {
+    if (source) 
+      theWindow.webContents.send('s3upload', base, source[0]);
+  });
 });

@@ -92,6 +92,27 @@ export class S3Service {
     });
   }
 
+  /** Create a new directory */
+  createDirectory(path: string,
+                  cb?: () => void): void {
+    const { bucket, prefix, parent } = this.path.analyze(path);
+    const params: S3.PutObjectRequest = { 
+      Body: '',
+      Bucket: bucket,
+      Key: prefix 
+    };
+    // now create empty object as directory
+    this.s3.putObject(params, (err, data) => {
+      this.trace('createDirectory', params, err, data);
+      // TODO: we'd like the watcher to see this automagically
+      this.watcher.touch(parent);
+      if (err)
+        this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
+      else if (cb)
+        cb();
+    });
+  }
+
   /** Delete a bucket (which must be empty!) */
   deleteBucket(path: string,
                cb?: () => void): void {
@@ -386,6 +407,35 @@ export class S3Service {
         if (cb) cb();
       }
     });
+  }
+
+  /** Create a new directory */
+  uploadObject(path: string,
+               stream: any,
+               progress?: (percent: number) => void,
+               cb?: () => void): void {
+    const { bucket, prefix, parent } = this.path.analyze(path);
+    const params = {
+      Body: stream,
+      Bucket: bucket,
+      Key: prefix,
+    };
+    // now start upload
+    const upload: S3.ManagedUpload = this.s3.upload(params, (err, data) =>  {
+      // TODO: we'd like the watcher to see this automagically
+      this.watcher.touch(parent);
+      if (err)
+        this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
+      else if (cb) 
+        cb();
+    });
+    // deliver progress notifications
+    if (progress) {
+      upload.on('httpUploadProgress', payload => {
+        const { loaded, total } = payload;
+        progress(Math.round((loaded / total) * 100));
+      });
+    }
   }
 
   // NOTE: these methods are adaptors that wrap the S3 metadata to assist the UI

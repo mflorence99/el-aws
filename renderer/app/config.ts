@@ -53,6 +53,7 @@ export class Config {
   s3MaxDirExtensions = 10;
   s3MaxKeys = 100;
   s3PathPurgeAge = 15 * 60 * 1000;
+  s3PrepareNewNameDelay = 100;
   s3SignedURLExpiry = 60 * 60 * 1000;
   s3TreeRefreshThrottle = 100;
   s3WatcherThrottle = 100;
