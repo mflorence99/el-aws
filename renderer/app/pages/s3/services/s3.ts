@@ -47,6 +47,7 @@ export class S3Service {
 
   private minimatch;
   private s3: S3;
+  private upload: S3.ManagedUpload;
 
   private s3_: typeof S3;
 
@@ -65,6 +66,14 @@ export class S3Service {
         s3ForcePathStyle: true
       });
     });
+  }
+
+  /** Cancel any running upload */
+  cancelUpload(): void {
+    if (this.upload) {
+      this.upload.abort();
+      this.upload = null;
+    }
   }
 
   /** Create a new bucket */
@@ -421,7 +430,8 @@ export class S3Service {
       Key: prefix,
     };
     // now start upload
-    const upload: S3.ManagedUpload = this.s3.upload(params, (err, data) =>  {
+    this.upload = this.s3.upload(params, (err, data) =>  {
+      this.upload = null;
       // TODO: we'd like the watcher to see this automagically
       this.watcher.touch(parent);
       if (err)
@@ -430,8 +440,8 @@ export class S3Service {
         cb();
     });
     // deliver progress notifications
-    if (progress) {
-      upload.on('httpUploadProgress', payload => {
+    if (progress && this.upload) {
+      this.upload.on('httpUploadProgress', payload => {
         const { loaded, total } = payload;
         progress(Math.round((loaded / total) * 100));
       });

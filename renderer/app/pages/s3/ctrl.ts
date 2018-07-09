@@ -1,6 +1,7 @@
 import { Actions } from '@ngxs/store';
 import { AutoUnsubscribe } from 'ellib';
 import { BucketMetadata } from './state/s3meta';
+import { Canceled } from '../../state/status';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { ClearPaths } from './state/s3view';
 import { Component } from '@angular/core';
@@ -13,6 +14,7 @@ import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { LoadDirectory } from './state/s3';
 import { Message } from '../../state/status';
+import { NgZone } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { OnChange } from 'ellib';
 import { Output } from '@angular/core';
@@ -77,6 +79,7 @@ export class S3CtrlComponent extends LifecycleComponent {
   @Select(S3SelectionState) selection$: Observable<S3SelectionStateModel>;
   @Select(S3ViewState) view$: Observable<S3ViewStateModel>;
 
+  subToCancel: Subscription;
   subToReset: Subscription;
   subToShowPagePrefs: Subscription;
 
@@ -85,7 +88,8 @@ export class S3CtrlComponent extends LifecycleComponent {
               private electron: ElectronService,
               private s3Svc: S3Service,
               private store: Store,
-              private watcher: WatcherService) {
+              private watcher: WatcherService,
+              private zone: NgZone) {
     super();
     // listen for open prefs
     this.subToShowPagePrefs = this.actions$.pipe(ofAction(ShowPagePrefs))
@@ -93,6 +97,14 @@ export class S3CtrlComponent extends LifecycleComponent {
     // clean up on a reset
     this.subToReset = this.actions$.pipe(ofAction(Reset))
       .subscribe(() => this.store.dispatch(new ClearPaths()));
+    // cancel long-running operation
+    this.subToCancel = this.actions$.pipe(ofAction(Canceled))
+      .subscribe(() => {
+        this.zone.run(() => {
+          this.store.dispatch(new Progress({ state: 'completed' }));
+          this.s3Svc.cancelUpload();
+        });
+      });
     // load all the data in the view
     // TODO: expire here doesn't work because it's ALWAYS 15 mins between sessions
     // this.store.dispatch(new ExpirePaths());
@@ -109,13 +121,20 @@ export class S3CtrlComponent extends LifecycleComponent {
       const stream = fs.createReadStream(source);
       this.store.dispatch(new Message({ text: `Uploading ${source} ...` }));
       this.s3Svc.uploadObject(`${base}${filename}`, stream,
+        // while running
         progress => {
-          const state = (progress === 100) ? 'completed' : 'scaled';
-          this.store.dispatch(new Progress({ scale: progress, state }));
+          this.zone.run(() => {
+            const state = (progress === 100) ? 'completed' : 'scaled';
+            this.store.dispatch(new Progress({ scale: progress, state }));
+          });
         },
+        // when complete
         () => {
-          this.store.dispatch(new Message({ text: `Uploaded ${source}` }));
           this.watcher.touch(base);
+          this.zone.run(() => {
+            this.store.dispatch(new Progress({ scale: 100, state: 'completed' }));
+            this.store.dispatch(new Message({ text: `Uploaded ${source}` }));
+          });
         });
     });
   }    

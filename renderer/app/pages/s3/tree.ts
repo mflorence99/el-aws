@@ -13,6 +13,7 @@ import { EventEmitter } from '@angular/core';
 import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { Message } from '../../state/status';
+import { NgZone } from '@angular/core';
 import { OnChange } from 'ellib';
 import { Output } from '@angular/core';
 import { PrefsStateModel } from '../../state/prefs';
@@ -73,7 +74,8 @@ export class TreeComponent extends LifecycleComponent {
               private dictSvc: DictionaryService,
               private electron: ElectronService,
               private s3Svc: S3Service,
-              private store: Store) {
+              private store: Store,
+              private zone: NgZone) {
     super();
     this.updateDescriptors = debounce(this._updateDescriptors, config.s3TreeRefreshThrottle);
   }
@@ -194,8 +196,10 @@ export class TreeComponent extends LifecycleComponent {
 
       case 'download':
         this.s3Svc.getSignedURL(desc.path, url => {
-          this.electron.ipcRenderer.send('s3download', url);
-          this.store.dispatch(new Message({ text: `Downloading ${desc.name} ...` }));
+          this.zone.run(() => {
+            this.electron.ipcRenderer.send('s3download', url);
+            this.store.dispatch(new Message({ text: `Downloading ${desc.name} ...` }));
+          });
         });
         break;
 
@@ -211,7 +215,9 @@ export class TreeComponent extends LifecycleComponent {
         }
         const dir = `${base}${this.newName}${config.s3Delimiter}`;
         this.s3Svc.createDirectory(dir, () => {
-          this.store.dispatch(new Message({ text: `Created directory ${dir}` }));
+          this.zone.run(() => {
+            this.store.dispatch(new Message({ text: `Created directory ${dir}` }));
+          });
         });
         break;
 
@@ -233,8 +239,10 @@ export class TreeComponent extends LifecycleComponent {
 
       case 'url':
         this.s3Svc.getSignedURL(desc.path, url => {
-          this.electron.clipboard.writeText(url);
-          this.store.dispatch(new Message({ text: `Copied ${url} to clipboard` }));
+          this.zone.run(() => {
+            this.electron.clipboard.writeText(url);
+            this.store.dispatch(new Message({ text: `Copied ${url} to clipboard` }));
+          });
         });
         break;
 
