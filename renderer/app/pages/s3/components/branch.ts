@@ -6,6 +6,7 @@ import { Dictionary } from '../services/dictionary';
 import { Input } from '@angular/core';
 import { OnInit } from '@angular/core';
 import { PrefsStateModel } from '../../../state/prefs';
+import { S3FilterStateModel } from '../state/s3filter';
 import { S3SelectionStateModel } from '../state/s3selection';
 import { S3StateModel } from '../state/s3';
 import { S3ViewStateModel } from '../state/s3view';
@@ -30,6 +31,7 @@ export class BranchComponent implements OnInit {
   @Input() descriptorsByPath: { [path: string]: Descriptor[] } = {};
   @Input() dictionary: Dictionary[] = [];
   @Input() s3 = {} as S3StateModel;
+  @Input() s3filter = {} as S3FilterStateModel;
   @Input() level = 0;
   @Input() path: string;
   @Input() prefs = {} as PrefsStateModel;

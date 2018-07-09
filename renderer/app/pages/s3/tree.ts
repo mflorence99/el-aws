@@ -18,6 +18,7 @@ import { Output } from '@angular/core';
 import { PrefsStateModel } from '../../state/prefs';
 import { RemovePath } from './state/s3view';
 import { RemovePaths } from './state/s3view';
+import { S3FilterStateModel } from './state/s3filter';
 import { S3MetaStateModel } from './state/s3meta';
 import { S3SelectionStateModel } from './state/s3selection';
 import { S3Service } from './services/s3';
@@ -46,6 +47,7 @@ export class TreeComponent extends LifecycleComponent {
 
   @Input() prefs = {} as PrefsStateModel;
   @Input() s3 = {} as S3StateModel;
+  @Input() s3filter = {} as S3FilterStateModel;
   @Input() s3meta = {} as S3MetaStateModel;
   @Input() selection = {} as S3SelectionStateModel;
   @Input() view = {} as S3ViewStateModel;

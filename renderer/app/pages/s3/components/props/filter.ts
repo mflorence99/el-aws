@@ -9,6 +9,7 @@ import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { OnChange } from 'ellib';
 import { S3Filter } from '../../state/s3filter';
+import { S3FilterState } from '../../state/s3filter';
 import { S3FilterStateModel } from '../../state/s3filter';
 import { Validators } from '@angular/forms';
 
@@ -62,7 +63,7 @@ export class BucketFilterComponent extends LifecycleComponent {
       if (this.filterForm) {
         this.filterForm.reset();
         if (!this.filter)
-          this.filter = { bucket: this.desc.name, period: 'THIS_WEEK' };
+          this.filter = { bucket: this.desc.name, ...S3FilterState.filterDefaults() };
         this.filterForm.patchValue(this.filter, { emitEvent: false });
       }
     }

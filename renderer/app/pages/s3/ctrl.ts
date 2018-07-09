@@ -39,6 +39,7 @@ import { UpdateVisibility } from './state/s3view';
 import { ViewVisibility } from './state/s3view';
 import { WatcherService } from './services/watcher';
 
+import { config } from '../../config';
 import { nextTick } from 'ellib';
 import { ofAction } from '@ngxs/store';
 
@@ -106,6 +107,7 @@ export class S3CtrlComponent extends LifecycleComponent {
       nextTick(() => {
         const bucket = this.bucketFilterForm.bucket;
         this.store.dispatch(new SetFilter({ bucket, filter: this.bucketFilterForm }));
+        this.watcher.touch(bucket + config.s3Delimiter);
       });
     }
   }

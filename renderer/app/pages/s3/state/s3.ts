@@ -50,7 +50,7 @@ export class DirectoryLoaded {
 
 export class ExtendDirectory {
   static readonly type = '[S3] extend directory';
-  constructor(public readonly payload: { path: string, token: string, versioning: boolean }) { }
+  constructor(public readonly payload: { path: string, token: string, versioning: boolean, extensionNum: number }) { }
 }
 
 export class FileVersionsLoaded {
@@ -187,14 +187,15 @@ export interface S3StateModel {
   @Action(ExtendDirectory)
   extendDirectory({ dispatch, getState }: StateContext<S3StateModel>,
                   { payload }: ExtendDirectory) {
-    const { path, token, versioning } = payload;
-    this.s3Svc.extendDirectory(path, token, versioning,
+    const { path, token, versioning, extensionNum } = payload;
+    this.s3Svc.extendDirectory(path, token, versioning, extensionNum,
                                 (bucket: S3.BucketName,
                                  prefixes: S3.CommonPrefixList,
                                  contents: S3.ObjectList,
                                  truncated: S3.IsTruncated,
                                  token: S3.Token,
-                                 versioning: boolean) => {
+                                 versioning: boolean,
+                                 extensionNum: number) => {
       const dirs = prefixes.map((prefix: S3.CommonPrefix) => {
         return this.makeDescriptorForDirectory(bucket, prefix);
       });
@@ -210,8 +211,8 @@ export interface S3StateModel {
         dispatch(new DirectoryLoaded({ path, descs }));
         dispatch(new Message({ text: `Extended ${path}` }));
         // keep going if there's more
-        if (truncated && token && (descs.length < config.s3MaxDescs))
-          dispatch(new ExtendDirectory({ path, token, versioning }));
+        if (truncated && token && (descs.length < config.s3MaxDescs) && (extensionNum < config.s3MaxDirExtensions))
+          dispatch(new ExtendDirectory({ path, token, versioning, extensionNum }));
       });
     });
   }
@@ -286,7 +287,7 @@ export interface S3StateModel {
             dispatch(new Message({ text: `Loaded ${path}` }));
             // keep going if there's more
             if (truncated && token && (descs.length < config.s3MaxDescs))
-              dispatch(new ExtendDirectory({ path, token, versioning }));
+              dispatch(new ExtendDirectory({ path, token, versioning, extensionNum: 0 }));
           });
         });
       }

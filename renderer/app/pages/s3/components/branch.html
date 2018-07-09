@@ -7,11 +7,11 @@
     [contextMenu]="contextMenu"
     [desc]="desc"
     [dictionary]="dictionary"
+    [filter]="desc.isBucket? s3filter[desc.name] : null"
     [libHydrated]="desc.path"
     [level]="level + 1"
     [path]="desc.path"
     [prefs]="prefs"
-    [s3]="s3"
     [selection]="selection"
     [view]="view"
     #row>
@@ -25,6 +25,7 @@
     [path]="desc.path"
     [prefs]="prefs"
     [s3]="s3"
+    [s3filter]="s3filter"
     [selection]="selection"
     [view]="view"
     *ngIf="tree.isExpanded(desc)">

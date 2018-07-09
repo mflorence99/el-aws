@@ -10,8 +10,8 @@ import { Input } from '@angular/core';
 import { PrefsStateModel } from '../../../state/prefs';
 import { RemovePath } from '../state/s3view';
 import { ReplacePathsInSelection } from '../state/s3selection';
+import { S3Filter } from '../state/s3filter';
 import { S3SelectionStateModel } from '../state/s3selection';
-import { S3StateModel } from '../state/s3';
 import { S3ViewStateModel } from '../state/s3view';
 import { Store } from '@ngxs/store';
 import { TogglePathInSelection } from '../state/s3selection';
@@ -33,11 +33,11 @@ export class RowComponent {
   @Input() contextMenu: ContextMenuComponent;
   @Input() desc: Descriptor;
   @Input() dictionary: Dictionary[] = [];
+  @Input() filter = {} as S3Filter;
   @Input() hydrated = true;
   @Input() level = 0;
   @Input() path: string;
   @Input() prefs = {} as PrefsStateModel;
-  @Input() s3 = {} as S3StateModel;
   @Input() selection = {} as S3SelectionStateModel;
   @Input() view = {} as S3ViewStateModel;
 

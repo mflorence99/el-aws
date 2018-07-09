@@ -11,6 +11,7 @@ import { BucketMetadataVersioning } from '../state/s3meta';
 import { BucketMetadataWebsite } from '../state/s3meta';
 import { CreateBucketRequest } from '../state/s3';
 import { ElectronService } from 'ngx-electron';
+import { FeatureState } from '../state/feature';
 import { FileMetadata } from '../state/s3meta';
 import { FileMetadataAcl } from '../state/s3meta';
 import { FileMetadataAclGrant } from '../state/s3meta';
@@ -21,8 +22,11 @@ import { Message } from '../../../state/status';
 import { Observable } from 'rxjs';
 import { PathInfo } from '../services/path';
 import { PathService } from '../services/path';
+import { PeriodResolverService } from '../../../services/period-resolver';
 import { PrefsState } from '../../../state/prefs';
 import { PrefsStateModel } from '../../../state/prefs';
+import { S3FilterState } from '../state/s3filter';
+import { S3FilterStateModel } from '../state/s3filter';
 import { Select } from '@ngxs/store';
 import { Store } from '@ngxs/store';
 import { WatcherService } from './watcher';
@@ -41,6 +45,7 @@ export class S3Service {
 
   @Select(PrefsState) prefs$: Observable<PrefsStateModel>;
 
+  private minimatch;
   private s3: S3;
 
   private s3_: typeof S3;
@@ -48,8 +53,10 @@ export class S3Service {
   /** ctor */
   constructor(private electron: ElectronService,
               private path: PathService,
+              private periodResolver: PeriodResolverService,
               private store: Store,
               private watcher: WatcherService) {
+    this.minimatch = this.electron.remote.require('minimatch');
     this.s3_ = this.electron.remote.require('aws-sdk/clients/s3');
     this.prefs$.subscribe((prefs: PrefsStateModel) => {
       this.s3 = new this.s3_({ 
@@ -138,12 +145,14 @@ export class S3Service {
   extendDirectory(path: string,
                   token: string,
                   versioning: boolean,
+                  extensionNum: number,
                   cb: (bucket: S3.BucketName,
                        prefixes: S3.CommonPrefixList,
                        contents: S3.ObjectList,
                        truncated: S3.IsTruncated,
                        token: S3.Token,
-                       versioning: boolean) => void): void {
+                       versioning: boolean,
+                       extensionNum: number) => void): void {
     const { bucket, prefix } = this.path.analyze(path);
     const params: S3.ListObjectsV2Request = {
       Bucket: bucket,
@@ -156,7 +165,7 @@ export class S3Service {
     this.s3.listObjectsV2(params, (err, data) => {
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
-      else cb(data.Name, data.CommonPrefixes, data.Contents, data.IsTruncated, data.NextContinuationToken, versioning);
+      else cb(data.Name, data.CommonPrefixes, this.filter(bucket, data.Contents), data.IsTruncated, data.NextContinuationToken, versioning, extensionNum + 1);
     });
   }
 
@@ -263,7 +272,7 @@ export class S3Service {
         const versioning: S3.GetBucketVersioningOutput = results.versioning;
         const data: S3.ListObjectsV2Output = results.objects;
         // NOTE: versioning once set can never be turned off
-        cb(data.Name, data.CommonPrefixes, data.Contents, data.IsTruncated, data.NextContinuationToken, !!versioning.Status);
+        cb(data.Name, data.CommonPrefixes, this.filter(bucket, data.Contents), data.IsTruncated, data.NextContinuationToken, !!versioning.Status);
       }
     });
   }
@@ -777,6 +786,16 @@ export class S3Service {
       }
     });
     return policy;
+  }
+
+  private filter(bucket: string,
+                 contents: S3.ObjectList): S3.ObjectList {
+    const s3filter: S3FilterStateModel = 
+      this.store.selectSnapshot((state: FeatureState) => state.s3filter);
+    const filter = S3FilterState.filterDefaults(s3filter[bucket]);
+    return contents
+      .filter(content => this.minimatch(content.Key, filter.match))
+      .filter(content => this.periodResolver.isInRange(content.LastModified, filter.period));
   }
 
   private trace(op: string,

@@ -78,7 +78,7 @@
 
   <fa-icon
     [fixedWidth]="true"
-    [icon]="desc.icon.split(' ')"
+    [icon]="filter? ['fas', 'filter'] : desc.icon.split(' ')"
     [ngStyle]="{color: tree.isEmpty(desc)? 'var(--text-color)' : desc.color}"
     *ngIf="entry.showIcon && desc.isBucket"
     size="xs">

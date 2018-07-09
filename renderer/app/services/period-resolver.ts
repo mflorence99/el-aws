@@ -9,6 +9,15 @@ import { Injectable } from '@angular/core';
 @Injectable()
 export class PeriodResolverService {
 
+  /** Tests if a Date is in range */
+  isInRange(target: string | Date,
+            period: string): boolean {
+    const date = moment(target);
+    const range = this.resolve(period);
+    // NOTE: range is inclusive / exclusive
+    return (date.isSame(range.from) || date.isAfter(range.from)) && date.isBefore(range.to);
+  }
+
   /** Convert relative period into a [from, to) range */
   resolve(period: string): moment.FromTo {
     let from: moment.MomentInput, to: moment.MomentInput;

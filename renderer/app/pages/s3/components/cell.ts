@@ -4,6 +4,7 @@ import { Descriptor } from '../state/s3';
 import { Dictionary } from '../services/dictionary';
 import { Input } from '@angular/core';
 import { PrefsStateModel } from '../../../state/prefs';
+import { S3Filter } from '../state/s3filter';
 import { TreeComponent } from '../tree';
 
 /**
@@ -21,6 +22,7 @@ export class CellComponent {
 
   @Input() desc = {} as Descriptor;
   @Input() entry = {} as Dictionary;
+  @Input() filter = {} as S3Filter;
   @Input() prefs = {} as PrefsStateModel;
 
   /** ctor */
