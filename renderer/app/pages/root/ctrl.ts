@@ -19,7 +19,6 @@ import { PrefsState } from '../../state/prefs';
 import { PrefsStateModel } from '../../state/prefs';
 import { Progress } from '../../state/status';
 import { RouterState } from '@ngxs/router-plugin';
-import { RouterStateModel } from '@ngxs/router-plugin';
 import { S3Guard } from '../../guards/s3';
 import { Select } from '@ngxs/store';
 import { SetBounds } from '../../state/window';
@@ -58,7 +57,8 @@ export class RootCtrlComponent extends LifecycleComponent {
   @Input() prefsForm = {} as PrefsStateModel;
 
   @Select(PrefsState) prefs$: Observable<PrefsStateModel>;
-  @Select(RouterState) router$: Observable<RouterStateModel>;
+  // TODO: should expose @ngxs/router-plugin
+  @Select(RouterState) router$: Observable<any>;
   @Select(StatusState) status$: Observable<StatusStateModel>;
   @Select(WindowState) window$: Observable<WindowStateModel>;
 

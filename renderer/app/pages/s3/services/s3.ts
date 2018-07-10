@@ -76,6 +76,45 @@ export class S3Service {
     }
   }
 
+  /** Clean out a bucket NOTE: test mode */
+  async cleanBucket(Bucket: string,
+                    filter?: string) {
+    while (true) {
+      const data = await this.s3.listObjectsV2({ Bucket, MaxKeys: 1000 }).promise();
+      if (data.Contents.length === 0)
+        break;
+      const params = data.Contents
+        .filter(Content => !filter || Content.Key.startsWith(filter))
+        .reduce((acc, Content) => {
+          this.cleanObjectVersions(Bucket, Content.Key);
+          acc.Delete.Objects.push({ Key: Content.Key });
+          return acc;
+        }, { Bucket, Delete: { Objects: [] }});
+      if (params.Delete.Objects.length) {
+        console.log(`Deleting ${params.Delete.Objects.length} objects from ${Bucket}`);
+        await this.s3.deleteObjects(params).promise();
+      }
+    }
+  }
+
+  async cleanObjectVersions(Bucket: string, 
+                            Prefix: string) {
+    const params: S3.ListObjectVersionsRequest = { Bucket, Prefix };
+    const data = await this.s3.listObjectVersions(params).promise();
+    if (data.Versions.length > 0) {
+      const params = data.Versions
+        .filter(Version => Version.VersionId && (Version.VersionId !== 'null'))
+        .reduce((acc, Version) => {
+          acc.Delete.Objects.push({ Key: Version.Key, VersionId: Version.VersionId });
+          return acc;
+        }, { Bucket, Delete: { Objects: [] } });
+      if (params.Delete.Objects.length) {
+        console.log(`Deleting ${params.Delete.Objects.length} versions from ${Bucket}`);
+        await this.s3.deleteObjects(params).promise();
+      }
+    }
+  }
+
   /** Create a new bucket */
   createBucket(request: CreateBucketRequest,
                cb?: () => void): void {

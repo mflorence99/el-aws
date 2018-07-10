@@ -6,7 +6,6 @@ import { MatTabGroup } from '@angular/material';
 import { Navigate } from '@ngxs/router-plugin';
 import { Navigator } from '../../services/navigator';
 import { OnChange } from 'ellib';
-import { RouterStateModel } from '@ngxs/router-plugin';
 import { SetRoute } from '../../state/window';
 import { ShowPagePrefs } from '../../state/window';
 import { Store } from '@ngxs/store';
@@ -25,7 +24,8 @@ import { ViewChild } from '@angular/core';
 
 export class TabsComponent extends LifecycleComponent { 
 
-  @Input() router = {} as RouterStateModel;
+  // TODO: should expose @ngxs/router-plugin
+  @Input() router: any = {};
   @Input() tabs: Navigator[] = [];
 
   @ViewChild(MatTabGroup) tabGroup: MatTabGroup;
