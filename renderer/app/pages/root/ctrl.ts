@@ -1,4 +1,5 @@
 import { Actions } from '@ngxs/store';
+import { AutoUnsubscribe } from 'ellib';
 import { Canceled } from '../../state/status';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { Component } from '@angular/core';
@@ -11,6 +12,7 @@ import { LifecycleComponent } from 'ellib';
 import { Message } from '../../state/status';
 import { Navigate } from '@ngxs/router-plugin';
 import { Navigator } from '../../services/navigator';
+import { NgZone } from '@angular/core';
 import { Observable } from 'rxjs';
 import { OnChange } from 'ellib';
 import { PrefsState } from '../../state/prefs';
@@ -25,6 +27,7 @@ import { SetupGuard } from '../../guards/setup';
 import { StatusState } from '../../state/status';
 import { StatusStateModel } from '../../state/status';
 import { Store } from '@ngxs/store';
+import { Subscription } from 'rxjs/Subscription';
 import { UpdatePrefs } from '../../state/prefs';
 import { WindowState } from '../../state/window';
 import { WindowStateModel } from '../../state/window';
@@ -49,6 +52,7 @@ import { take } from 'rxjs/operators';
   template: ''
 })
 
+@AutoUnsubscribe()
 export class RootCtrlComponent extends LifecycleComponent {       
 
   @Input() prefsForm = {} as PrefsStateModel;
@@ -57,6 +61,8 @@ export class RootCtrlComponent extends LifecycleComponent {
   @Select(RouterState) router$: Observable<RouterStateModel>;
   @Select(StatusState) status$: Observable<StatusStateModel>;
   @Select(WindowState) window$: Observable<WindowStateModel>;
+
+  subToCancel: Subscription;
 
   tabs$: Observable<Navigator[]>;
 
@@ -100,40 +106,13 @@ export class RootCtrlComponent extends LifecycleComponent {
   constructor(private actions$: Actions,
               private electron: ElectronService,
               private injector: Injector,
-              private store: Store) {
+              private store: Store,
+              private zone: NgZone) {
     super();
-    // setup the tabs depending on what is available
-    this.tabs$ = combineLatest(this.navigator.map(tab => combineLatest(of(tab), ...this.canNavigate(tab))))
-      .pipe(
-        map((combined: any[][]) => {
-          return combined
-            .map((item: any[]) => ({ tab: item[0], flags: item.slice(1) }))
-            .filter((item: { tab, flags }) => item.flags.every(can => can))
-            .map((item: { tab, flags }) => item.tab);
-        })
-      );
-    // set the initial bounds
-    this.window$.pipe(take(1))
-      .subscribe((window: WindowStateModel) => {
-        const win = this.electron.remote.getCurrentWindow();
-        if (window.bounds)
-          win.setBounds(window.bounds);
-        this.store.dispatch(new Navigate([window.route || '/noop']));
-      });
-    // record the bounds when they change
-    this.electron.ipcRenderer.on('bounds', debounce((event, bounds) => {
-      this.store.dispatch(new SetBounds(bounds));
-    }, config.setBoundsThrottle)); 
-    // handle general Cancel in case of long running main process action 
-    this.actions$.pipe(ofAction(Canceled))
-      .subscribe(() => this.electron.ipcRenderer.send('cancel'));
-    // handle general progress indication from main process 
-    this.electron.ipcRenderer.on('progress', (event, progress) => {
-      const state = (progress === 100)? 'completed' : 'scaled';
-      this.store.dispatch(new Progress({ scale: progress, state }));
-      if (progress === 100)
-        this.store.dispatch(new Message({ text: '' }));
-    });  
+    this.tabs$ = this.makeNavigator();
+    this.handleActions(); 
+    this.handleWindowBounds();
+    this.electron.ipcRenderer.on('progress', this.showProgress.bind(this));  
   }     
 
   // bind OnChange handlers
@@ -157,6 +136,50 @@ export class RootCtrlComponent extends LifecycleComponent {
     else return tab.canNavigate.map(clazz => {
       const guard = this.injector.get(clazz);
       return guard.canActivate();
+    });
+  }
+
+  private handleActions(): void {
+    // handle general Cancel in case of long running main process action 
+    this.subToCancel = this.actions$.pipe(ofAction(Canceled))
+      .subscribe(() => this.electron.ipcRenderer.send('cancel'));
+  }
+
+  private handleWindowBounds(): void {
+    // set the initial bounds
+    this.window$.pipe(take(1))
+      .subscribe((window: WindowStateModel) => {
+        const win = this.electron.remote.getCurrentWindow();
+        if (window.bounds)
+          win.setBounds(window.bounds);
+        this.store.dispatch(new Navigate([window.route || '/noop']));
+      });
+    // record the bounds when they change
+    this.electron.ipcRenderer.on('bounds', debounce((event, bounds) => {
+      this.store.dispatch(new SetBounds(bounds));
+    }, config.setBoundsThrottle));
+  }
+
+  private makeNavigator(): Observable<Navigator[]> {
+    const tabs = this.navigator.map(tab => combineLatest(of(tab), ...this.canNavigate(tab)));
+    return combineLatest(tabs)
+      .pipe(
+        map((combined: any[][]) => {
+          return combined
+            .map((item: any[]) => ({ tab: item[0], flags: item.slice(1) }))
+            .filter((item: { tab, flags }) => item.flags.every(can => can))
+            .map((item: { tab, flags }) => item.tab);
+        })
+      );
+  }
+
+  private showProgress(event, 
+                       percent: number): void {
+    this.zone.run(() => {
+      const state = (percent === 100) ? 'completed' : 'scaled';
+      this.store.dispatch(new Progress({ scale: percent, state }));
+      if (percent === 100)
+        this.store.dispatch(new Message({ text: '' }));
     });
   }
 

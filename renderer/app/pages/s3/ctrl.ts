@@ -91,20 +91,6 @@ export class S3CtrlComponent extends LifecycleComponent {
               private watcher: WatcherService,
               private zone: NgZone) {
     super();
-    // listen for open prefs
-    this.subToShowPagePrefs = this.actions$.pipe(ofAction(ShowPagePrefs))
-      .subscribe(() => this.openView.emit());
-    // clean up on a reset
-    this.subToReset = this.actions$.pipe(ofAction(Reset))
-      .subscribe(() => this.store.dispatch(new ClearPaths()));
-    // cancel long-running operation
-    this.subToCancel = this.actions$.pipe(ofAction(Canceled))
-      .subscribe(() => {
-        this.zone.run(() => {
-          this.store.dispatch(new Progress({ state: 'completed' }));
-          this.s3Svc.cancelUpload();
-        });
-      });
     // load all the data in the view
     // TODO: expire here doesn't work because it's ALWAYS 15 mins between sessions
     // this.store.dispatch(new ExpirePaths());
@@ -113,30 +99,8 @@ export class S3CtrlComponent extends LifecycleComponent {
       this.watcher.watch(path);
       this.store.dispatch(new LoadDirectory({ path }));
     });
-    // respond to upload request
-    this.electron.ipcRenderer.on('s3upload', (event, base, source) => {
-      const path = this.electron.remote.require('path');
-      const filename = path.basename(source);
-      const fs = this.electron.remote.require('fs');
-      const stream = fs.createReadStream(source);
-      this.store.dispatch(new Message({ text: `Uploading ${source} ...` }));
-      this.s3Svc.uploadObject(`${base}${filename}`, stream,
-        // while running
-        progress => {
-          this.zone.run(() => {
-            const state = (progress === 100) ? 'completed' : 'scaled';
-            this.store.dispatch(new Progress({ scale: progress, state }));
-          });
-        },
-        // when complete
-        () => {
-          this.watcher.touch(base);
-          this.zone.run(() => {
-            this.store.dispatch(new Progress({ scale: 100, state: 'completed' }));
-            this.store.dispatch(new Message({ text: `Uploaded ${source}` }));
-          });
-        });
-    });
+    this.handleActions();
+    this.electron.ipcRenderer.on('s3upload', this.handleUpload.bind(this));
   }    
 
   // bind OnChange handlers
@@ -199,6 +163,56 @@ export class S3CtrlComponent extends LifecycleComponent {
         this.store.dispatch(new UpdateVisibility({ visibility }));
       });
     }
+  }
+
+  // private methods
+
+  private handleActions(): void {
+    // listen for open prefs
+    this.subToShowPagePrefs = this.actions$.pipe(ofAction(ShowPagePrefs))
+      .subscribe(() => this.openView.emit());
+    // clean up on a reset
+    this.subToReset = this.actions$.pipe(ofAction(Reset))
+      .subscribe(() => this.store.dispatch(new ClearPaths()));
+    // cancel long-running operation
+    this.subToCancel = this.actions$.pipe(ofAction(Canceled))
+      .subscribe(() => {
+        this.zone.run(() => {
+          this.store.dispatch(new Progress({ state: 'completed' }));
+          this.s3Svc.cancelUpload();
+        });
+      });
+  }
+
+  private handleUpload(event, 
+                       base: string,
+                       source: string): void {
+    const path = this.electron.remote.require('path');
+    const filename = path.basename(source);
+    const fs = this.electron.remote.require('fs');
+    const stream = fs.createReadStream(source);
+    this.zone.run(() => {
+      this.store.dispatch(new Message({ text: `Uploading ${source} ...` }));
+    });
+    this.s3Svc.uploadObject(`${base}${filename}`, stream, 
+      this.handleUploadProgress.bind(this), 
+      this.handleUploadCompleted.bind(this, base, source));
+  }
+
+  private handleUploadCompleted(base: string,
+                                source: string): void {
+    this.watcher.touch(base);
+    this.zone.run(() => {
+      this.store.dispatch(new Progress({ scale: 100, state: 'completed' }));
+      this.store.dispatch(new Message({ text: `Uploaded ${source}` }));
+    });
+  }
+
+  private handleUploadProgress(percent: number): void {
+    this.zone.run(() => {
+      const state = (percent === 100) ? 'completed' : 'scaled';
+      this.store.dispatch(new Progress({ scale: percent, state }));
+    });
   }
 
 }

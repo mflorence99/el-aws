@@ -25,7 +25,7 @@ export class PeriodResolverService {
 
       case 'TODAY':
         from = moment().startOf('day');
-        to = moment();
+        to = moment().add(1, 'year');
         break;
 
       case 'YESTERDAY':
@@ -35,22 +35,22 @@ export class PeriodResolverService {
 
       case 'LAST_2_DAYS':
         from = moment().startOf('day').subtract(1, 'day');
-        to = moment();
+        to = moment().add(1, 'year');
         break;
 
       case 'LAST_3_DAYS':
         from = moment().startOf('day').subtract(2, 'days');
-        to = moment();
+        to = moment().add(1, 'year');
         break;
 
       case 'LAST_7_DAYS':
         from = moment().startOf('day').subtract(6, 'days');
-        to = moment();
+        to = moment().add(1, 'year');
         break;
 
       case 'THIS_WEEK':
         from = moment().startOf('week');
-        to = moment();
+        to = moment().add(1, 'year');
         break;
 
       case 'LAST_WEEK':
@@ -60,7 +60,7 @@ export class PeriodResolverService {
 
       case 'THIS_MONTH':
         from = moment().startOf('month');
-        to = moment();
+        to = moment().add(1, 'year');
         break;
 
       case 'LAST_MONTH':
@@ -70,7 +70,7 @@ export class PeriodResolverService {
 
       case 'THIS_QUARTER':
         from = moment().startOf('quarter');
-        to = moment();
+        to = moment().add(1, 'year');
         break;
 
       case 'LAST_QUARTER':
@@ -80,7 +80,7 @@ export class PeriodResolverService {
 
       case 'THIS_YEAR':
         from = moment().startOf('year');
-        to = moment();
+        to = moment().add(1, 'year');
         break;
 
       case 'LAST_YEAR':
@@ -90,7 +90,7 @@ export class PeriodResolverService {
 
       case 'ANYTIME':
         from = moment.unix(0);
-        to = moment();
+        to = moment().add(1, 'year');
         break;
 
     }
