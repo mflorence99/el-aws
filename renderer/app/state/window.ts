@@ -65,7 +65,15 @@ export interface WindowStateModel {
   @Action(Reload)
   reload() {
     const win = this.electron.remote.getCurrentWindow();
-    win.webContents.reload();
+    const url = win.webContents.getURL();
+    // NOTE: we need this because the router messes with the URL
+    // TODO: why doesn't everyone see this
+    if (url.startsWith('http') || url.endsWith('index.html'))
+      win.webContents.reload();
+    else {
+      const ix = url.lastIndexOf('/');
+      win.webContents.loadURL(url.substring(0, ix + 1) + 'index.html');
+    }
   }
 
   @Action(Reset)
