@@ -127,6 +127,15 @@ export interface FileMetadataHead {
     KMSMasterKeyID?: S3.SSEKMSKeyId;
     SSEAlgorithm: S3.ServerSideEncryption;
   };
+  metadata: {
+    CacheControl?: S3.CacheControl;
+    ContentDisposition?: S3.ContentDisposition;
+    ContentEncoding?: S3.ContentEncoding;
+    ContentLanguage?: S3.ContentLanguage;
+    ContentType?: S3.ContentType;
+    Expires?: S3.Expires;
+    WebsiteRedirectLocation?: S3.WebsiteRedirectLocation;
+  };
   storage: {
     StorageClass: S3.StorageClass;
   };

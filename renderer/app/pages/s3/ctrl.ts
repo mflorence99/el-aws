@@ -18,6 +18,7 @@ import { NgZone } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { OnChange } from 'ellib';
 import { Output } from '@angular/core';
+import { PathService } from './services/path';
 import { PrefsState } from '../../state/prefs';
 import { PrefsStateModel } from '../../state/prefs';
 import { Progress } from '../../state/status';
@@ -86,19 +87,13 @@ export class S3CtrlComponent extends LifecycleComponent {
   /** ctor */
   constructor(private actions$: Actions,
               private electron: ElectronService,
+              private path: PathService,
               private s3Svc: S3Service,
               private store: Store,
               private watcher: WatcherService,
               private zone: NgZone) {
     super();
-    // load all the data in the view
-    // TODO: expire here doesn't work because it's ALWAYS 15 mins between sessions
-    // this.store.dispatch(new ExpirePaths());
-    const paths = this.store.selectSnapshot(S3ViewState.getPaths);
-    paths.forEach(path => {
-      this.watcher.watch(path);
-      this.store.dispatch(new LoadDirectory({ path }));
-    });
+    this.loadInitialPaths();
     this.handleActions();
     this.electron.ipcRenderer.on('s3upload', this.handleUpload.bind(this));
   }    
@@ -213,6 +208,24 @@ export class S3CtrlComponent extends LifecycleComponent {
       const state = (percent === 100) ? 'completed' : 'scaled';
       this.store.dispatch(new Progress({ scale: percent, state }));
     });
+  }
+
+  private loadInitialPaths(): void {
+    // TODO: expire here doesn't work because it's ALWAYS 15 mins between sessions
+    // this.store.dispatch(new ExpirePaths());
+    // only premptively load paths whose parent has been loaded
+    // NOTE: sorting guarantees that a parent is loaded before its children
+    const loaded = { };
+    this.store.selectSnapshot(S3ViewState.getPaths)
+      .sort()
+      .forEach(path => {
+        const { parent } = this.path.analyze(path);
+        if (!parent || loaded[parent]) {
+          loaded[path] = true;
+          this.watcher.watch(path);
+          this.store.dispatch(new LoadDirectory({ path }));
+        }
+      });
   }
 
 }

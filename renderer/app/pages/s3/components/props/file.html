@@ -44,7 +44,7 @@
             <div 
             [ngClass]="{invalid: !propsForm.get('head.encryption').valid}"
             class="drawer-label">
-              {{ metadata?.encryption?.SSEAlgorithm || 'Default' }}
+              {{ metadata?.head?.encryption?.SSEAlgorithm || 'Default' }}
             </div>
           </mat-panel-title>
         </mat-expansion-panel-header>
@@ -93,6 +93,58 @@
           </mat-form-field>
 
         </div>
+
+      </mat-expansion-panel>
+
+      <!-- METADATA -->
+
+      <mat-expansion-panel>
+
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Metadata
+            <div 
+            [ngClass]="{invalid: !propsForm.get('head.metadata').valid}"
+            class="drawer-label">
+            {{ metadataCount() | i18nPlural: metadataLabelMapping }}
+            </div>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+
+      <div class="group">
+
+        <div class="drawer-label">
+          Metadata is used as HTTP headers when objects are deployed.
+        </div>
+
+        <elaws-key-value
+          [keyConstraints]="metadataKeys"
+          duplicateKeyMessage="Metadata is already in use"
+          formControlName="metadata"
+          placeholder="New metadata">
+
+          <ng-template #keyIcon>
+            <fa-icon
+              [icon]="['fas', 'key']"
+              flip="horizontal"
+              size="xs"
+              style="color: var(--primary-color)">
+            </fa-icon>
+            &nbsp;
+          </ng-template>
+
+          <ng-template #valueIcon>
+            <fa-icon
+              [icon]="['fas', 'tag']"
+              size="xs"
+              style="color: var(--primary-color)">
+            </fa-icon>
+            &nbsp;
+          </ng-template>
+
+        </elaws-key-value>
+
+      </div>
 
       </mat-expansion-panel>
 
@@ -188,7 +240,7 @@
             <div 
             [ngClass]="{invalid: !propsForm.get('head.storage').valid}"
             class="drawer-label">
-              {{ metadata?.storage || desc.storage }}
+              {{ metadata?.head?.storage?.StorageClass || desc.storage }}
             </div>
           </mat-panel-title>
         </mat-expansion-panel-header>

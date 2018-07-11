@@ -1,5 +1,4 @@
 import { Action } from '@ngxs/store';
-import { LoadDirectory } from './s3';
 import { Selector } from '@ngxs/store';
 import { State } from '@ngxs/store';
 import { StateContext } from '@ngxs/store';
@@ -105,13 +104,12 @@ export interface ViewWidths {
   constructor(private watcher: WatcherService) { }
 
   @Action(AddPath)
-  addPath({ dispatch, getState, patchState }: StateContext<S3ViewStateModel>,
+  addPath({ getState, patchState }: StateContext<S3ViewStateModel>,
           { payload }: AddPath) {
     const { path } = payload;
     const state = getState();
     if (!state.paths.includes(path)) { 
       patchState({ paths: [...state.paths, path] });
-      dispatch(new LoadDirectory({ path }));
       // watch for changes
       this.watcher.watch(path);
     }

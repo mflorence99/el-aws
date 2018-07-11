@@ -4,6 +4,7 @@ import { ContextMenuComponent } from 'ngx-contextmenu';
 import { Descriptor } from '../state/s3';
 import { Dictionary } from '../services/dictionary';
 import { Input } from '@angular/core';
+import { LoadDirectory } from '../state/s3';
 import { OnInit } from '@angular/core';
 import { PrefsStateModel } from '../../../state/prefs';
 import { S3FilterStateModel } from '../state/s3filter';
@@ -11,7 +12,7 @@ import { S3SelectionStateModel } from '../state/s3selection';
 import { S3StateModel } from '../state/s3';
 import { S3ViewStateModel } from '../state/s3view';
 import { Store } from '@ngxs/store';
-import { TreeComponent } from '../tree';
+import { TreeComponent } from './tree';
 import { UpdatePathLRU } from '../state/s3view';
 
 /**
@@ -45,7 +46,10 @@ export class BranchComponent implements OnInit {
   // lifecycle methods
 
   ngOnInit(): void {
-    this.store.dispatch(new UpdatePathLRU({ path: this.path }));
+    this.store.dispatch([
+      new LoadDirectory({ path: this.path }),
+      new UpdatePathLRU({ path: this.path })
+    ]);
   }
 
 } 

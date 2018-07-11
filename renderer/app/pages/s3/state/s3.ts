@@ -307,7 +307,7 @@ export interface S3StateModel {
       this.s3Svc.loadFileVersions(path, (versions: S3.ObjectVersionList) => {
         descs = versions
           // NOTE: that's an odd encoding but it is what the tests reveal
-          .filter((version: S3.ObjectVersion) => version.VersionId && (version.VersionId !== 'null'))
+          .filter((version: S3.ObjectVersion) => !version.IsLatest && version.VersionId && (version.VersionId !== 'null'))
           .map((version: S3.ObjectVersion) => {
             return this.makeDescriptorForFileVersion(path, version);
           });

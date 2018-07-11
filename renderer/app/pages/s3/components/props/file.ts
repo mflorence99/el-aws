@@ -14,6 +14,7 @@ import { PrefsStateModel } from '../../../../state/prefs';
 import { S3MetaStateModel } from '../../state/s3meta';
 import { Store } from '@ngxs/store';
 
+import { config } from '../../../../config';
 import { showHideAnimation } from 'ellib';
 
 /**
@@ -37,7 +38,11 @@ export class FilePropsComponent extends LifecycleComponent {
   metadata = { } as FileMetadata;
   propsForm: FormGroup;
 
-  tagLabelMapping: { [k: string]: string } = { '=0': 'No tags.', '=1': 'One tag.', 'other': '# tags.' };
+  metadataKeys = config.s3MetadataKeys;
+
+  metadataLabelMapping: { [k: string]: string } = { '=0': 'None', 'other': 'Defined' };
+
+  tagLabelMapping: { [k: string]: string } = { '=0': 'No tags', '=1': 'One tag', 'other': '# tags' };
 
   /** ctor */
   constructor(private cdf: ChangeDetectorRef,
@@ -63,6 +68,7 @@ export class FilePropsComponent extends LifecycleComponent {
             KMSMasterKeyID: '',
             SSEAlgorithm: ''
           }),
+          metadata: '',
           storage: this.formBuilder.group({
             StorageClass: ''
           }),
@@ -80,6 +86,13 @@ export class FilePropsComponent extends LifecycleComponent {
   /** Close drawer */
   close(): void {
     this.drawerPanel.close();
+  }
+
+  /** Do we have metadata? */
+  metadataCount(): number {
+    if (this.metadata && this.metadata.head)
+      return Object.keys(this.metadata.head.metadata).length;
+    else return 0;
   }
 
   // bind OnChange handlers

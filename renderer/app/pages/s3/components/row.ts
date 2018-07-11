@@ -7,6 +7,7 @@ import { ContextMenuComponent } from 'ngx-contextmenu';
 import { Descriptor } from '../state/s3';
 import { Dictionary } from '../services/dictionary';
 import { Input } from '@angular/core';
+import { LoadDirectory } from '../state/s3';
 import { PrefsStateModel } from '../../../state/prefs';
 import { RemovePath } from '../state/s3view';
 import { ReplacePathsInSelection } from '../state/s3selection';
@@ -15,7 +16,7 @@ import { S3SelectionStateModel } from '../state/s3selection';
 import { S3ViewStateModel } from '../state/s3view';
 import { Store } from '@ngxs/store';
 import { TogglePathInSelection } from '../state/s3selection';
-import { TreeComponent } from '../tree';
+import { TreeComponent } from './tree';
 
 /**
  * S3 row component
@@ -63,7 +64,12 @@ export class RowComponent {
           desc: Descriptor): void {
     if (this.view.paths.includes(desc.path))
       this.store.dispatch(new RemovePath({ path: desc.path }));
-    else this.store.dispatch(new AddPath({ path: desc.path }));
+    else {
+      this.store.dispatch([
+        new AddPath({ path: desc.path }),
+        new LoadDirectory({ path: desc.path })
+      ]);
+    }
     event.stopPropagation();
   }
 

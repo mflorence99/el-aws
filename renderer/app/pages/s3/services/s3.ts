@@ -589,15 +589,25 @@ export class S3Service {
   private getObjectHead(params: any, 
                         cb: (err, data: FileMetadataHead) => void) {
     this.s3.headObject(params, (err, data: S3.HeadObjectOutput) => {
-      cb(null, {
-        encryption: { 
+      const head = {
+        encryption: {
           SSEAlgorithm: nullSafe(data, 'ServerSideEncryption'),
           KMSMasterKeyID: nullSafe(data, 'SSEKMSKeyId')
         },
-        storage: { 
+        metadata: {
+          // TBD below
+        },
+        storage: {
           StorageClass: nullSafe(data, 'StorageClass')
         }
+      };
+      // fill in only used metadata
+      config.s3MetadataKeys.forEach(key => {
+        const value = nullSafe(data, key);
+        if (value)
+          head.metadata[key] = value;
       });
+      cb(null, head);
     });
   }
 
@@ -781,6 +791,14 @@ export class S3Service {
         if (copy.ServerSideEncryption === 'aws:kms')
           copy.SSEKMSKeyId = head.encryption.KMSMasterKeyID;
       }
+      // metadata changes
+      Object.keys(head.metadata).forEach(key => {
+        if (head.metadata[key]) {
+          changed = true;
+          copy[key] = head.metadata[key];
+          copy.MetadataDirective = 'REPLACE';
+        }
+      });
       // storage changes
       if (head.storage.StorageClass) {
         changed = true;

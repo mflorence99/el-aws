@@ -3,33 +3,33 @@ import { ChangeDetectionStrategy } from '@angular/core';
 import { ChangeDetectorRef } from '@angular/core';
 import { Component } from '@angular/core';
 import { ContextMenuComponent } from 'ngx-contextmenu';
-import { DeleteBucket } from './state/s3';
-import { DeleteObjects } from './state/s3';
-import { Descriptor } from './state/s3';
-import { Dictionary } from './services/dictionary';
-import { DictionaryService } from './services/dictionary';
+import { DeleteBucket } from '../state/s3';
+import { DeleteObjects } from '../state/s3';
+import { Descriptor } from '../state/s3';
+import { Dictionary } from '../services/dictionary';
+import { DictionaryService } from '../services/dictionary';
 import { ElectronService } from 'ngx-electron';
 import { EventEmitter } from '@angular/core';
 import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
-import { Message } from '../../state/status';
+import { Message } from '../../../state/status';
 import { NgZone } from '@angular/core';
 import { OnChange } from 'ellib';
 import { Output } from '@angular/core';
-import { PrefsStateModel } from '../../state/prefs';
-import { RemovePath } from './state/s3view';
-import { RemovePaths } from './state/s3view';
-import { S3FilterStateModel } from './state/s3filter';
-import { S3MetaStateModel } from './state/s3meta';
-import { S3SelectionStateModel } from './state/s3selection';
-import { S3Service } from './services/s3';
-import { S3StateModel } from './state/s3';
-import { S3ViewStateModel } from './state/s3view';
+import { PrefsStateModel } from '../../../state/prefs';
+import { RemovePath } from '../state/s3view';
+import { RemovePaths } from '../state/s3view';
+import { S3FilterStateModel } from '../state/s3filter';
+import { S3MetaStateModel } from '../state/s3meta';
+import { S3SelectionStateModel } from '../state/s3selection';
+import { S3Service } from '../services/s3';
+import { S3StateModel } from '../state/s3';
+import { S3ViewStateModel } from '../state/s3view';
 import { Store } from '@ngxs/store';
 import { Subscription } from 'rxjs';
 import { ViewChild } from '@angular/core';
 
-import { config } from '../../config';
+import { config } from '../../../config';
 import { debounce } from 'ellib';
 
 /**
@@ -90,6 +90,12 @@ export class TreeComponent extends LifecycleComponent {
     return this.newName && (this.newName.length > 0);
   }
 
+  /** Is this the kind of path that has children? */
+  hasChildren(desc: Descriptor): boolean {
+    return desc
+      && (desc.isBucket || desc.isDirectory || (desc.isFile && desc.isFileVersioned));
+  }
+
   /** Is this an object that has properties? */
   hasProperties(desc: Descriptor): boolean {
     return this.isBucket(desc) || this.isFile(desc) || this.isFileVersion(desc);
@@ -117,24 +123,27 @@ export class TreeComponent extends LifecycleComponent {
 
   /** Is this path empty? */
   isEmpty(desc: Descriptor): boolean {
-    return desc
-      && (desc.isBucket || desc.isDirectory || (desc.isFile && desc.isFileVersioned))
+    return this.hasChildren(desc)
       && !!this.s3[desc.path]
       && (this.s3[desc.path].length === 0);
   }
 
+  /** Is this path expandable? */
+  isExpandable(desc: Descriptor): boolean {
+    return this.hasChildren(desc)
+      && this.view.paths.includes(desc.path);
+  }
+
   /** Is this path expanded? */
   isExpanded(desc: Descriptor): boolean {
-    return desc
-      && (desc.isBucket || desc.isDirectory || (desc.isFile && desc.isFileVersioned))
+    return this.hasChildren(desc)
       && this.view.paths.includes(desc.path)
       && !!this.s3[desc.path];
   }
 
   /** Is this path expanding? */
   isExpanding(desc: Descriptor): boolean {
-    return desc
-      && (desc.isBucket || desc.isDirectory || (desc.isFile && desc.isFileVersioned))
+    return this.hasChildren(desc)
       && this.view.paths.includes(desc.path)
       && !this.s3[desc.path];
   }

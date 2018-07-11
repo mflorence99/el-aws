@@ -44,7 +44,7 @@ export class Config {
     'us-gov-west-1': 'US Gov West 1'
   };
 
-  resetDelay: 1500;
+  resetDelay = 1500;
 
   // @see https://stackoverflow.com/questions/50480924/regex-for-s3-bucket-name
   s3BucketValidationPattern = /(?=^.{3,63}$)(?!^(\d+\.)+\d+$)(^(({[}a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)*([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$)/;
@@ -57,6 +57,16 @@ export class Config {
   s3SignedURLExpiry = 60 * 60 * 1000;
   s3TreeRefreshThrottle = 100;
   s3WatcherThrottle = 100;
+
+  s3MetadataKeys = [
+    'CacheControl',
+    'ContentDisposition',
+    'ContentEncoding',
+    'ContentLanguage',
+    'ContentType',
+    'Expires',
+    'WebsiteRedirectLocation'
+  ];
 
   s3Colors = [
     'var(--mat-amber-a100)',

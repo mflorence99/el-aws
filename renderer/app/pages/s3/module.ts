@@ -11,7 +11,6 @@ import { Routes } from '@angular/router';
 import { S3CtrlComponent } from './ctrl';
 import { S3PageComponent } from './page';
 import { S3Service } from './services/s3';
-import { TreeComponent } from './tree';
 import { WatcherService } from './services/watcher';
 
 import { states } from './state/feature';
@@ -23,8 +22,7 @@ import { states } from './state/feature';
 const COMPONENTS = [
   HeaderComponent,
   S3CtrlComponent,
-  S3PageComponent,
-  TreeComponent
+  S3PageComponent
 ];
 
 const MODULES = [

@@ -5,7 +5,7 @@ import { Dictionary } from '../services/dictionary';
 import { Input } from '@angular/core';
 import { PrefsStateModel } from '../../../state/prefs';
 import { S3Filter } from '../state/s3filter';
-import { TreeComponent } from '../tree';
+import { TreeComponent } from './tree';
 
 /**
  * S3 cell component

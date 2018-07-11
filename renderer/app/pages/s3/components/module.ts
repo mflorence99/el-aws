@@ -10,6 +10,7 @@ import { FilePropsComponent } from './props/file';
 import { NgModule } from '@angular/core';
 import { RowComponent } from './row';
 import { SelectBucketComponent } from './select-bucket';
+import { TreeComponent } from './tree';
 import { ViewComponent } from './view';
 
 /**
@@ -26,6 +27,7 @@ const COMPONENTS = [
   FilePropsComponent,
   RowComponent,
   SelectBucketComponent,
+  TreeComponent,
   ViewComponent
 ];
 
