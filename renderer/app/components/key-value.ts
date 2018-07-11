@@ -73,14 +73,15 @@ export class KeyValueComponent implements ControlValueAccessor,
   @ContentChild('valueIcon') valueIcon: TemplateRef<any>;
 
   @HostBinding('attr.aria-describedby') describedBy = '';
-  @HostBinding() id = `my-tel-input-${KeyValueComponent.nextID++}`;
+  @HostBinding() id = `elaws-key-value-${KeyValueComponent.nextID++}`;
 
   @Input() asArray = false;
   @Input() asArrayOfHashes: KeyValueTuple;
   @Input() asHash = true;
   @Input() duplicateKeyMessage: string;
+  @Input() keyConstraints: string[];
 
-  @ViewChild('newKey') newKey: ElementRef;
+  @ViewChild('newKey') newKey: any;
 
   // @see MatFormFieldControl
   controlType = 'elaws-key-value';
@@ -200,7 +201,9 @@ export class KeyValueComponent implements ControlValueAccessor,
         this.keyValues[key] = null;
         this.buildForm();
         this.stateChanges.next();
-        this.newKey.nativeElement.value = '';
+        if (this.keyConstraints)
+          this.newKey.value = '';
+        else this.newKey.nativeElement.value = '';
       }
       else this.duplicateKey = true;
     }
@@ -217,12 +220,7 @@ export class KeyValueComponent implements ControlValueAccessor,
   }
 
   /** @see MatFormFieldControl */
-  /** @see https://material.angular.io/guide/creating-a-custom-form-field-control */
-  onContainerClick(event: MouseEvent) { 
-    const tagName = (<Element>event.target).tagName.toLowerCase();
-    if (!['input', 'a'].includes(tagName))
-      this.newKey.nativeElement.focus();
-  }
+  onContainerClick(event: MouseEvent) { }
 
   /** @see ControlValueAccessor */
   registerOnChange(fn): void {

@@ -47,10 +47,24 @@
       </ng-container>
     </span>
 
+    <mat-select
+      [disabled]="disabled"
+      [errorStateMatcher]="errorStateMatcher"
+      [placeholder]="placeholder"
+      *ngIf="keyConstraints"
+      #newKey>
+      <mat-option
+        [value]="key"
+        *ngFor="let key of keyConstraints">
+        {{ key }}
+      </mat-option>
+    </mat-select>
+
     <input
       [disabled]="disabled"
       [errorStateMatcher]="errorStateMatcher"
       [placeholder]="placeholder"
+      *ngIf="!keyConstraints"
       matInput
       type="text"
       #newKey>
@@ -59,7 +73,7 @@
 
   <a
     (click)="addKey(newKey.value)"
-    [disabled]="disabled || !newKey.value"
+    [disabled]="disabled || !newKey?.value"
     matTooltip="Add a new key"
     mat-icon-button>
     <fa-icon
