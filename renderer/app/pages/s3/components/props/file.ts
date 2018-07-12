@@ -66,12 +66,17 @@ export class FilePropsComponent extends LifecycleComponent {
         head: this.formBuilder.group({
           encryption: this.formBuilder.group({
             KMSMasterKeyID: '',
-            SSEAlgorithm: ''
+            SSEAlgorithm: '',
           }),
           metadata: '',
           storage: this.formBuilder.group({
-            StorageClass: ''
+            StorageClass: '',
           }),
+          touched: this.formBuilder.group({
+            encryption: '',
+            metadata: '',
+            storage: ''
+          })
         }),
         path: '',
         tagging: this.formBuilder.group({

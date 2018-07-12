@@ -599,6 +599,11 @@ export class S3Service {
         },
         storage: {
           StorageClass: nullSafe(data, 'StorageClass')
+        },
+        touched: {
+          encryption: false,
+          metadata: false,
+          storage: false
         }
       };
       // fill in only used metadata
@@ -785,22 +790,24 @@ export class S3Service {
       };
       // encryption changes
       let changed = false;
-      if (head.encryption.SSEAlgorithm) {
+      if (head.touched.encryption && head.encryption.SSEAlgorithm) {
         changed = true;
         copy.ServerSideEncryption = head.encryption.SSEAlgorithm;
         if (copy.ServerSideEncryption === 'aws:kms')
           copy.SSEKMSKeyId = head.encryption.KMSMasterKeyID;
       }
       // metadata changes
-      Object.keys(head.metadata).forEach(key => {
-        if (head.metadata[key]) {
-          changed = true;
-          copy[key] = head.metadata[key];
-          copy.MetadataDirective = 'REPLACE';
-        }
-      });
+      if (head.touched.metadata) {
+        Object.keys(head.metadata)
+          .filter(key => !!head.metadata[key])
+          .forEach(key => {
+            changed = true;
+            copy[key] = head.metadata[key];
+            copy.MetadataDirective = 'REPLACE';
+          });
+      }
       // storage changes
-      if (head.storage.StorageClass) {
+      if (head.touched.storage && head.storage.StorageClass) {
         changed = true;
         copy.StorageClass = head.storage.StorageClass;
       }

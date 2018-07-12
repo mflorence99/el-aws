@@ -139,6 +139,11 @@ export interface FileMetadataHead {
   storage: {
     StorageClass: S3.StorageClass;
   };
+  touched: {
+    encryption: boolean;
+    metadata: boolean;
+    storage: boolean;
+  };
 }
 
 export interface FileMetadataTagging {

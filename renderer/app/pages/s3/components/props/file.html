@@ -51,6 +51,18 @@
 
         <div class="group">
 
+          <div 
+            *ngIf="desc.isFile && desc.isFileVersioned"
+            class="drawer-label">
+            When versioning is enabled and the encryption of an object is changed, a copy of the original will be created as a new version.
+          </div>
+
+          <div 
+            *ngIf="desc.isFileVersion"
+            class="drawer-label">
+            The encryption of an existing object version cannot be changed. Instead, change the latest version and a copy of the original will be created as a new version.
+          </div>
+
           <mat-radio-group
             [libRxfDisabled]="desc.isFileVersion"
             class="group"
@@ -116,40 +128,52 @@
           </mat-panel-title>
         </mat-expansion-panel-header>
 
-      <div class="group">
+        <div class="group">
 
-        <div class="drawer-label">
-          Metadata is used as HTTP headers when objects are deployed.
+          <div class="drawer-label">
+            Metadata is used as HTTP headers when objects are deployed.
+          </div>
+
+          <div 
+            *ngIf="desc.isFile && desc.isFileVersioned"
+            class="drawer-label">
+            When versioning is enabled and the metdata of an object is changed, a copy of the original will be created as a new version.
+          </div>
+
+          <div 
+            *ngIf="desc.isFileVersion"
+            class="drawer-label">
+            The metadata of an existing object version cannot be changed. Instead, change the latest version and a copy of the original will be created as a new version.
+          </div>
+
+          <elaws-key-value
+            [keyConstraints]="metadataKeys"
+            duplicateKeyMessage="Metadata is already in use"
+            formControlName="metadata"
+            placeholder="New metadata">
+
+            <ng-template #keyIcon>
+              <fa-icon
+                [icon]="['fas', 'key']"
+                flip="horizontal"
+                size="xs"
+                style="color: var(--primary-color)">
+              </fa-icon>
+              &nbsp;
+            </ng-template>
+
+            <ng-template #valueIcon>
+              <fa-icon
+                [icon]="['fas', 'tag']"
+                size="xs"
+                style="color: var(--primary-color)">
+              </fa-icon>
+              &nbsp;
+            </ng-template>
+
+          </elaws-key-value>
+
         </div>
-
-        <elaws-key-value
-          [keyConstraints]="metadataKeys"
-          duplicateKeyMessage="Metadata is already in use"
-          formControlName="metadata"
-          placeholder="New metadata">
-
-          <ng-template #keyIcon>
-            <fa-icon
-              [icon]="['fas', 'key']"
-              flip="horizontal"
-              size="xs"
-              style="color: var(--primary-color)">
-            </fa-icon>
-            &nbsp;
-          </ng-template>
-
-          <ng-template #valueIcon>
-            <fa-icon
-              [icon]="['fas', 'tag']"
-              size="xs"
-              style="color: var(--primary-color)">
-            </fa-icon>
-            &nbsp;
-          </ng-template>
-
-        </elaws-key-value>
-
-      </div>
 
       </mat-expansion-panel>
 
@@ -255,6 +279,18 @@
           class="group"
           formControlName="StorageClass">
 
+          <div 
+            *ngIf="desc.isFile && desc.isFileVersioned"
+            class="drawer-label">
+            When versioning is enabled and the storage class of an object is changed, a copy of the original will be created as a new version.
+          </div>
+
+          <div 
+            *ngIf="desc.isFileVersion"
+            class="drawer-label">
+            The storage class of an existing object version cannot be changed. Instead, change the latest version and a copy of the original will be created as a new version.
+          </div>
+
           <mat-radio-button value="STANDARD">
             Standard
             <div class="drawer-label">
@@ -343,6 +379,31 @@
     </mat-expansion-panel>
 
   </mat-accordion>
+
+  <ng-container 
+    formGroupName="head">
+
+    <ng-container 
+      formGroupName="touched">
+
+      <input 
+        [ngModel]="propsForm.get('head.encryption').touched" 
+        formControlName="encryption"
+        type="hidden">
+
+      <input 
+        [ngModel]="propsForm.get('head.metadata').touched" 
+        formControlName="metadata"
+        type="hidden">
+
+      <input 
+        [ngModel]="propsForm.get('head.storage').touched" 
+        formControlName="storage"
+        type="hidden">
+
+    </ng-container>
+
+  </ng-container>
 
   <div class="okAndCancel">
 
