@@ -36,6 +36,12 @@
     </a>
 
   </ng-container>
+
+  <div 
+    class="instructions"
+    style="grid-column-start: span 2">
+    To create a new item, enter its name below and hit the <fa-icon [icon]="['fas', 'plus']" size="xs"></fa-icon> icon. Then enter its value above.
+  </div>
     
   <mat-form-field>
 
@@ -72,8 +78,8 @@
   </mat-form-field>
 
   <a
-    (click)="addKey(newKey.value)"
-    [disabled]="disabled || !newKey?.value"
+    (click)="addKey(newKeyValue())"
+    [disabled]="disabled || !newKeyValue()"
     matTooltip="Add a new key"
     mat-icon-button>
     <fa-icon

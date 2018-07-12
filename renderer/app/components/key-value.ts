@@ -219,6 +219,14 @@ export class KeyValueComponent implements ControlValueAccessor,
     }
   }
 
+  newKeyValue(): string {
+    if (!this.newKey)
+      return null;
+    else if (this.keyConstraints)
+      return this.newKey.value;
+    else return this.newKey.nativeElement.value;
+  }
+
   /** @see MatFormFieldControl */
   onContainerClick(event: MouseEvent) { }
 
