@@ -666,7 +666,7 @@ export class S3Service {
           Rules: [{
             ApplyServerSideEncryptionByDefault: {
               SSEAlgorithm: encryption.SSEAlgorithm,
-              KMSMasterKeyID: (encryption.SSEAlgorithm === 'aws:kms') ? encryption.KMSMasterKeyID : null
+              KMSMasterKeyID: (encryption.SSEAlgorithm === 'aws:kms')? encryption.KMSMasterKeyID : null
             }
           }]
         }
