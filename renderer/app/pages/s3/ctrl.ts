@@ -92,6 +92,7 @@ export class S3CtrlComponent extends LifecycleComponent {
               private watcher: WatcherService,
               private zone: NgZone) {
     super();
+    this.expirePaths();
     this.loadInitialPaths();
     this.handleActions();
     this.electron.ipcRenderer.on('s3upload', this.handleUpload.bind(this));
@@ -212,9 +213,12 @@ export class S3CtrlComponent extends LifecycleComponent {
     });
   }
 
-  private loadInitialPaths(): void {
+  private expirePaths(): void {
     // TODO: expire here doesn't work because it's ALWAYS 15 mins between sessions
     // this.store.dispatch(new ExpirePaths());
+  }
+
+  private loadInitialPaths(): void {
     // only premptively load paths whose parent has been loaded
     // NOTE: sorting guarantees that a parent is loaded before its children
     const loaded = { };
