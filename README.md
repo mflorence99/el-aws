@@ -46,7 +46,7 @@ As always, in addition to `ngxs`, I have relied heavily on one of the best tech 
 * The context menu is driven by the impressive [ngx-contextmenu](https://github.com/isaacplmann/ngx-contextmenu).
 * [Angular Material](https://material.angular.io/) for UI components.
 * [Font Awesome](https://fontawesome.com)'s awesome library of icons.
-* I've actually used [async-es](https://caolan.github.io/async/) in my other apps, but none so effectively as here. For example, EL-AWS uses async-es to aggregate S3 metadata for firing up many API calls in parallel, then joining the results when all complete.
+* I've actually used [async-es](https://caolan.github.io/async/) in my other apps, but none so effectively as here. For example, EL-AWS uses async-es to aggregate S3 metadata by firing up many API calls in parallel, then joining the results when all are complete.
 
 ## Authentication
 
@@ -63,7 +63,7 @@ One time only, you'll need to grab the code.
 
 ```sh
 git clone https://github.com/mflorence99/el-aws.git
-cd el-term
+cd el-aws
 npm install
 ```
 
