@@ -1,20 +1,20 @@
 import { ChangeDetectionStrategy } from '@angular/core';
 import { Component } from '@angular/core';
-import { Dictionary } from './services/dictionary';
-import { DictionaryService } from './services/dictionary';
+import { Dictionary } from '../services/dictionary';
+import { DictionaryService } from '../services/dictionary';
 import { ElementRef } from '@angular/core';
 import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { OnChange } from 'ellib';
 import { OnDestroy } from '@angular/core';
 import { OnInit } from '@angular/core';
-import { PrefsStateModel } from '../../state/prefs';
-import { S3PageComponent } from './page';
-import { S3ViewStateModel } from './state/s3view';
+import { PrefsStateModel } from '../../../state/prefs';
+import { S3PageComponent } from '../page';
+import { S3ViewStateModel } from '../state/s3view';
 import { Store } from '@ngxs/store';
-import { UpdateWidths } from './state/s3view';
+import { UpdateWidths } from '../state/s3view';
 import { ViewChild } from '@angular/core';
-import { ViewWidths } from './state/s3view';
+import { ViewWidths } from '../state/s3view';
 
 /**
  * Header component

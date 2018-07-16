@@ -7,6 +7,7 @@ import { ColumnComponent } from './column';
 import { ComponentsModule as CommonComponentsModule } from '../../../components/module';
 import { CreateBucketComponent } from './props/create';
 import { FilePropsComponent } from './props/file';
+import { HeaderComponent } from './header';
 import { NgModule } from '@angular/core';
 import { RowComponent } from './row';
 import { SelectBucketComponent } from './select-bucket';
@@ -25,6 +26,7 @@ const COMPONENTS = [
   CreateBucketComponent,
   ColumnComponent,
   FilePropsComponent,
+  HeaderComponent,
   RowComponent,
   SelectBucketComponent,
   TreeComponent,

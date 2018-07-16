@@ -2,11 +2,13 @@
 
   <div>DDB Table</div>
 
-  <select>
+  <select
+    (change)="onLoadTable($event.target.value)">
 
-    <option value="">please select ...</option>
+    <option value="">... please select</option>
 
     <option
+      [selected]="tableName === table?.TableName"
       [value]="tableName"
       *ngFor="let tableName of tableNames">
       {{ tableName }}

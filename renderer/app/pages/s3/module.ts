@@ -2,7 +2,6 @@ import { BarrelModule } from '../../barrel';
 import { ComponentsModule as CommonComponentsModule } from '../../components/module';
 import { ComponentsModule as S3ComponentsModule } from './components/module';
 import { DictionaryService } from './services/dictionary';
-import { HeaderComponent } from './header';
 import { NgModule } from '@angular/core';
 import { NgxsModule } from '@ngxs/store';
 import { PathService } from './services/path';
@@ -20,7 +19,6 @@ import { states } from './state/feature';
  */
 
 const COMPONENTS = [
-  HeaderComponent,
   S3CtrlComponent,
   S3PageComponent
 ];
