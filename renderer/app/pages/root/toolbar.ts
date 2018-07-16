@@ -7,7 +7,7 @@ import { Reload } from '../../state/window';
 import { Store } from '@ngxs/store';
 
 /**
- * Toolbar page
+ * Toolbar component
  */
 
 @Component({

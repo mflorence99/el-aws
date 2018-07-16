@@ -1,0 +1,17 @@
+<header>
+
+  <div>DDB Table</div>
+
+  <select>
+
+    <option value="">please select ...</option>
+
+    <option
+      [value]="tableName"
+      *ngFor="let tableName of tableNames">
+      {{ tableName }}
+    </option>
+
+  </select>
+
+</header>

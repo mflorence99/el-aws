@@ -1,11 +1,13 @@
 import { BarrelModule } from '../../barrel';
 import { ComponentsModule as CommonComponentsModule } from '../../components/module';
+import { ComponentsModule as DDBComponentsModule } from './components/module';
 import { DDBPageComponent } from './page';
 import { DDBService } from './services/ddb';
 import { NgModule } from '@angular/core';
 import { NgxsModule } from '@ngxs/store';
 import { RouterModule } from '@angular/router';
 import { Routes } from '@angular/router';
+import { ToolbarComponent } from './toolbar';
 
 import { states } from './state/feature';
 
@@ -14,16 +16,19 @@ import { states } from './state/feature';
  */
 
 const COMPONENTS = [
-  DDBPageComponent
+  DDBPageComponent,
+  ToolbarComponent
 ];
 
 const MODULES = [
   BarrelModule,
-  CommonComponentsModule
+  CommonComponentsModule,
+  DDBComponentsModule
 ];
 
 const ROUTES: Routes = [
-  { path: '', component: DDBPageComponent }
+  { path: '', component: DDBPageComponent },
+  { path: '', component: ToolbarComponent, outlet: 'toolbar' },
 ];
 
 const SERVICES = [

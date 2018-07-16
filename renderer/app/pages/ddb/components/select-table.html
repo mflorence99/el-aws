@@ -1,0 +1,26 @@
+<div
+  [formGroup]="selectTableForm">
+
+  <mat-form-field>
+
+    <mat-select
+      [libRxfDisabled]="disabled"
+      [libRxfRequired]="required"
+      [placeholder]="placeholder"
+      formControlName="selectTable">
+
+      <ng-container
+        *ngFor="let tableName of tableNames">
+
+        <mat-option
+          [value]="tableName">
+          {{ tableName }}
+        </mat-option>
+
+      </ng-container>
+
+    </mat-select>
+
+  </mat-form-field>
+
+</div>

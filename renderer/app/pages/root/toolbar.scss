@@ -5,7 +5,7 @@
 header {
   align-items: center;
   display: grid;
-  grid-template-columns: auto auto auto;
-  justify-content: end;
+  grid-template-columns: 1fr auto auto auto;
+  justify-content: start;
   padding: 4px;
 }

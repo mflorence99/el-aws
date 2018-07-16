@@ -1,0 +1,26 @@
+:host {
+  display: block;
+}
+
+header {
+  align-items: center;
+  display: grid;
+  font-size: 0.8rem;
+  grid-template-columns: auto auto;
+  justify-content: start;
+  padding: 4px;
+
+  select {
+    background-color: transparent;
+    border: 0;
+    color: var(--mat-grey-500);
+    cursor: pointer;
+    outline: 0;
+
+    option {
+      background-color: var(--mat-grey-800);
+    }
+
+  }
+
+}
