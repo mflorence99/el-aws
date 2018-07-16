@@ -6,6 +6,8 @@ export class Config {
 
   componentOnChangeThrottle = 100;
 
+  ddbMaxTables = 100;
+
   numParallel = 16;
 
   periods = {

@@ -1,8 +1,13 @@
 import { BarrelModule } from '../../barrel';
+import { ComponentsModule as CommonComponentsModule } from '../../components/module';
 import { DDBPageComponent } from './page';
+import { DDBService } from './services/ddb';
 import { NgModule } from '@angular/core';
+import { NgxsModule } from '@ngxs/store';
 import { RouterModule } from '@angular/router';
 import { Routes } from '@angular/router';
+
+import { states } from './state/feature';
 
 /**
  * DDB page module
@@ -13,11 +18,16 @@ const COMPONENTS = [
 ];
 
 const MODULES = [
-  BarrelModule
+  BarrelModule,
+  CommonComponentsModule
 ];
 
 const ROUTES: Routes = [
   { path: '', component: DDBPageComponent }
+];
+
+const SERVICES = [
+  DDBService
 ];
 
 @NgModule({
@@ -32,7 +42,12 @@ const ROUTES: Routes = [
 
   imports: [
     ...MODULES,
+    NgxsModule.forFeature(states),
     RouterModule.forChild(ROUTES)
+  ],
+
+  providers: [
+    ...SERVICES
   ]
 
 })
