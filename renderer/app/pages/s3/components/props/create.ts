@@ -34,7 +34,7 @@ export class CreateBucketComponent implements OnInit {
       ACL: ['', Validators.required],
       Bucket: ['', [
         Validators.required, 
-        Validators.pattern(config.s3BucketValidationPattern)
+        Validators.pattern(config.s3.bucketValidationPattern)
       ]],
       Region: ['', Validators.required]
     });

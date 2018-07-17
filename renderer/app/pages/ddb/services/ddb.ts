@@ -31,7 +31,7 @@ export class DDBService {
     this.prefs$.subscribe((prefs: PrefsStateModel) => {
       this.ddb = new this.ddb_({
         endpoint: prefs.endpoints.ddb,
-        maxRetries: config.ddbMaxRetries,
+        maxRetries: config.ddb.maxRetries,
         region: prefs.region
       });
     });
@@ -54,7 +54,7 @@ export class DDBService {
   /** List all the tables */
   listTables(cb: (tableNames: DDB.TableNameList) => void): void {
     const params = {
-      Limit: config.ddbMaxTables
+      Limit: config.ddb.maxTables
     };
     this.ddb.listTables(params, (err, data) => {
       this.trace('listTables', params, err, data);

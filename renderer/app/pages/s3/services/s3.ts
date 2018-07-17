@@ -62,7 +62,7 @@ export class S3Service {
     this.prefs$.subscribe((prefs: PrefsStateModel) => {
       this.s3 = new this.s3_({ 
         endpoint: prefs.endpoints.s3,
-        maxRetries: config.s3MaxRetries,
+        maxRetries: config.s3.maxRetries,
         region: prefs.region,
         s3ForcePathStyle: true
       });
@@ -133,7 +133,7 @@ export class S3Service {
     this.s3.createBucket(params, (err, data) => {
       this.trace('createBucket', params, err, data);
       // TODO: we'd like the watcher to see this automagically
-      this.watcher.touch(config.s3Delimiter);
+      this.watcher.touch(config.s3.delimiter);
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
       else if (cb)
@@ -171,7 +171,7 @@ export class S3Service {
     this.s3.deleteBucket(params, (err, data) => {
       this.trace('deleteBucket', params, err, data);
       // TODO: we'd like the watcher to see this automagically
-      this.watcher.touch(config.s3Delimiter);
+      this.watcher.touch(config.s3.delimiter);
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
       else if (cb)
@@ -197,7 +197,7 @@ export class S3Service {
         return acc;
       }, []);
     // now delete them all in parallel
-    async.parallelLimit(funcs, config.numParallel, (err, data) => {
+    async.parallelLimit(funcs, config.numParallelOps, (err, data) => {
       this.trace('deleteObjects', paths, err, data);
       // TODO: we'd like the watcher to see this automagically
       paths.forEach(path => {
@@ -227,9 +227,9 @@ export class S3Service {
     const params: S3.ListObjectsV2Request = {
       Bucket: bucket,
       ContinuationToken: token,
-      Delimiter: config.s3Delimiter,
+      Delimiter: config.s3.delimiter,
       FetchOwner: true,
-      MaxKeys: config.s3MaxKeys,
+      MaxKeys: config.s3.maxKeys,
       Prefix: prefix
     };
     this.s3.listObjectsV2(params, (err, data) => {
@@ -245,7 +245,7 @@ export class S3Service {
     const { bucket, prefix } = this.path.analyze(path);
     const params = {
       Bucket: bucket,
-      Expires: config.s3SignedURLExpiry / 1000,
+      Expires: config.s3.signedURLExpiry / 1000,
       Key: prefix
     };
     this.s3.getSignedUrl('getObject', params, (err, url) => {
@@ -270,7 +270,7 @@ export class S3Service {
       website: async.apply(this.getBucketWebsite.bind(this), params)
     });
     // now load them all in parallel
-    async.parallelLimit(funcs, config.numParallel, (err, data) => {
+    async.parallelLimit(funcs, config.numParallelOps, (err, data) => {
       // NOTE: we are ignoring errors and only recording metadata actually found
       // reason: a bucket with no tags for example errors on the tagging call
       // TODO: while developing, log this nicely
@@ -298,7 +298,7 @@ export class S3Service {
           return async.apply(this.s3.getBucketLocation, params);
         });
         // now run them all in parallel
-        async.parallelLimit(funcs, config.numParallel, (err, results: S3.GetBucketLocationOutput[]) => {
+        async.parallelLimit(funcs, config.numParallelOps, (err, results: S3.GetBucketLocationOutput[]) => {
           if (err)
             this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
           else {
@@ -327,15 +327,15 @@ export class S3Service {
     const funcs = {
       objects: async.apply(this.s3.listObjectsV2, {
         Bucket: bucket,
-        Delimiter: config.s3Delimiter,
+        Delimiter: config.s3.delimiter,
         FetchOwner: true,
-        MaxKeys: config.s3MaxKeys,
+        MaxKeys: config.s3.maxKeys,
         Prefix: prefix
       } as S3.ListObjectsV2Request),
       versioning: async.apply(this.s3.getBucketVersioning, { Bucket: bucket })
     };
     // now load them all in parallel
-    async.parallelLimit(funcs, config.numParallel, (err, results: any) => {
+    async.parallelLimit(funcs, config.numParallelOps, (err, results: any) => {
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
       else {
@@ -362,7 +362,7 @@ export class S3Service {
       tagging: async.apply(this.getObjectTagging.bind(this), params)
     });
     // now load them all in parallel
-    async.parallelLimit(funcs, config.numParallel, (err, data) => {
+    async.parallelLimit(funcs, config.numParallelOps, (err, data) => {
       // NOTE: we are ignoring errors and only recording metadata actually found
       // reason: a file with no tags for example errors on the tagging call
       // TODO: while developing, log this nicely
@@ -408,7 +408,7 @@ export class S3Service {
       async.apply(this.putBucketWebsite.bind(this), params, metadata.website)
     ];
     // now update them all in parallel
-    async.parallelLimit(funcs, config.numParallel, (err, results: any) => {
+    async.parallelLimit(funcs, config.numParallelOps, (err, results: any) => {
       // TODO: we'd like the watcher to see this automagically
       this.watcher.touch(path);
       if (err)
@@ -441,7 +441,7 @@ export class S3Service {
       async.apply(this.putObjectTagging.bind(this), params, metadata.tagging)
     ];
     // now update them all in parallel
-    async.parallelLimit(funcs, config.numParallel, (err, results: any) => {
+    async.parallelLimit(funcs, config.numParallelOps, (err, results: any) => {
       // TODO: we'd like the watcher to see this automagically
       this.watcher.touch(path);
       if (err)
@@ -608,7 +608,7 @@ export class S3Service {
         }
       };
       // fill in only used metadata
-      config.s3MetadataKeys.forEach(key => {
+      config.s3.metadataKeys.forEach(key => {
         const value = nullSafe(data, key);
         if (value)
           head.metadata[key] = value;

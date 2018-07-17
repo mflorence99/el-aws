@@ -38,7 +38,7 @@ export class FilePropsComponent extends LifecycleComponent {
   metadata = { } as FileMetadata;
   propsForm: FormGroup;
 
-  metadataKeys = config.s3MetadataKeys;
+  metadataKeys = config.s3.metadataKeys;
 
   metadataLabelMapping: { [k: string]: string } = { '=0': 'None', 'other': 'Defined' };
 

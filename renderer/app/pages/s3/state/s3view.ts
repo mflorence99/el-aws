@@ -122,10 +122,10 @@ export interface ViewWidths {
     // stop watching for changes
     state.paths.forEach(path => this.watcher.unwatch(path));
     // clear state
-    patchState({ paths: [config.s3Delimiter] });
+    patchState({ paths: [config.s3.delimiter] });
     patchState({ lru: { } });
     // watch for changes
-    this.watcher.watch(config.s3Delimiter);
+    this.watcher.watch(config.s3.delimiter);
   }
 
   @Action(ExpirePaths)
@@ -136,7 +136,7 @@ export interface ViewWidths {
     const now = Date.now();
     const expired = paths.filter(path => {
       const ts = state.lru[path];
-      return (ts < (now - config.s3PathPurgeAge));
+      return (ts < (now - config.s3.pathPurgeAge));
     });
     dispatch(new RemovePaths({ paths: expired }));
   }
@@ -172,7 +172,7 @@ export interface ViewWidths {
                 { payload }: UpdatePathLRU) {
     const { path } = payload;
     // NOTE: the root doesn't have an LRU
-    if (path !== config.s3Delimiter) {
+    if (path !== config.s3.delimiter) {
       const state = getState();
       patchState({ lru: { ...state.lru, [path]: Date.now() } });
     }

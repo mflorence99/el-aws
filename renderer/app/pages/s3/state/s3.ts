@@ -107,7 +107,7 @@ export interface S3StateModel {
 }) export class S3State implements NgxsOnInit {
 
   @Selector() static getBuckets(state: S3StateModel): Descriptor[] {
-    return state[config.s3Delimiter].sort((a, b) => {
+    return state[config.s3.delimiter].sort((a, b) => {
       return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
     });
   }
@@ -201,7 +201,7 @@ export interface S3StateModel {
       });
       const files = contents
         // TODO: I don't understand how these exist -- directories are phantoms!
-        .filter((content: S3.Object) => !content.Key.endsWith(config.s3Delimiter))
+        .filter((content: S3.Object) => !content.Key.endsWith(config.s3.delimiter))
         .map((content: S3.Object) => {
           return this.makeDescriptorForFile(path, content, versioning);
         });
@@ -211,7 +211,7 @@ export interface S3StateModel {
           dispatch(new DirectoryLoaded({ path, descs: descs.concat(getState()[path]) }));
         dispatch(new Message({ text: `Extended ${path}` }));
         // keep going if there's more
-        if (truncated && token && (descs.length < config.s3MaxDescs) && (extensionNum < config.s3MaxDirExtensions))
+        if (truncated && token && (descs.length < config.s3.maxDescs) && (extensionNum < config.s3.maxDirExtensions))
           dispatch(new ExtendDirectory({ path, token, versioning, extensionNum }));
       });
     });
@@ -229,9 +229,9 @@ export interface S3StateModel {
               { payload }: LoadBuckets) {
     const { force } = payload;
     const state = getState();
-    let descs = state[config.s3Delimiter];
+    let descs = state[config.s3.delimiter];
     if (!force && descs)
-      dispatch(new BucketsLoaded({ path: config.s3Delimiter, descs }));
+      dispatch(new BucketsLoaded({ path: config.s3.delimiter, descs }));
     else {
       dispatch(new Message({ text: 'Loading buckets ...' }));
       this.s3Svc.loadBuckets((buckets: S3.Buckets, 
@@ -241,7 +241,7 @@ export interface S3StateModel {
           return this.makeDescriptorForBucket(bucket, owner, locations[ix]);
         });
         this.zone.run(() => {
-          dispatch(new BucketsLoaded({ path: config.s3Delimiter, descs }));
+          dispatch(new BucketsLoaded({ path: config.s3.delimiter, descs }));
           dispatch(new Message({ text: 'Buckets loaded' }));
         });
       });
@@ -255,9 +255,9 @@ export interface S3StateModel {
     const state = getState();
     // NOTE: a path of just / is really the buckets themselves
     // NOTE: a path that doesn't end in / is a file
-    if (path === config.s3Delimiter)
+    if (path === config.s3.delimiter)
       dispatch(new LoadBuckets({ force }));
-    else if (!path.endsWith(config.s3Delimiter))
+    else if (!path.endsWith(config.s3.delimiter))
       dispatch(new LoadFileVersions({ path, force }));
     else {
       let descs = state[path];
@@ -277,7 +277,7 @@ export interface S3StateModel {
           });
           const files = contents
             // TODO: I don't understand how these exist -- directories are phantoms!
-            .filter((content: S3.Object) => !content.Key.endsWith(config.s3Delimiter))
+            .filter((content: S3.Object) => !content.Key.endsWith(config.s3.delimiter))
             .map((content: S3.Object) => {
               return this.makeDescriptorForFile(path, content, versioning);
             });
@@ -286,7 +286,7 @@ export interface S3StateModel {
             dispatch(new DirectoryLoaded({ path, descs }));
             dispatch(new Message({ text: `Loaded ${path}` }));
             // keep going if there's more
-            if (truncated && token && (descs.length < config.s3MaxDescs))
+            if (truncated && token && (descs.length < config.s3.maxDescs))
               dispatch(new ExtendDirectory({ path, token, versioning, extensionNum: 1 }));
           });
         });
@@ -326,7 +326,7 @@ export interface S3StateModel {
     this.watcher.stream$.subscribe((path: string) => {
       const { directory, isDirectory, isFile, isRoot } = this.path.analyze(path);
       if (isRoot)
-        dispatch(new LoadDirectory({ path: config.s3Delimiter, force: true }));
+        dispatch(new LoadDirectory({ path: config.s3.delimiter, force: true }));
       else if (isDirectory)
         dispatch(new LoadDirectory({ path, force: true }));
       else if (isFile) {
@@ -343,9 +343,9 @@ export interface S3StateModel {
   // private methods
 
   private extractName(path: string): string {
-    if (path.endsWith(config.s3Delimiter))
+    if (path.endsWith(config.s3.delimiter))
       path = path.substring(0, path.length - 1);
-    const parts = path.split(config.s3Delimiter);
+    const parts = path.split(config.s3.delimiter);
     return parts[parts.length - 1];
   }
 
@@ -357,7 +357,7 @@ export interface S3StateModel {
       const ext = name.substring(ix + 1).toLowerCase();
       let color = this.s3color[ext];
       if (!color) {
-        color = config.s3Colors[Math.trunc(Math.random() * config.s3Colors.length)];
+        color = config.s3.colors[Math.trunc(Math.random() * config.s3.colors.length)];
         this.store.dispatch(new SetColor({ ext, color }));
       }
       return color;
@@ -374,7 +374,7 @@ export interface S3StateModel {
       isBucket: true,
       name: bucket.Name,
       owner: owner.DisplayName,
-      path: bucket.Name + config.s3Delimiter,
+      path: bucket.Name + config.s3.delimiter,
       size: 0,
       storage: location,
       timestamp: new Date(bucket.CreationDate)
@@ -390,7 +390,7 @@ export interface S3StateModel {
       isDirectory: true,
       name: this.extractName(prefix.Prefix),
       owner: null,
-      path: bucket + config.s3Delimiter + prefix.Prefix,
+      path: bucket + config.s3.delimiter + prefix.Prefix,
       size: 0,
       storage: null,
       timestamp: null
@@ -437,10 +437,10 @@ export interface S3StateModel {
     let icon = null;
     const ix = name.lastIndexOf('.');
     if (ix <= 0)
-      icon = config.s3IconByName[name.toLowerCase()];
+      icon = config.s3.iconByName[name.toLowerCase()];
     else {
       const ext = name.substring(ix + 1).toLowerCase();
-      icon = config.s3IconByExt[ext];
+      icon = config.s3.iconByExt[ext];
     }
     return icon ? icon : 'far file';
   }

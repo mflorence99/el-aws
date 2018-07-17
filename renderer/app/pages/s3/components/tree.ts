@@ -77,12 +77,12 @@ export class TreeComponent extends LifecycleComponent {
               private store: Store,
               private zone: NgZone) {
     super();
-    this.updateDescriptors = debounce(this._updateDescriptors, config.s3TreeRefreshThrottle);
+    this.updateDescriptors = debounce(this._updateDescriptors, config.s3.treeRefreshThrottle);
   }
 
   /** Are all buckets loaded? */
   areBucketsLoaded(): boolean {
-    return !!this.s3[config.s3Delimiter];
+    return !!this.s3[config.s3.delimiter];
   }
 
   /** Is new name allowed? */
@@ -178,7 +178,7 @@ export class TreeComponent extends LifecycleComponent {
           ctrl.select();
         else ctrl.setSelectionRange(0, ix);
         ctrl.focus();
-      }, config.s3PrepareNewNameDelay);
+      }, config.s3.prepareNewNameDelay);
     }
     return this.newName;
   }
@@ -219,10 +219,10 @@ export class TreeComponent extends LifecycleComponent {
       case 'new-dir':
         base = desc.path;
         if (desc.isFile || desc.isFileVersion) {
-          const ix = desc.path.lastIndexOf(config.s3Delimiter);
+          const ix = desc.path.lastIndexOf(config.s3.delimiter);
           base = desc.path.substring(0, ix + 1);
         }
-        const dir = `${base}${this.newName}${config.s3Delimiter}`;
+        const dir = `${base}${this.newName}${config.s3.delimiter}`;
         this.s3Svc.createDirectory(dir, () => {
           this.zone.run(() => {
             this.store.dispatch(new Message({ text: `Created directory ${dir}` }));
@@ -240,7 +240,7 @@ export class TreeComponent extends LifecycleComponent {
       case 'upload':
         base = desc.path;
         if (desc.isFile || desc.isFileVersion) {
-          const ix = desc.path.lastIndexOf(config.s3Delimiter);
+          const ix = desc.path.lastIndexOf(config.s3.delimiter);
           base = desc.path.substring(0, ix + 1);
         }
         this.electron.ipcRenderer.send('s3upload', base);

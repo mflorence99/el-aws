@@ -35,14 +35,14 @@ export class PathService {
   analyze(path: string): PathInfo {
     const info = { } as PathInfo;
     // special case: root path
-    if (!path || (path === config.s3Delimiter)) {
+    if (!path || (path === config.s3.delimiter)) {
       info.isDirectory = true;
       info.isRoot = true;
-      info.directory = config.s3Delimiter;
+      info.directory = config.s3.delimiter;
     }
     else {
       // eliminate any initial /
-      if (path.startsWith(config.s3Delimiter))
+      if (path.startsWith(config.s3.delimiter))
         path = path.substring(1);
       // extract any version
       const param = '?versionid=';
@@ -53,7 +53,7 @@ export class PathService {
         path = path.substring(0, ix);
       }
       // split around / into parts
-      ix = path.indexOf(config.s3Delimiter);
+      ix = path.indexOf(config.s3.delimiter);
       if (ix === -1) {
         info.bucket = path;
         info.isBucket = true;
@@ -62,22 +62,22 @@ export class PathService {
         info.bucket = path.substring(0, ix);
         info.prefix = path.substring(ix + 1);
         // just a directory
-        if (path.endsWith(config.s3Delimiter)) {
+        if (path.endsWith(config.s3.delimiter)) {
           info.isDirectory = true;
           info.directory = path;
           if (!info.prefix) 
             info.isBucket = true;
           else {
-            ix = path.substring(0, path.length - 1).lastIndexOf(config.s3Delimiter);
+            ix = path.substring(0, path.length - 1).lastIndexOf(config.s3.delimiter);
             if (ix === -1)
-              info.parent = info.bucket + config.s3Delimiter;
+              info.parent = info.bucket + config.s3.delimiter;
             else info.parent = path.substring(0, ix + 1);
           }
         }
         // or a file
         else {
           info.isFile = true;
-          ix = path.lastIndexOf(config.s3Delimiter);
+          ix = path.lastIndexOf(config.s3.delimiter);
           info.directory = path.substring(0, ix + 1);
           info.filename = path.substring(ix + 1);
           info.parent = info.isFileVersion? path : info.directory;

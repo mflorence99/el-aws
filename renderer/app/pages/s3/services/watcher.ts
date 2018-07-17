@@ -25,7 +25,7 @@ export class WatcherService {
     this.watcher$ = new Subject<string>();
     // @see https://stackoverflow.com/questions/50928751/rxjs-distinctuntilchanged-with-timer
     this.stream$ = this.watcher$.pipe(
-      windowTime(config.s3WatcherThrottle),
+      windowTime(config.s3.watcherThrottle),
       concatMap(obs => obs.pipe(
         distinctUntilChanged()
       ))
