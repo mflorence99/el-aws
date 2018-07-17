@@ -54,7 +54,7 @@
         formControlName="Status">
 
         <div class="drawer-label">
-          Use endpoint <a>{{ desc.name }}.s3-accelerate.amazonaws.com</a> for faster data transfers, which will incur an additional fee.
+          Use endpoint <a>{{ (desc.name + '.s3-accelerate.amazonaws.com') | libBreakable }}</a> for faster data transfers, which will incur an additional fee.
         </div>
 
         <mat-radio-button 
@@ -418,7 +418,7 @@
           formControlName="WebsiteEnabled">
 
           <div class="drawer-label">
-            Host a static website at <a>http://{{ desc.name }}.s3-website-{{ desc.storage }}.amazonaws.com</a> that doesn't require server-side technologies.
+            Host a static website at <a>{{ ('http://' + desc.name + '.s3-website-' + desc.storage + '.amazonaws.com') | libBreakable }}</a> that doesn't require server-side technologies.
           </div>
 
           <mat-radio-button 
