@@ -858,20 +858,22 @@ export class S3Service {
       }
       else if ((Grant.Grantee.URI === logDelivery) && (Grant.Grantee.Type === 'Group'))
         target = acl.Grants[2];
-      if (Grant.Permission === 'FULL_CONTROL') {
-        target.ReadAcl = true;
-        target.ReadObjects = true;
-        target.WriteAcl = true;
-        target.WriteObjects = true;
+      if (target) {
+        if (Grant.Permission === 'FULL_CONTROL') {
+          target.ReadAcl = true;
+          target.ReadObjects = true;
+          target.WriteAcl = true;
+          target.WriteObjects = true;
+        }
+        else if (Grant.Permission === 'READ')
+          target.ReadObjects = true;
+        else if (Grant.Permission === 'READ_ACP')
+          target.ReadAcl = true;
+        else if (Grant.Permission === 'WRITE')
+          target.WriteObjects = true;
+        else if (Grant.Permission === 'WRITE_ACP')
+          target.WriteAcl = true;
       }
-      else if (Grant.Permission === 'READ')
-        target.ReadObjects = true;
-      else if (Grant.Permission === 'READ_ACP')
-        target.ReadAcl = true;
-      else if (Grant.Permission === 'WRITE')
-        target.WriteObjects = true;
-      else if (Grant.Permission === 'WRITE_ACP')
-        target.WriteAcl = true;
     });
   }
 
