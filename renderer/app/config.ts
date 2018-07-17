@@ -6,6 +6,7 @@ export class Config {
 
   componentOnChangeThrottle = 100;
 
+  ddbMaxRetries = 10;
   ddbMaxTables = 100;
 
   numParallel = 16;
@@ -54,6 +55,7 @@ export class Config {
   s3MaxDescs = 200;
   s3MaxDirExtensions = 10;
   s3MaxKeys = 100;
+  s3MaxRetries = 10;
   s3PathPurgeAge = 15 * 60 * 1000;
   s3PrepareNewNameDelay = 100;
   s3SignedURLExpiry = 60 * 60 * 1000;

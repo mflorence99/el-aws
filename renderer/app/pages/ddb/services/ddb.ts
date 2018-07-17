@@ -30,7 +30,9 @@ export class DDBService {
     this.ddb_ = this.electron.remote.require('aws-sdk/clients/dynamodb');
     this.prefs$.subscribe((prefs: PrefsStateModel) => {
       this.ddb = new this.ddb_({
-        endpoint: prefs.endpoints.ddb
+        endpoint: prefs.endpoints.ddb,
+        maxRetries: config.ddbMaxRetries,
+        region: prefs.region
       });
     });
   }

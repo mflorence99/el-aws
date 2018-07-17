@@ -1,8 +1,6 @@
 import * as path from 'path';
 import * as url from 'url';
 
-import AWS = require('aws-sdk');
-
 /**
  * Electron event dispatcher
  */
@@ -11,12 +9,6 @@ const { BrowserWindow, app, dialog, ipcMain } = require('electron');
 const { download } = require('electron-dl');
 
 const isDev = process.env['DEV_MODE'] === '1';
-
-// create credentials
-AWS.config.credentials = {
-  accessKeyId: process.env['AWS_ACCESS_KEY_ID'],
-  secretAccessKey: process.env['AWS_SECRET_KEY'] || process.env['AWS_SECRET_ACCESS_KEY']
-};
 
 // event dispatcher
 

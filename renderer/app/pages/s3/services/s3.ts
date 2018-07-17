@@ -62,6 +62,7 @@ export class S3Service {
     this.prefs$.subscribe((prefs: PrefsStateModel) => {
       this.s3 = new this.s3_({ 
         endpoint: prefs.endpoints.s3,
+        maxRetries: config.s3MaxRetries,
         region: prefs.region,
         s3ForcePathStyle: true
       });

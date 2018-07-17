@@ -1,3 +1,4 @@
+import { AWSService } from './services/aws';
 import { BarrelModule } from './barrel';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
@@ -71,6 +72,7 @@ const ROUTES: Routes = [
 ];
 
 const SERVICES = [
+  AWSService,
   DDBGuard,
   EC2Guard,
   NavigatorService,

@@ -1,5 +1,6 @@
 import { Actions } from '@ngxs/store';
 import { AutoUnsubscribe } from 'ellib';
+import { AWSService } from '../../services/aws';
 import { Canceled } from '../../state/status';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { Component } from '@angular/core';
@@ -104,11 +105,13 @@ export class RootCtrlComponent extends LifecycleComponent {
 
   /** ctor */
   constructor(private actions$: Actions,
+              private awsSvc: AWSService,
               private electron: ElectronService,
               private injector: Injector,
               private store: Store,
               private zone: NgZone) {
     super();
+    this.awsSvc.init();
     this.tabs$ = this.makeNavigator();
     this.handleActions(); 
     this.handleWindowBounds();
