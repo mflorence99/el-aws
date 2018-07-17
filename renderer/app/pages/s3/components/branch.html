@@ -12,8 +12,8 @@
     [level]="level + 1"
     [path]="desc.path"
     [prefs]="prefs"
+    [s3view]="s3view"
     [selection]="selection"
-    [view]="view"
     #row>
   </elaws-row>
 
@@ -26,8 +26,8 @@
     [prefs]="prefs"
     [s3]="s3"
     [s3filter]="s3filter"
+    [s3view]="s3view"
     [selection]="selection"
-    [view]="view"
     *ngIf="tree.isExpandable(desc)">
   </elaws-branch>
 

@@ -101,7 +101,16 @@ const SERVICES = [
     }),
     NgxsRouterPluginModule.forRoot(),
     NgxsStoragePluginModule.forRoot({
-      key: ['prefs', 's3color', 's3filter', 's3view', 'window'],
+      key: [
+        'ddbfilters', 
+        'ddbschemas', 
+        'ddbviews', 
+        'prefs', 
+        's3color', 
+        's3filter', 
+        's3view', 
+        'window'
+      ],
       storage: StorageOption.LocalStorage
     }),
     NgxsReduxDevtoolsPluginModule.forRoot({disabled: !window['DEV_MODE']}),

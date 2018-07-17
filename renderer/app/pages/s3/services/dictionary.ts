@@ -37,14 +37,14 @@ export class DictionaryService {
     ] as Dictionary[];
   }
 
-  /** Return the dictionary for a particular view */
-  dictionaryForView(view: S3ViewStateModel): Dictionary[] {
+  /** Return the dictionary for a particular s3view */
+  dictionaryForView(s3view: S3ViewStateModel): Dictionary[] {
     return this.dictionary()
-      .filter(entry => view.visibility && view.visibility[entry.name])
+      .filter(entry => s3view.visibility && s3view.visibility[entry.name])
       .map(entry => {
         let width = 0;
-        if (view.widths && view.widths[entry.name])
-          width = view.widths[entry.name];
+        if (s3view.widths && s3view.widths[entry.name])
+          width = s3view.widths[entry.name];
         return { ...entry, width };
       });
   }
@@ -54,8 +54,8 @@ export class DictionaryService {
                      s3: S3StateModel,
                      dictionary: Dictionary[],
                      prefs: PrefsStateModel,
-                     view: S3ViewStateModel): Descriptor[] {
-    return this.sort(s3[path] || [], dictionary, prefs, view);
+                     s3view: S3ViewStateModel): Descriptor[] {
+    return this.sort(s3[path] || [], dictionary, prefs, s3view);
   }
 
   // private methods
@@ -63,27 +63,27 @@ export class DictionaryService {
   private sort(descriptors: Descriptor[],
                dictionary: Dictionary[],
                prefs: PrefsStateModel,
-               view: S3ViewStateModel): Descriptor[] {
+               s3view: S3ViewStateModel): Descriptor[] {
     if (['first', 'last'].includes(prefs.sortDirectories)) {
       const directories = descriptors.filter(desc => desc.isBucket || desc.isDirectory);
       const files = descriptors.filter(desc => desc.isFile || desc.isFileVersion);
       if (prefs.sortDirectories === 'first')
-        descriptors = this.sortImpl(directories, dictionary, view)
-          .concat(this.sortImpl(files, dictionary, view));
+        descriptors = this.sortImpl(directories, dictionary, s3view)
+          .concat(this.sortImpl(files, dictionary, s3view));
       else if (prefs.sortDirectories === 'last')
-        descriptors = this.sortImpl(files, dictionary, view)
-          .concat(this.sortImpl(directories, dictionary, view));
+        descriptors = this.sortImpl(files, dictionary, s3view)
+          .concat(this.sortImpl(directories, dictionary, s3view));
     }
-    else this.sortImpl(descriptors, dictionary, view);
+    else this.sortImpl(descriptors, dictionary, s3view);
     return descriptors;
   }
 
   private sortImpl(descriptors: Descriptor[],
                    dictionary: Dictionary[],
-                   view: S3ViewStateModel): Descriptor[] {
-    const entry = dictionary.find(dict => dict.name === view.sortColumn);
-    const col = view.sortColumn;
-    const dir = view.sortDir;
+                   s3view: S3ViewStateModel): Descriptor[] {
+    const entry = dictionary.find(dict => dict.name === s3view.sortColumn);
+    const col = s3view.sortColumn;
+    const dir = s3view.sortDir;
     return descriptors.sort((a, b) => {
       if ((a[col] == null) && (b[col] == null))
         return 0;

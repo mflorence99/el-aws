@@ -31,7 +31,7 @@ export class HeaderComponent extends LifecycleComponent
                              implements OnDestroy, OnInit {
 
   @Input() prefs = { } as PrefsStateModel;
-  @Input() view = { } as S3ViewStateModel;
+  @Input() s3view = { } as S3ViewStateModel;
 
   @ViewChild('outliner') outliner: ElementRef;
 
@@ -77,9 +77,9 @@ export class HeaderComponent extends LifecycleComponent
 
   // bind OnChange handlers
 
-  @OnChange('view') onView(): void {
-    if (this.view)
-      this.dictionary = this.dictSvc.dictionaryForView(this.view);
+  @OnChange('s3view') onView(): void {
+    if (this.s3view)
+      this.dictionary = this.dictSvc.dictionaryForView(this.s3view);
   }
 
   // lifecycle methods

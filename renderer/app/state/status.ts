@@ -73,7 +73,7 @@ export interface StatusStateModel {
 
   @Action(Progress)
   progress({ patchState }: StateContext<StatusStateModel>,
-    { payload }: Progress) {
+           { payload }: Progress) {
     const { path, scale, state } = payload;
     patchState({ progress: { scale: scale || 0, state: state || 'scaled' } });
     if (path)

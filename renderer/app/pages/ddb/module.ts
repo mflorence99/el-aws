@@ -1,6 +1,7 @@
 import { BarrelModule } from '../../barrel';
 import { ComponentsModule as CommonComponentsModule } from '../../components/module';
 import { ComponentsModule as DDBComponentsModule } from './components/module';
+import { DDBCtrlComponent } from './ctrl';
 import { DDBPageComponent } from './page';
 import { DDBService } from './services/ddb';
 import { NgModule } from '@angular/core';
@@ -16,6 +17,7 @@ import { states } from './state/feature';
  */
 
 const COMPONENTS = [
+  DDBCtrlComponent,
   DDBPageComponent,
   ToolbarComponent
 ];

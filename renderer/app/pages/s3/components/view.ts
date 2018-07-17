@@ -25,7 +25,7 @@ import { map } from 'rxjs/operators';
 
 export class ViewComponent extends LifecycleComponent {
 
-  @Input() view = { } as S3ViewStateModel;
+  @Input() s3view = { } as S3ViewStateModel;
 
   viewForm: FormGroup;
 
@@ -62,9 +62,9 @@ export class ViewComponent extends LifecycleComponent {
 
   // bind OnChange handlers
 
-  @OnChange('view') patchView(): void {
-    if (this.view && this.view.visibility)
-      this.viewForm.patchValue({ visibility: this.view.visibility }, { emitEvent: true });
+  @OnChange('s3view') patchView(): void {
+    if (this.s3view && this.s3view.visibility)
+      this.viewForm.patchValue({ visibility: this.s3view.visibility }, { emitEvent: true });
   }
 
 }

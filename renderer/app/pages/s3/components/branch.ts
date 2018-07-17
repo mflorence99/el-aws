@@ -36,8 +36,8 @@ export class BranchComponent implements OnInit {
   @Input() level = 0;
   @Input() path: string;
   @Input() prefs = {} as PrefsStateModel;
+  @Input() s3view = {} as S3ViewStateModel;
   @Input() selection = {} as S3SelectionStateModel;
-  @Input() view = {} as S3ViewStateModel;
 
   /** ctor */
   constructor(private store: Store,

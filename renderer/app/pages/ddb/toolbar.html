@@ -1,11 +1,14 @@
 <header>
 
-  <div>DDB Table</div>
+  <fa-icon 
+    [icon]="['fas', 'th']"
+    size="lg">
+  </fa-icon>
 
   <select
     (change)="onLoadTable($event.target.value)">
 
-    <option value="">... please select</option>
+    <option value="">Select DDB table ...</option>
 
     <option
       [selected]="tableName === table?.TableName"

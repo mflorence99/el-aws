@@ -20,7 +20,7 @@ import { UpdateSort } from '../state/s3view';
 export class ColumnComponent {
 
   @Input() entry = { } as Dictionary;
-  @Input() view = { } as S3ViewStateModel;
+  @Input() s3view = { } as S3ViewStateModel;
 
   /** ctor */
   constructor(private store: Store) { }
@@ -29,8 +29,8 @@ export class ColumnComponent {
 
   onSortChange(sortColumn: string): void {
     let sortDir = 1;
-    if (this.view.sortColumn === sortColumn)
-      sortDir = this.view.sortDir * -1;
+    if (this.s3view.sortColumn === sortColumn)
+      sortDir = this.s3view.sortDir * -1;
     this.store.dispatch(new UpdateSort({ sortColumn, sortDir}));
   }
 

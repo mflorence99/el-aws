@@ -4,15 +4,15 @@
   class="column">
 
   <fa-icon
-    [icon]="['fas', (view.sortDir > 0)? 'sort-up' : 'sort-down']"
-    *ngIf="entry.isQuantity && view.sortColumn === entry.name">
+    [icon]="['fas', (s3view.sortDir > 0)? 'sort-up' : 'sort-down']"
+    *ngIf="entry.isQuantity && s3view.sortColumn === entry.name">
   </fa-icon>
 
   {{ entry.tag }}
 
   <fa-icon
-    [icon]="['fas', (view.sortDir > 0)? 'sort-up' : 'sort-down']"
-    *ngIf="!entry.isQuantity && view.sortColumn === entry.name">
+    [icon]="['fas', (s3view.sortDir > 0)? 'sort-up' : 'sort-down']"
+    *ngIf="!entry.isQuantity && s3view.sortColumn === entry.name">
   </fa-icon>
 
 </div>

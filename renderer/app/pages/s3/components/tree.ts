@@ -51,7 +51,7 @@ export class TreeComponent extends LifecycleComponent {
   @Input() s3filter = {} as S3FilterStateModel;
   @Input() s3meta = {} as S3MetaStateModel;
   @Input() selection = {} as S3SelectionStateModel;
-  @Input() view = {} as S3ViewStateModel;
+  @Input() s3view = {} as S3ViewStateModel;
 
   @Output() createBucket = new EventEmitter<void>();
   @Output() editBucketFilter = new EventEmitter<Descriptor>();
@@ -131,20 +131,20 @@ export class TreeComponent extends LifecycleComponent {
   /** Is this path expandable? */
   isExpandable(desc: Descriptor): boolean {
     return this.hasChildren(desc)
-      && this.view.paths.includes(desc.path);
+      && this.s3view.paths.includes(desc.path);
   }
 
   /** Is this path expanded? */
   isExpanded(desc: Descriptor): boolean {
     return this.hasChildren(desc)
-      && this.view.paths.includes(desc.path)
+      && this.s3view.paths.includes(desc.path)
       && !!this.s3[desc.path];
   }
 
   /** Is this path expanding? */
   isExpanding(desc: Descriptor): boolean {
     return this.hasChildren(desc)
-      && this.view.paths.includes(desc.path)
+      && this.s3view.paths.includes(desc.path)
       && !this.s3[desc.path];
   }
 
@@ -189,7 +189,7 @@ export class TreeComponent extends LifecycleComponent {
                     item: Descriptor},
             command: string): void {
     let base;
-    const desc = event.item || <Descriptor>{ isDirectory: true, path: this.view.paths[0] };
+    const desc = event.item || <Descriptor>{ isDirectory: true, path: this.s3view.paths[0] };
     switch (command) {
 
       // these commands are singular
@@ -275,22 +275,22 @@ export class TreeComponent extends LifecycleComponent {
 
   // bind OnChange handlers
 
-  @OnChange('prefs', 's3', 's3meta', 'view') onChange(): void {
-    if (this.prefs && this.s3 && this.s3meta && this.view)
+  @OnChange('prefs', 's3', 's3meta', 's3view') onChange(): void {
+    if (this.prefs && this.s3 && this.s3meta && this.s3view)
       this.updateDescriptors();
   }
 
   // private methods
 
   private _updateDescriptors(): void {
-    this.dictionary = this.dictSvc.dictionaryForView(this.view);
-    this.view.paths.forEach(path => {
+    this.dictionary = this.dictSvc.dictionaryForView(this.s3view);
+    this.s3view.paths.forEach(path => {
       this.descriptorsByPath[path] =
         this.dictSvc.descriptorsForView(path, 
                                         this.s3, 
                                         this.dictionary, 
                                         this.prefs, 
-                                        this.view);
+                                        this.s3view);
     });
     this.cdf.detectChanges();
   }

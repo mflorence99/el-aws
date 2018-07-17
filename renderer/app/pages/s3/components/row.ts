@@ -39,8 +39,8 @@ export class RowComponent {
   @Input() level = 0;
   @Input() path: string;
   @Input() prefs = {} as PrefsStateModel;
+  @Input() s3view = {} as S3ViewStateModel;
   @Input() selection = {} as S3SelectionStateModel;
-  @Input() view = {} as S3ViewStateModel;
 
   /** ctor */
   constructor(private store: Store,
@@ -62,7 +62,7 @@ export class RowComponent {
 
   onExpand(event: MouseEvent,
           desc: Descriptor): void {
-    if (this.view.paths.includes(desc.path))
+    if (this.s3view.paths.includes(desc.path))
       this.store.dispatch(new RemovePath({ path: desc.path }));
     else {
       this.store.dispatch([
