@@ -929,11 +929,11 @@ export class S3Service {
                 params: any,
                 err: any,
                 data: any): void {
-    console.group(`%c${op} %c${JSON.stringify(params)}`, 'color: #880e4f', 'color: gray');
+    console.group(`%cAWS S3 ${op} %c${JSON.stringify(params)}`, 'color: #880e4f', 'color: gray');
     if (err)
-      console.log(`%cERR %c${JSON.stringify(err)}`, 'color: red', 'color: gray');
+      console.log(`%cERR %c${JSON.stringify(err)}`, 'color: #c53929', 'color: gray');
     if (data)
-      console.log(`%cDATA %c${JSON.stringify(data)}`, 'color: black', 'color: gray');
+      console.log(`%cDATA %c${JSON.stringify(data)}`, 'color: #3367d6', 'color: gray');
     console.groupEnd();
   }
 

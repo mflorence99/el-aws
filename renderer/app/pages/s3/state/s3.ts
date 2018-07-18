@@ -200,7 +200,6 @@ export interface S3StateModel {
         return this.makeDescriptorForDirectory(bucket, prefix);
       });
       const files = contents
-        // TODO: I don't understand how these exist -- directories are phantoms!
         .filter((content: S3.Object) => !content.Key.endsWith(config.s3.delimiter))
         .map((content: S3.Object) => {
           return this.makeDescriptorForFile(path, content, versioning);
@@ -212,7 +211,7 @@ export interface S3StateModel {
         dispatch(new Message({ text: `Extended ${path}` }));
         // keep going if there's more
         if (truncated && token && (descs.length < config.s3.maxDescs) && (extensionNum < config.s3.maxDirExtensions))
-          dispatch(new ExtendDirectory({ path, token, versioning, extensionNum }));
+          dispatch(new ExtendDirectory({ path, token, versioning, extensionNum: extensionNum + 1 }));
       });
     });
   }
@@ -276,7 +275,6 @@ export interface S3StateModel {
             return this.makeDescriptorForDirectory(bucket, prefix);
           });
           const files = contents
-            // TODO: I don't understand how these exist -- directories are phantoms!
             .filter((content: S3.Object) => !content.Key.endsWith(config.s3.delimiter))
             .map((content: S3.Object) => {
               return this.makeDescriptorForFile(path, content, versioning);

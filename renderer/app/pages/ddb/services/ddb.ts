@@ -1,6 +1,8 @@
 import * as DDB from 'aws-sdk/clients/dynamodb';
 
 import { ElectronService } from 'ngx-electron';
+import { FeatureState } from '../state/feature';
+import { Filter } from '../state/ddbfilters';
 import { Injectable } from '@angular/core';
 import { Message } from '../../../state/status';
 import { Observable } from 'rxjs';
@@ -8,6 +10,7 @@ import { PrefsState } from '../../../state/prefs';
 import { PrefsStateModel } from '../../../state/prefs';
 import { Select } from '@ngxs/store';
 import { Store } from '@ngxs/store';
+import { View } from '../state/ddbviews';
 
 import { config } from '../../../config';
 
@@ -64,17 +67,44 @@ export class DDBService {
     });
   }
 
+  /** Read data from a table */
+  scan(tableName: string,
+       lastEvaluatedKey: DDB.Key,
+       cb: (rows: any[],
+            lastEvaluatedKey: DDB.Key) => void): void {
+    const params = {
+      ExclusiveStartKey: lastEvaluatedKey,
+      Limit: config.ddb.maxRows,
+      TableName: tableName
+    };
+    // TODO: use Filter and View for FilterExpression and ProjectionExpression
+    const filter: Filter = this.store.selectSnapshot((state: FeatureState) => state.ddbfilters)[tableName];
+    const view: View = this.store.selectSnapshot((state: FeatureState) => state.ddbviews)[tableName];
+    console.log({ filter, view });
+    // now read data
+    this.ddb.scan(params, (err, data) => {
+      this.trace('scan', params, err, data);
+      if (err)
+        this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
+      else {
+        // TODO: convert data.Items into rows
+        const rows = [];
+        cb(rows, data.LastEvaluatedKey);
+      }
+    });
+  }
+
   // private methods
 
   private trace(op: string,
                 params: any,
                 err: any,
                 data: any): void {
-    console.group(`%c${op} %c${JSON.stringify(params)}`, 'color: #e65100', 'color: gray');
+    console.group(`%cAWS DDB ${op} %c${JSON.stringify(params)}`, 'color: #e65100', 'color: gray');
     if (err)
-      console.log(`%cERR %c${JSON.stringify(err)}`, 'color: red', 'color: gray');
+      console.log(`%cERR %c${JSON.stringify(err)}`, 'color: #c53929', 'color: gray');
     if (data)
-      console.log(`%cDATA %c${JSON.stringify(data)}`, 'color: black', 'color: gray');
+      console.log(`%cDATA %c${JSON.stringify(data)}`, 'color: #3367d6', 'color: gray');
     console.groupEnd();
   }
 
