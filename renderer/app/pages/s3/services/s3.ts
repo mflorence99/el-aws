@@ -130,7 +130,7 @@ export class S3Service {
       };
     }
     // now create bucket
-    this.s3.createBucket(params, (err, data) => {
+    this.s3.createBucket(params, (err, data: S3.CreateBucketOutput) => {
       this.trace('createBucket', params, err, data);
       // TODO: we'd like the watcher to see this automagically
       this.watcher.touch(config.s3.delimiter);
@@ -151,7 +151,7 @@ export class S3Service {
       Key: prefix 
     };
     // now create empty object as directory
-    this.s3.putObject(params, (err, data) => {
+    this.s3.putObject(params, (err, data: S3.PutObjectOutput) => {
       this.trace('createDirectory', params, err, data);
       // TODO: we'd like the watcher to see this automagically
       this.watcher.touch(parent);
@@ -168,7 +168,7 @@ export class S3Service {
     const { bucket } = this.path.analyze(path);
     const params: S3.DeleteBucketRequest = { Bucket: bucket };
     // now delete bucket
-    this.s3.deleteBucket(params, (err, data) => {
+    this.s3.deleteBucket(params, (err, data: { }) => {
       this.trace('deleteBucket', params, err, data);
       // TODO: we'd like the watcher to see this automagically
       this.watcher.touch(config.s3.delimiter);
@@ -197,7 +197,7 @@ export class S3Service {
         return acc;
       }, []);
     // now delete them all in parallel
-    async.parallelLimit(funcs, config.numParallelOps, (err, data) => {
+    async.parallelLimit(funcs, config.numParallelOps, (err, data: S3.DeleteObjectOutput) => {
       this.trace('deleteObjects', paths, err, data);
       // TODO: we'd like the watcher to see this automagically
       paths.forEach(path => {
@@ -232,7 +232,7 @@ export class S3Service {
       MaxKeys: config.s3.maxKeys,
       Prefix: prefix
     };
-    this.s3.listObjectsV2(params, (err, data) => {
+    this.s3.listObjectsV2(params, (err, data: S3.ListObjectsV2Output) => {
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
       else cb(data.Name, data.CommonPrefixes, this.filter(bucket, data.Contents), data.IsTruncated, data.NextContinuationToken, versioning, extensionNum + 1);
@@ -248,7 +248,7 @@ export class S3Service {
       Expires: config.s3.signedURLExpiry / 1000,
       Key: prefix
     };
-    this.s3.getSignedUrl('getObject', params, (err, url) => {
+    this.s3.getSignedUrl('getObject', params, (err, url: string) => {
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
       else cb(url);    
@@ -270,7 +270,7 @@ export class S3Service {
       website: async.apply(this.getBucketWebsite.bind(this), params)
     });
     // now load them all in parallel
-    async.parallelLimit(funcs, config.numParallelOps, (err, data) => {
+    async.parallelLimit(funcs, config.numParallelOps, (err, data: { value }) => {
       // NOTE: we are ignoring errors and only recording metadata actually found
       // reason: a bucket with no tags for example errors on the tagging call
       // TODO: while developing, log this nicely
@@ -362,7 +362,7 @@ export class S3Service {
       tagging: async.apply(this.getObjectTagging.bind(this), params)
     });
     // now load them all in parallel
-    async.parallelLimit(funcs, config.numParallelOps, (err, data) => {
+    async.parallelLimit(funcs, config.numParallelOps, (err, data: { value }) => {
       // NOTE: we are ignoring errors and only recording metadata actually found
       // reason: a file with no tags for example errors on the tagging call
       // TODO: while developing, log this nicely

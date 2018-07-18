@@ -12,6 +12,7 @@ import { Select } from '@ngxs/store';
 import { Store } from '@ngxs/store';
 import { View } from '../state/ddbviews';
 
+import { base64ToBuffer } from 'ellib';
 import { config } from '../../../config';
 
 /**
@@ -46,7 +47,7 @@ export class DDBService {
     const params = {
       TableName: tableName
     };
-    this.ddb.describeTable(params, (err, data) => {
+    this.ddb.describeTable(params, (err, data: DDB.DescribeTableOutput) => {
       this.trace('describeTable', params, err, data);
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
@@ -59,7 +60,7 @@ export class DDBService {
     const params = {
       Limit: config.ddb.maxTables
     };
-    this.ddb.listTables(params, (err, data) => {
+    this.ddb.listTables(params, (err, data: DDB.ListTablesOutput) => {
       this.trace('listTables', params, err, data);
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
@@ -82,19 +83,57 @@ export class DDBService {
     const view: View = this.store.selectSnapshot((state: FeatureState) => state.ddbviews)[tableName];
     console.log({ filter, view });
     // now read data
-    this.ddb.scan(params, (err, data) => {
+    this.ddb.scan(params, (err, data: DDB.ScanOutput) => {
       this.trace('scan', params, err, data);
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
       else {
         // TODO: convert data.Items into rows
-        const rows = [];
+        const rows = this.makeRowsFromItems(data.Items);
         cb(rows, data.LastEvaluatedKey);
       }
     });
   }
 
   // private methods
+
+  private makeRowsFromItems(Items: DDB.ItemList): any[] {
+    return Items.reduce((acc, Item: DDB.AttributeMap) => {
+      acc.push(this.makeRowFromItem(Item));
+      return acc;
+    }, []);
+  }
+
+  private makeRowFromItem(Item: DDB.AttributeMap): any {
+    return Object.keys(Item).reduce((acc, column) => {
+      const value: DDB.AttributeValue = Item[column];
+      const type = Object.keys(value)[0];
+      switch (type) {
+        case 'B':
+          acc[column] = base64ToBuffer(value.B as string);
+          break;
+        case 'BS':
+          acc[column] = value.BS.map(val => base64ToBuffer(val as string));
+          break;
+        case 'N':
+          acc[column] = Number(value.N);
+          break;
+        case 'NS':
+          acc[column] = value.NS.map(val => Number(val));
+          break;
+        case 'M':
+          acc[column] = this.makeRowFromItem(value.M);
+          break;
+        case 'NULL':
+          acc[column] = null;
+          break;
+        default:
+          acc[column] = value[type];
+          break;
+      }
+      return acc;
+    }, { });
+  }
 
   private trace(op: string,
                 params: any,

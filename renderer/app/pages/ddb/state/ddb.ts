@@ -61,15 +61,15 @@ export interface DDBStateModel {
                      lastEvaluatedKey,
                      (rows: any[],
                       lastEvaluatedKey: DDB.Key) => {
-        this.zone.run(() => {
-          if (rows.length > 0)
-            dispatch(new RowsLoaded({ tableName, rows: getState().rows.concat(rows) }));
-          dispatch(new Message({ text: `Extended ${tableName} rows` }));
-          // keep going if there's more
-          if (lastEvaluatedKey && (extensionNum < config.ddb.maxRowExtensions))
-            dispatch(new ExtendRows({ tableName, lastEvaluatedKey, extensionNum: extensionNum + 1 }));
-        });
+      this.zone.run(() => {
+        if (rows.length > 0)
+          dispatch(new RowsLoaded({ tableName, rows: getState().rows.concat(rows) }));
+        dispatch(new Message({ text: `Extended ${tableName} rows` }));
+        // keep going if there's more
+        if (lastEvaluatedKey && (extensionNum < config.ddb.maxRowExtensions))
+          dispatch(new ExtendRows({ tableName, lastEvaluatedKey, extensionNum: extensionNum + 1 }));
       });
+    });
   }
 
   @Action(LoadRows)
