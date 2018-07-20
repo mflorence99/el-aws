@@ -103,7 +103,7 @@ export interface S3StateModel {
 
 @State<S3StateModel>({
   name: 's3',
-  defaults: {}
+  defaults: { }
 }) export class S3State implements NgxsOnInit {
 
   @Selector() static getBuckets(state: S3StateModel): Descriptor[] {
@@ -114,7 +114,7 @@ export interface S3StateModel {
 
   @Select(S3ColorState) s3color$: Observable<S3ColorStateModel>;
 
-  s3color = {} as S3ColorStateModel;
+  s3color = { } as S3ColorStateModel;
 
   /** ctor */
   constructor(private path: PathService,

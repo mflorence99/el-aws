@@ -46,12 +46,12 @@ import { debounce } from 'ellib';
 @AutoUnsubscribe()
 export class TreeComponent extends LifecycleComponent {
 
-  @Input() prefs = {} as PrefsStateModel;
-  @Input() s3 = {} as S3StateModel;
-  @Input() s3filter = {} as S3FilterStateModel;
-  @Input() s3meta = {} as S3MetaStateModel;
-  @Input() selection = {} as S3SelectionStateModel;
-  @Input() s3view = {} as S3ViewStateModel;
+  @Input() prefs = { } as PrefsStateModel;
+  @Input() s3 = { } as S3StateModel;
+  @Input() s3filter = { } as S3FilterStateModel;
+  @Input() s3meta = { } as S3MetaStateModel;
+  @Input() selection = { } as S3SelectionStateModel;
+  @Input() s3view = { } as S3ViewStateModel;
 
   @Output() createBucket = new EventEmitter<void>();
   @Output() editBucketFilter = new EventEmitter<Descriptor>();
@@ -60,7 +60,7 @@ export class TreeComponent extends LifecycleComponent {
 
   @ViewChild(ContextMenuComponent) contextMenu: ContextMenuComponent;
 
-  descriptorsByPath: { [path: string]: Descriptor[] } = {};
+  descriptorsByPath: { [path: string]: Descriptor[] } = { };
   dictionary: Dictionary[] = [];
 
   newName: string;

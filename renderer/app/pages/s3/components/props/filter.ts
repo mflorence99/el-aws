@@ -26,10 +26,10 @@ import { Validators } from '@angular/forms';
 
 export class BucketFilterComponent extends LifecycleComponent {
 
-  @Input() s3filter = {} as S3FilterStateModel;
+  @Input() s3filter = { } as S3FilterStateModel;
 
-  desc = {} as Descriptor;
-  filter = {} as S3Filter;
+  desc = { } as Descriptor;
+  filter = { } as S3Filter;
   filterForm: FormGroup;
 
   /** ctor */

@@ -23,7 +23,7 @@ import { config } from '../../config';
 
 export class SetupComponent extends LifecycleComponent {
 
-  @Input() prefs = {} as PrefsStateModel;
+  @Input() prefs = { } as PrefsStateModel;
 
   prefsForm: FormGroup;
 

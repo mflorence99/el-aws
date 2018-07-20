@@ -1,0 +1,21 @@
+:host {
+  background-color: var(--background-color);
+  display: block;
+  height: 100%;
+  overflow: auto;
+  padding: 16px;
+  width: 360px;
+}
+
+.no-data {
+  align-items: center;
+  color: var(--mat-grey-400);
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+
+  fa-icon {
+    margin-right: 8px;
+  }
+
+}

@@ -25,7 +25,7 @@ import { ViewChild } from '@angular/core';
 export class TabsComponent extends LifecycleComponent { 
 
   // TODO: should expose @ngxs/router-plugin
-  @Input() router: any = {};
+  @Input() router: any = { };
   @Input() tabs: Navigator[] = [];
 
   @ViewChild(MatTabGroup) tabGroup: MatTabGroup;

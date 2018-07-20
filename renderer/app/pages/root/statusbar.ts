@@ -22,7 +22,7 @@ import { ViewChild } from '@angular/core';
 
 export class StatusbarComponent extends LifecycleComponent {
 
-  @Input() status = {} as StatusStateModel;
+  @Input() status = { } as StatusStateModel;
 
   @ViewChild('ding') ding;
 

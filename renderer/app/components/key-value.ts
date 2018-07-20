@@ -153,7 +153,7 @@ export class KeyValueComponent implements ControlValueAccessor,
     this.stateChanges.next();
   }
 
-  private keyValues = {} as KeyValueHash;
+  private keyValues = { } as KeyValueHash;
 
   private onChange: Function;
 
@@ -272,12 +272,12 @@ export class KeyValueComponent implements ControlValueAccessor,
 
   private fromKeyValueType(value: KeyValueType): void {
     if (!value)
-      this.keyValues = {} as KeyValueHash;
+      this.keyValues = { } as KeyValueHash;
     else if (this.asArray) {
       this.keyValues = (<KeyValueArray>value).reduce((acc, tuple) => {
         acc[tuple[0]] = tuple[1];
         return acc;
-      }, {} as KeyValueHash);
+      }, { } as KeyValueHash);
     }
     else if (this.asArrayOfHashes) {
       const k = this.asArrayOfHashes[0];
@@ -285,7 +285,7 @@ export class KeyValueComponent implements ControlValueAccessor,
       this.keyValues = (<KeyValueArrayOfHashes>value).reduce((acc, hash) => {
         acc[hash[k]] = hash[v];
         return acc;
-      }, {} as KeyValueHash);
+      }, { } as KeyValueHash);
     }
     else if (this.asHash)
       this.keyValues = { ...<KeyValueHash>value };

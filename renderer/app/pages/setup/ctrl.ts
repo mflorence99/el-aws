@@ -25,7 +25,7 @@ import { nextTick } from 'ellib';
 
 export class SetupCtrlComponent extends LifecycleComponent {
 
-  @Input() prefsForm = {} as PrefsStateModel;
+  @Input() prefsForm = { } as PrefsStateModel;
 
   @Select(PrefsState) prefs$: Observable<PrefsStateModel>;
 

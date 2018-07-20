@@ -1,0 +1,82 @@
+<h3 class="drawer-header">
+
+  <div class="icon">
+
+    <fa-icon
+      [icon]="['fas', 'ellipsis-v']"
+      size="lg">
+    </fa-icon>
+
+  </div>
+
+  <div class="title">
+    Filter Rows and Columns
+  </div>
+
+</h3>
+
+<mat-accordion>
+
+  <mat-expansion-panel
+    [expanded]="true">
+
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Select Columns    
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <elaws-view-schema
+      [ddb]="ddb"
+      [ddbschema]="ddbschema"
+      [ddbview]="ddbview"
+      *ngIf="ddb.table">
+    </elaws-view-schema>
+
+    <div
+      *ngIf="!ddb.table"
+      class="no-data">
+
+      <fa-icon
+        [icon]="['fas', 'exclamation']">
+      </fa-icon>
+
+      <div>
+        Please select DDB table
+      </div>
+      
+    </div>
+
+  </mat-expansion-panel>
+
+  <mat-expansion-panel>
+
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Filter Rows    
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+
+    <elaws-view-filter
+      [ddb]="ddb"
+      [ddbfilter]="ddbfilter"
+      *ngIf="ddb.table">
+    </elaws-view-filter>
+
+    <div
+      *ngIf="!ddb.table"
+      class="no-data">
+
+      <fa-icon
+        [icon]="['fas', 'exclamation']">
+      </fa-icon>
+
+      <div>
+        Please select DDB table
+      </div>
+      
+    </div>
+
+  </mat-expansion-panel>
+
+</mat-accordion>

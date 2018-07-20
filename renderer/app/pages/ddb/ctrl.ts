@@ -12,18 +12,26 @@ import { DDBViewsState } from './state/ddbviews';
 import { DDBViewsStateModel } from './state/ddbviews';
 import { EventEmitter } from '@angular/core';
 import { Filter } from './state/ddbfilters';
+import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { Observable } from 'rxjs/Observable';
+import { OnChange } from 'ellib';
 import { Output } from '@angular/core';
 import { PrefsState } from '../../state/prefs';
 import { PrefsStateModel } from '../../state/prefs';
 import { Schema } from './state/ddbschemas';
 import { Select } from '@ngxs/store';
 import { ShowPagePrefs } from '../../state/window';
+import { Store } from '@ngxs/store';
 import { Subscription } from 'rxjs/Subscription';
+import { UpdateSchema } from './state/ddbschemas';
+import { UpdateVisibility } from './state/ddbviews';
 import { View } from './state/ddbviews';
+import { ViewVisibility } from './state/ddbviews';
 
+import { filter } from 'rxjs/operators';
 import { map } from 'rxjs/operators';
+import { nextTick } from 'ellib';
 import { ofAction } from '@ngxs/store';
 import { switchMap } from 'rxjs/operators';
 
@@ -41,6 +49,8 @@ import { switchMap } from 'rxjs/operators';
 @AutoUnsubscribe()
 export class DDBCtrlComponent extends LifecycleComponent {
 
+  @Input() viewAndSchemaForm = { } as ViewAndSchemaForm;
+
   @Output() openView = new EventEmitter<any>();
 
   @Select(DDBState) ddb$: Observable<DDBStateModel>;
@@ -50,6 +60,7 @@ export class DDBCtrlComponent extends LifecycleComponent {
   @Select(PrefsState) prefs$: Observable<PrefsStateModel>;
 
   ddbfilter$: Observable<Filter> = this.ddb$.pipe(
+    filter((ddb: DDBStateModel) => !!ddb.table),
     switchMap((ddb: DDBStateModel) => {
       return this.ddbfilters$.pipe(
         map((model: DDBFiltersStateModel) => model[ddb.table.TableName])
@@ -58,6 +69,7 @@ export class DDBCtrlComponent extends LifecycleComponent {
   );
 
   ddbschema$: Observable<Schema> = this.ddb$.pipe(
+    filter((ddb: DDBStateModel) => !!ddb.table),
     switchMap((ddb: DDBStateModel) => {
       return this.ddbschemas$.pipe(
         map((model: DDBSchemasStateModel) => model[ddb.table.TableName])
@@ -66,6 +78,7 @@ export class DDBCtrlComponent extends LifecycleComponent {
   );
 
   ddbview$: Observable<View> = this.ddb$.pipe(
+    filter((ddb: DDBStateModel) => !!ddb.table),
     switchMap((ddb: DDBStateModel) => {
       return this.ddbviews$.pipe(
         map((model: DDBViewsStateModel) => model[ddb.table.TableName])
@@ -76,10 +89,28 @@ export class DDBCtrlComponent extends LifecycleComponent {
   subToShowPagePrefs: Subscription;
 
   /** ctor */
-  constructor(private actions$: Actions) {
+  constructor(private actions$: Actions,
+              private store: Store) {
     super();
     this.handleActions();
   }    
+
+  // bind OnChange handlers
+
+  @OnChange('viewAndSchemaForm') saveViewAndSchema(): void {
+    if (this.viewAndSchemaForm && this.viewAndSchemaForm.submitted) {
+      // TODO: why do we need this in Electron? and only running live?
+      // at worst, running in NgZone should work -- but otherwise a DOM
+      // event is necessary to force change detection
+      nextTick(() => {
+        const tableName = this.viewAndSchemaForm.tableName;
+        const visibility: ViewVisibility = { ...this.viewAndSchemaForm.visibility };
+        this.store.dispatch(new UpdateVisibility({ tableName, visibility }));
+        const schema: Schema = { ...this.viewAndSchemaForm.schema };
+        this.store.dispatch(new UpdateSchema({ tableName, schema }));
+      });
+    }
+  }
 
   // private methods
 
@@ -89,4 +120,17 @@ export class DDBCtrlComponent extends LifecycleComponent {
       .subscribe(() => this.openView.emit());
   }
 
+}
+
+/**
+ * Model combined view and schema form
+ * 
+ * @see ViewSchemaComponent
+ */
+
+interface ViewAndSchemaForm {
+  submitted: boolean;
+  tableName: string;
+  schema: Schema;
+  visibility: ViewVisibility;
 }

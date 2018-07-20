@@ -30,11 +30,11 @@ import { showHideAnimation } from 'ellib';
 
 export class BucketPropsComponent extends LifecycleComponent {
 
-  @Input() prefs = {} as PrefsStateModel;
-  @Input() s3meta = {} as S3MetaStateModel;
+  @Input() prefs = { } as PrefsStateModel;
+  @Input() s3meta = { } as S3MetaStateModel;
 
-  desc = {} as Descriptor;
-  metadata = {} as BucketMetadata;
+  desc = { } as Descriptor;
+  metadata = { } as BucketMetadata;
   propsForm: FormGroup;
 
   encryptionEnabled: string;

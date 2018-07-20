@@ -25,8 +25,8 @@ import { config } from '../../config';
 
 export class PrefsComponent extends LifecycleComponent { 
 
-  @Input() prefs = {} as PrefsStateModel;
-  @Input() window = {} as WindowStateModel;
+  @Input() prefs = { } as PrefsStateModel;
+  @Input() window = { } as WindowStateModel;
 
   prefsForm: FormGroup;
 

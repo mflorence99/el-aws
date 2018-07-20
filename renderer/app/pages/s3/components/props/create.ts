@@ -23,7 +23,7 @@ import { config } from '../../../../config';
 
 export class CreateBucketComponent implements OnInit {
 
-  @Input() prefs = {} as PrefsStateModel;
+  @Input() prefs = { } as PrefsStateModel;
 
   createForm: FormGroup;
 

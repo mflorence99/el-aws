@@ -1,0 +1,102 @@
+<form
+  (submit)="close()"
+  [formGroup]="viewAndSchemaForm"
+  [libRxfSubmit]="viewAndSchemaForm"
+  *ngIf="viewAndSchemaForm"
+  novalidate>
+
+  <input
+    formControlName="tableName"
+    type="hidden">
+
+  <input
+    formControlName="atLeastOne"
+    type="hidden">
+
+  <div class="drawer-label">
+    Column types may be coerced and names edited as desired.
+  </div>
+
+  <div class="columns">
+
+    <div
+       class="drawer-label"
+       style="grid-column-start: span 2">
+      Show as ...
+    </div>
+
+    <div class="drawer-label">
+      <div class="type">
+        <div>Bool</div>
+        <div>Num</div>
+        <div>Str</div>
+      </div>
+    </div>
+
+    <ng-container
+      *ngFor="let column of columns">
+
+      <ng-container
+        formGroupName="visibility">
+
+        <mat-checkbox
+          [formControlName]="column">
+        </mat-checkbox>
+
+      </ng-container>
+
+      <ng-container
+        formGroupName="schema">
+
+        <ng-container
+          [formGroupName]="column">
+
+          <div>
+            <input formControlName="tag">
+          </div>
+
+          <mat-radio-group
+            formControlName="type"
+            class="type">
+
+            <mat-radio-button 
+              value="boolean">
+            </mat-radio-button>
+
+            <mat-radio-button 
+              value="number">
+            </mat-radio-button>
+
+            <mat-radio-button 
+              value="string">
+            </mat-radio-button>
+
+          </mat-radio-group>
+          
+        </ng-container>
+
+      </ng-container>
+
+    </ng-container>
+
+  </div>
+
+  <div class="okAndCancel">
+
+    <a
+      (click)="close()"
+      mat-button>
+      Cancel
+    </a>
+
+    <button
+      [disabled]="viewAndSchemaForm.invalid"
+      color="primary"
+      mat-raised-button
+      type="submit">
+      OK
+    </button>
+
+  </div>
+
+</form>

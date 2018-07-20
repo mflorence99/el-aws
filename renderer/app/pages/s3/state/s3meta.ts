@@ -156,7 +156,7 @@ export interface S3MetaStateModel {
 
 @State<S3MetaStateModel>({
   name: 's3meta',
-  defaults: {}
+  defaults: { }
 }) export class S3MetaState implements NgxsOnInit {
 
   /** ctor */

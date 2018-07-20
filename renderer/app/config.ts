@@ -55,7 +55,8 @@ export class Config {
   ddb = {
     maxRetries: 10,
     maxRowExtensions: 10,
-    maxRows: 500,
+    maxRows: 100,
+    maxRowsPerScan: 100,
     maxTables: 100
   };
 

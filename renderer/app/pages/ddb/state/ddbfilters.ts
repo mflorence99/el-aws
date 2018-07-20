@@ -22,7 +22,7 @@ export type FilterExpression = any;
 
 @State<DDBFiltersStateModel>({
   name: 'ddbfilters',
-  defaults: {}
+  defaults: { }
 }) export class DDBFiltersState {
 
   @Action(UpdateFilter)

@@ -55,7 +55,7 @@ import { take } from 'rxjs/operators';
 @AutoUnsubscribe()
 export class RootCtrlComponent extends LifecycleComponent {       
 
-  @Input() prefsForm = {} as PrefsStateModel;
+  @Input() prefsForm = { } as PrefsStateModel;
 
   @Select(PrefsState) prefs$: Observable<PrefsStateModel>;
   // TODO: should expose @ngxs/router-plugin

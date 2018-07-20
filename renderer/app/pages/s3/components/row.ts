@@ -34,13 +34,13 @@ export class RowComponent {
   @Input() contextMenu: ContextMenuComponent;
   @Input() desc: Descriptor;
   @Input() dictionary: Dictionary[] = [];
-  @Input() filter = {} as S3Filter;
+  @Input() filter = { } as S3Filter;
   @Input() hydrated = true;
   @Input() level = 0;
   @Input() path: string;
-  @Input() prefs = {} as PrefsStateModel;
-  @Input() s3view = {} as S3ViewStateModel;
-  @Input() selection = {} as S3SelectionStateModel;
+  @Input() prefs = { } as PrefsStateModel;
+  @Input() s3view = { } as S3ViewStateModel;
+  @Input() selection = { } as S3SelectionStateModel;
 
   /** ctor */
   constructor(private store: Store,

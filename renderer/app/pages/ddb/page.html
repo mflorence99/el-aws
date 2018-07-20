@@ -1,7 +1,23 @@
 <lib-drawer-container>
 
+  <lib-drawer-panel
+    #viewDrawer
+    position="right"> 
+
+    <elaws-view
+      [ddb]="ctrl.ddb$ | async"
+      [ddbfilter]="ctrl.ddbfilter$ | async"
+      [ddbschema]="ctrl.ddbschema$ | async"
+      [ddbview]="ctrl.ddbview$ | async"
+      #view>
+    </elaws-view>  
+
+  </lib-drawer-panel>
+
 </lib-drawer-container> 
 
 <elaws-ddb-ctrl
+  (openView)="viewDrawer.open()"
+  [viewAndSchemaForm]="view.schema?.viewAndSchemaForm?.valueChanges | async"
   #ctrl>
 </elaws-ddb-ctrl> 

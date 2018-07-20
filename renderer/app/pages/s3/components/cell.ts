@@ -20,10 +20,10 @@ import { TreeComponent } from './tree';
 
 export class CellComponent {
 
-  @Input() desc = {} as Descriptor;
-  @Input() entry = {} as Dictionary;
-  @Input() filter = {} as S3Filter;
-  @Input() prefs = {} as PrefsStateModel;
+  @Input() desc = { } as Descriptor;
+  @Input() entry = { } as Dictionary;
+  @Input() filter = { } as S3Filter;
+  @Input() prefs = { } as PrefsStateModel;
 
   /** ctor */
   constructor(public tree: TreeComponent) { }

@@ -31,7 +31,7 @@ import { showHideAnimation } from 'ellib';
 
 export class FilePropsComponent extends LifecycleComponent {
 
-  @Input() prefs = {} as PrefsStateModel;
+  @Input() prefs = { } as PrefsStateModel;
   @Input() s3meta = { } as S3MetaStateModel;
 
   desc = { } as Descriptor;

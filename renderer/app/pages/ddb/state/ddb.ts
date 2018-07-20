@@ -2,6 +2,7 @@ import * as DDB from 'aws-sdk/clients/dynamodb';
 
 import { Action } from '@ngxs/store';
 import { DDBService } from '../services/ddb';
+import { InitSchema } from './ddbschemas';
 import { Message } from '../../../state/status';
 import { NgZone } from '@angular/core';
 import { Selector } from '@ngxs/store';
@@ -66,7 +67,7 @@ export interface DDBStateModel {
           dispatch(new RowsLoaded({ tableName, rows: getState().rows.concat(rows) }));
         dispatch(new Message({ text: `Extended ${tableName} rows` }));
         // keep going if there's more
-        if (lastEvaluatedKey && (extensionNum < config.ddb.maxRowExtensions))
+        if (lastEvaluatedKey && (rows.length < config.ddb.maxRows) && (extensionNum < config.ddb.maxRowExtensions))
           dispatch(new ExtendRows({ tableName, lastEvaluatedKey, extensionNum: extensionNum + 1 }));
       });
     });
@@ -85,7 +86,7 @@ export interface DDBStateModel {
         dispatch(new RowsLoaded({ tableName, rows }));
         dispatch(new Message({ text: `Loaded ${tableName} rows` }));
         // keep going if there's more
-        if (lastEvaluatedKey)
+        if (lastEvaluatedKey && (rows.length < config.ddb.maxRows))
           dispatch(new ExtendRows({ tableName, lastEvaluatedKey, extensionNum: 1 }));
       });
     });
@@ -108,10 +109,11 @@ export interface DDBStateModel {
   }
 
   @Action(RowsLoaded)
-  rowsLoaded({ patchState }: StateContext<DDBStateModel>,
+  rowsLoaded({ dispatch, patchState }: StateContext<DDBStateModel>,
              { payload }: RowsLoaded) {
-    const { rows } = payload;
+    const { tableName, rows } = payload;
     patchState({ rows });
+    dispatch(new InitSchema({ tableName, rows }));
   }
 
 }

@@ -12,7 +12,6 @@ import { Select } from '@ngxs/store';
 import { Store } from '@ngxs/store';
 import { View } from '../state/ddbviews';
 
-import { base64ToBuffer } from 'ellib';
 import { config } from '../../../config';
 
 /**
@@ -75,7 +74,7 @@ export class DDBService {
             lastEvaluatedKey: DDB.Key) => void): void {
     const params = {
       ExclusiveStartKey: lastEvaluatedKey,
-      Limit: config.ddb.maxRows,
+      Limit: config.ddb.maxRowsPerScan,
       TableName: tableName
     };
     // TODO: use Filter and View for FilterExpression and ProjectionExpression
@@ -84,11 +83,10 @@ export class DDBService {
     console.log({ filter, view });
     // now read data
     this.ddb.scan(params, (err, data: DDB.ScanOutput) => {
-      this.trace('scan', params, err, data);
+      this.trace('scan', params, err, { data: 'suppressed' });
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
       else {
-        // TODO: convert data.Items into rows
         const rows = this.makeRowsFromItems(data.Items);
         cb(rows, data.LastEvaluatedKey);
       }
@@ -98,39 +96,21 @@ export class DDBService {
   // private methods
 
   private makeRowsFromItems(Items: DDB.ItemList): any[] {
-    return Items.reduce((acc, Item: DDB.AttributeMap) => {
-      acc.push(this.makeRowFromItem(Item));
-      return acc;
-    }, []);
+    return Items.map((Item: DDB.AttributeMap) => this.makeRowFromItem(Item));
   }
 
   private makeRowFromItem(Item: DDB.AttributeMap): any {
     return Object.keys(Item).reduce((acc, column) => {
       const value: DDB.AttributeValue = Item[column];
-      const type = Object.keys(value)[0];
-      switch (type) {
-        case 'B':
-          acc[column] = base64ToBuffer(value.B as string);
-          break;
-        case 'BS':
-          acc[column] = value.BS.map(val => base64ToBuffer(val as string));
-          break;
-        case 'N':
-          acc[column] = Number(value.N);
-          break;
-        case 'NS':
-          acc[column] = value.NS.map(val => Number(val));
-          break;
-        case 'M':
-          acc[column] = this.makeRowFromItem(value.M);
-          break;
-        case 'NULL':
-          acc[column] = null;
-          break;
-        default:
-          acc[column] = value[type];
-          break;
-      }
+      // TODO: we are currently only handling scalar columns
+      if (value.BOOL)
+        acc[column] = !!value.BOOL;
+      else if (value.N)
+        acc[column] = Number(value.N);
+      else if (value.NULL)
+        acc[column] = null;
+      else if (value.S)
+        acc[column] = value.S;
       return acc;
     }, { });
   }

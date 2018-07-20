@@ -22,7 +22,7 @@ export interface S3FilterStateModel {
 
 @State<S3FilterStateModel>({
   name: 's3filter',
-  defaults: {}
+  defaults: { }
 }) export class S3FilterState {
 
   static filterDefaults(filter?: any | null): S3Filter {
