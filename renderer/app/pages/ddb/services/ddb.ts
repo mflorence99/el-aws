@@ -1,6 +1,6 @@
 import * as DDB from 'aws-sdk/clients/dynamodb';
 
-import { ElectronService } from 'ngx-electron';
+import { DynamoDB } from 'aws-sdk';
 import { FeatureState } from '../state/feature';
 import { Filter } from '../state/ddbfilters';
 import { Injectable } from '@angular/core';
@@ -16,6 +16,9 @@ import { config } from '../../../config';
 
 /**
  * DynamoDB service
+ * 
+ * NOTE: we are using the browser API as it is so much faster. Under Node.js
+ * RPC calls to object access are REALLY slow
  */
 
 @Injectable()
@@ -25,14 +28,10 @@ export class DDBService {
 
   private ddb: DDB;
 
-  private ddb_: typeof DDB;
-
   /** ctor */
-  constructor(private electron: ElectronService,
-              private store: Store) {
-    this.ddb_ = this.electron.remote.require('aws-sdk/clients/dynamodb');
+  constructor(private store: Store) {
     this.prefs$.subscribe((prefs: PrefsStateModel) => {
-      this.ddb = new this.ddb_({
+      this.ddb = new DynamoDB({
         endpoint: prefs.endpoints.ddb,
         maxRetries: config.ddb.maxRetries,
         region: prefs.region
@@ -83,7 +82,7 @@ export class DDBService {
     console.log({ filter, view });
     // now read data
     this.ddb.scan(params, (err, data: DDB.ScanOutput) => {
-      this.trace('scan', params, err, { data: 'suppressed' });
+      this.trace('scan', params, err, { });
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
       else {

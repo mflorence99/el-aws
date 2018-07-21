@@ -204,10 +204,12 @@ export interface S3StateModel {
         .map((content: S3.Object) => {
           return this.makeDescriptorForFile(path, content, versioning);
         });
-      const descs = dirs.concat(files);
+      let descs = dirs.concat(files);
       this.zone.run(() => {
-        if (descs.length > 0)
-          dispatch(new DirectoryLoaded({ path, descs: descs.concat(getState()[path]) }));
+        if (descs.length > 0) {
+          descs = getState()[path].concat(descs);
+          dispatch(new DirectoryLoaded({ path, descs }));
+        }
         dispatch(new Message({ text: `Extended ${path}` }));
         // keep going if there's more
         if (truncated && token && (descs.length < config.s3.maxDescs) && (extensionNum < config.s3.maxDirExtensions))

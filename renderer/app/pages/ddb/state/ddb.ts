@@ -63,8 +63,10 @@ export interface DDBStateModel {
                      (rows: any[],
                       lastEvaluatedKey: DDB.Key) => {
       this.zone.run(() => {
-        if (rows.length > 0)
-          dispatch(new RowsLoaded({ tableName, rows: getState().rows.concat(rows) }));
+        if (rows.length > 0) {
+          rows = getState().rows.concat(rows);
+          dispatch(new RowsLoaded({ tableName, rows }));
+        }
         dispatch(new Message({ text: `Extended ${tableName} rows` }));
         // keep going if there's more
         if (lastEvaluatedKey && (rows.length < config.ddb.maxRows) && (extensionNum < config.ddb.maxRowExtensions))

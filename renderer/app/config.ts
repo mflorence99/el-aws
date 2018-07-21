@@ -55,8 +55,8 @@ export class Config {
   ddb = {
     maxRetries: 10,
     maxRowExtensions: 10,
-    maxRows: 100,
-    maxRowsPerScan: 100,
+    maxRows: 1000,
+    maxRowsPerScan: 500,
     maxTables: 100
   };
 
@@ -66,7 +66,7 @@ export class Config {
     // @see https://stackoverflow.com/questions/50480924/regex-for-s3-bucket-name
     bucketValidationPattern: /(?=^.{3,63}$)(?!^(\d+\.)+\d+$)(^(({[}a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])\.)*([a-z0-9]|[a-z0-9][a-z0-9\-]*[a-z0-9])$)/,
     delimiter: '/',
-    maxDescs: 200,
+    maxDescs: 1000,
     maxDirExtensions: 10,
     maxKeys: 100,
     maxRetries: 10,
