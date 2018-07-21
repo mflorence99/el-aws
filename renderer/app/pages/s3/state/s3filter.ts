@@ -11,10 +11,14 @@ export class SetFilter {
 
 export interface S3Filter {
   bucket: string;
-  match?: string;
-  period?: string;
+  match: string;
+  period: string;
   submitted?: boolean;
 }
+
+export type S3FilterFormGroup = {
+  [P in keyof S3Filter]: any;
+};
 
 export interface S3FilterStateModel {
   [bucket: string]: S3Filter;

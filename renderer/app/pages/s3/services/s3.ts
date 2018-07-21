@@ -40,8 +40,11 @@ import async from 'async-es';
  * S3 service
  * 
  * TODO: we'd like to user the browser API but we are currently hitting (a) CORS
- * errors (which we can likely fix by encoding HTTP headers in the config) but also
- * (b) makeRequest is not a function, which is baffling.
+ * errors and also (b) makeRequest is not a function, which is baffling.
+ * 
+ * @see https://github.com/aws/aws-sdk-js/issues/1939
+ * 
+ * CORS isn't available for listBuckets so we'll always have trouble
  */
 
 @Injectable()

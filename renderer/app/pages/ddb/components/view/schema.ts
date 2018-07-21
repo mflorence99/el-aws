@@ -10,8 +10,25 @@ import { OnChange } from 'ellib';
 import { Schema } from '../../state/ddbschemas';
 import { Validators } from '@angular/forms';
 import { View } from '../../state/ddbviews';
+import { ViewVisibility } from '../../state/ddbviews';
 
 import { map } from 'rxjs/operators';
+
+/**
+ * Model combined view and schema form
+ */
+
+export interface ViewAndSchemaForm {
+  atLeastOne: boolean;
+  submitted: boolean;
+  tableName: string;
+  schema: Schema;
+  visibility: ViewVisibility;
+}
+
+type ViewAndSchemaFormGroup = {
+  [P in keyof ViewAndSchemaForm]: any;
+};
 
 /**
  * Schema component
@@ -69,7 +86,7 @@ export class ViewSchemaComponent extends LifecycleComponent {
           acc[column] = this.ddbview.visibility[column];
           return acc;
         }, { }))
-      });
+      } as ViewAndSchemaFormGroup);
       // make sure at least one visibility
       this.viewAndSchemaForm.get('visibility').valueChanges
         .pipe(

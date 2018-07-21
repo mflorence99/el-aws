@@ -1,4 +1,5 @@
 import { BucketMetadata } from '../../state/s3meta';
+import { BucketMetadataFormGroup } from '../../state/s3meta';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { ChangeDetectorRef } from '@angular/core';
 import { Component } from '@angular/core';
@@ -87,7 +88,7 @@ export class BucketPropsComponent extends LifecycleComponent {
           RedirectProtocol: '',
           WebsiteEnabled: ''
         })
-      });
+      } as BucketMetadataFormGroup);
       this.newMetadata();
       this.cdf.detectChanges();
     });

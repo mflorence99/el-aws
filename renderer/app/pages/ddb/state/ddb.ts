@@ -115,6 +115,7 @@ export interface DDBStateModel {
              { payload }: RowsLoaded) {
     const { tableName, rows } = payload;
     patchState({ rows });
+    // build up the schema as we see new data
     dispatch(new InitSchema({ tableName, rows }));
   }
 

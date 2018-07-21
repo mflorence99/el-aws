@@ -42,17 +42,21 @@ export class UpdateFileMetadata {
 }
 
 export interface BucketMetadata {
-  acceleration?: BucketMetadataAcceleration;
-  acl?: BucketMetadataAcl;
-  encryption?: BucketMetadataEncryption;
+  acceleration: BucketMetadataAcceleration;
+  acl: BucketMetadataAcl;
+  encryption: BucketMetadataEncryption;
   loading?: boolean;
-  logging?: BucketMetadataLogging;
-  path?: string;
+  logging: BucketMetadataLogging;
+  path: string;
   submitted?: boolean;
-  tagging?: BucketMetadataTagging;
+  tagging: BucketMetadataTagging;
   versioning?: BucketMetadataVersioning;
-  website?: BucketMetadataWebsite;
+  website: BucketMetadataWebsite;
 }
+
+export type BucketMetadataFormGroup = {
+  [P in keyof BucketMetadata]: any;
+};
 
 export interface BucketMetadataAcceleration {
   Status: S3.BucketAccelerateStatus;
@@ -100,13 +104,17 @@ export interface BucketMetadataWebsite {
 }
 
 export interface FileMetadata {
-  acl?: FileMetadataAcl;
-  head?: FileMetadataHead;
+  acl: FileMetadataAcl;
+  head: FileMetadataHead;
   loading?: boolean;
-  path?: string;
+  path: string;
   submitted?: boolean;
-  tagging?: FileMetadataTagging;
+  tagging: FileMetadataTagging;
 }
+
+export type FileMetadataFormGroup = {
+  [P in keyof FileMetadata]: any;
+};
 
 export interface FileMetadataAcl {
   Grants: FileMetadataAclGrant[];
@@ -193,7 +201,7 @@ export interface S3MetaStateModel {
       dispatch(new BucketMetadataLoaded({ path, metadata }));
     else {
       const loading = { loading: true };
-      patchState({ [path]: (metadata? { ...metadata, ...loading } : loading ) });
+      patchState({ [path]: <any>(metadata? { ...metadata, ...loading } : loading ) });
       this.s3Svc.loadBucketMetadata(path, (metadata: BucketMetadata) => {
         this.zone.run(() => {
           dispatch(new BucketMetadataLoaded({ path, metadata }));
@@ -212,7 +220,7 @@ export interface S3MetaStateModel {
       dispatch(new FileMetadataLoaded({ path, metadata }));
     else {
       const loading = { loading: true };
-      patchState({ [path]: (metadata ? { ...metadata, ...loading } : loading) });
+      patchState({ [path]: <any>(metadata? { ...metadata, ...loading } : loading) });
       this.s3Svc.loadFileMetadata(path, (metadata: FileMetadata) => {
         this.zone.run(() => {
           dispatch(new FileMetadataLoaded({ path, metadata }));

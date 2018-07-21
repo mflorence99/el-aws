@@ -7,6 +7,7 @@ import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { OnChange } from 'ellib';
 import { PrefsStateModel } from '../../state/prefs';
+import { PrefsStateModelFormGroup } from '../../state/prefs';
 import { Validators } from '@angular/forms';
 import { WindowStateModel } from '../../state/window';
 
@@ -50,7 +51,7 @@ export class PrefsComponent extends LifecycleComponent {
       showGridLines: false,
       sortDirectories: '',
       timeFormat: ''
-    });
+    } as PrefsStateModelFormGroup);
   }
 
   /** Close drawer */

@@ -25,6 +25,7 @@ export interface Schema {
 
 // TODO: provisional
 export interface Scheme {
+  interpretAs: 'date' | 'millis' | null;
   tag: string;
   type: 'boolean' | 'number' | 'string' | any;
 }
@@ -39,10 +40,12 @@ export interface Scheme {
              { payload }: InitSchema) {
     const { tableName, rows } = payload;
     const schema = rows.reduce((acc, row) => {
+      // NOTE: we complete the scheme for columns we haven't seen before
       Object.keys(row)
         .filter(column => !acc[column])
         .forEach(column => {
           const scheme: Scheme = {
+            interpretAs: null,
             tag: column,
             type: typeof row[column]
           };
@@ -51,6 +54,7 @@ export interface Scheme {
       return acc;
     }, getState()[tableName] || { });
     patchState({ [tableName]: schema });
+    // initialize the view from the schema so far
     dispatch(new InitView( { tableName, schema }));
   }
 

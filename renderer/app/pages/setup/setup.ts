@@ -6,6 +6,7 @@ import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { OnChange } from 'ellib';
 import { PrefsStateModel } from '../../state/prefs';
+import { PrefsStateModelFormGroup } from '../../state/prefs';
 import { Validators } from '@angular/forms';
 
 import { config } from '../../config';
@@ -39,7 +40,7 @@ export class SetupComponent extends LifecycleComponent {
         s3: ['', [Validators.pattern(config.urlValidationPattern)]]
       }),
       region: ['', Validators.required]
-    });
+    } as PrefsStateModelFormGroup);
   }
 
   // bind OnChange handlers

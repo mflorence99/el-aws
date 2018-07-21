@@ -27,6 +27,7 @@ import { Subscription } from 'rxjs/Subscription';
 import { UpdateSchema } from './state/ddbschemas';
 import { UpdateVisibility } from './state/ddbviews';
 import { View } from './state/ddbviews';
+import { ViewAndSchemaForm } from './components/view/schema';
 import { ViewVisibility } from './state/ddbviews';
 
 import { filter } from 'rxjs/operators';
@@ -120,17 +121,4 @@ export class DDBCtrlComponent extends LifecycleComponent {
       .subscribe(() => this.openView.emit());
   }
 
-}
-
-/**
- * Model combined view and schema form
- * 
- * @see ViewSchemaComponent
- */
-
-interface ViewAndSchemaForm {
-  submitted: boolean;
-  tableName: string;
-  schema: Schema;
-  visibility: ViewVisibility;
 }

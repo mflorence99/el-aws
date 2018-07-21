@@ -18,7 +18,7 @@ export type TimeFmt = 'none' | 'shortTime' | 'mediumTime' | 'longTime' | 'fullTi
 export interface PrefsStateModel {
   configured?: boolean;
   dateFormat?: DateFmt;
-  endpoints?: {
+  endpoints: {
     ddb: string;
     ec2: string;
     s3: string;
@@ -30,6 +30,10 @@ export interface PrefsStateModel {
   submitted?: boolean;
   timeFormat?: TimeFmt;
 }
+
+export type PrefsStateModelFormGroup = {
+  [P in keyof PrefsStateModel]: any;
+};
 
 @State<PrefsStateModel>({
   name: 'prefs',

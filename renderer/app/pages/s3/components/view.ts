@@ -8,6 +8,7 @@ import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { OnChange } from 'ellib';
 import { S3ViewStateModel } from '../state/s3view';
+import { S3ViewStateModelFormGroup } from '../state/s3view';
 import { Validators } from '@angular/forms';
 
 import { map } from 'rxjs/operators';
@@ -44,7 +45,7 @@ export class ViewComponent extends LifecycleComponent {
       atLeastOne: ['', Validators.required],
       submitted: '',
       visibility: this.formBuilder.group(visibility)
-    });
+    } as S3ViewStateModelFormGroup);
     // make sure at least one visibility
     this.viewForm.get('visibility').valueChanges
       .pipe(

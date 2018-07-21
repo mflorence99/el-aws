@@ -4,6 +4,7 @@ import { Component } from '@angular/core';
 import { Descriptor } from '../../state/s3';
 import { DrawerPanelComponent } from 'ellib';
 import { FileMetadata } from '../../state/s3meta';
+import { FileMetadataFormGroup } from '../../state/s3meta';
 import { FormBuilder } from '@angular/forms';
 import { FormGroup } from '@angular/forms';
 import { Input } from '@angular/core';
@@ -82,7 +83,7 @@ export class FilePropsComponent extends LifecycleComponent {
         tagging: this.formBuilder.group({
           TagSet: ''
         })
-      });
+      } as FileMetadataFormGroup);
       this.newMetadata();
       this.cdf.detectChanges();
     });

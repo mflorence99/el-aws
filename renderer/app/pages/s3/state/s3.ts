@@ -80,6 +80,10 @@ export interface CreateBucketRequest {
   submitted?: boolean;
 }
 
+export type CreateBucketRequestFormGroup = {
+  [P in keyof CreateBucketRequest]: any;
+};
+
 export interface Descriptor {
   account: string;
   color: string;

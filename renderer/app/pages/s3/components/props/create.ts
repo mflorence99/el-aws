@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy } from '@angular/core';
 import { Component } from '@angular/core';
+import { CreateBucketRequestFormGroup } from '../../state/s3';
 import { DrawerPanelComponent } from 'ellib';
 import { FormBuilder } from '@angular/forms';
 import { FormGroup } from '@angular/forms';
@@ -37,7 +38,7 @@ export class CreateBucketComponent implements OnInit {
         Validators.pattern(config.s3.bucketValidationPattern)
       ]],
       Region: ['', Validators.required]
-    });
+    } as CreateBucketRequestFormGroup);
   }
 
   /** Close drawer */

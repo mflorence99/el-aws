@@ -9,6 +9,7 @@ import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { OnChange } from 'ellib';
 import { S3Filter } from '../../state/s3filter';
+import { S3FilterFormGroup } from '../../state/s3filter';
 import { S3FilterState } from '../../state/s3filter';
 import { S3FilterStateModel } from '../../state/s3filter';
 import { Validators } from '@angular/forms';
@@ -44,7 +45,7 @@ export class BucketFilterComponent extends LifecycleComponent {
         bucket: '',
         match: '',
         period: ['', Validators.required]
-      });
+      } as S3FilterFormGroup);
       this.newFilter();
       this.cdf.detectChanges();
     });
