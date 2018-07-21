@@ -19,11 +19,9 @@
 
   <div class="columns">
 
-    <div
-       class="drawer-label"
-       style="grid-column-start: span 2">
-      Show as ...
-    </div>
+    <div style="grid-column-start: span 2">&nbsp; </div>
+
+    <div class="drawer-label">Show as ...</div>
 
     <div class="drawer-label">
       <div class="type">
@@ -54,6 +52,14 @@
           <div>
             <input formControlName="tag">
           </div>
+
+          <select
+            formControlName="showAs">
+            <option value=""></option>
+            <option value="currency">{{ 0 | currency }}</option>
+            <option value="date">Date</option>
+            <option value="millis">Millis</option>
+          </select>
 
           <mat-radio-group
             formControlName="type"

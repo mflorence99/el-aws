@@ -8,6 +8,7 @@ import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { OnChange } from 'ellib';
 import { Schema } from '../../state/ddbschemas';
+import { SchemeFormGroup } from '../../state/ddbschemas';
 import { Validators } from '@angular/forms';
 import { View } from '../../state/ddbviews';
 import { ViewVisibility } from '../../state/ddbviews';
@@ -77,9 +78,10 @@ export class ViewSchemaComponent extends LifecycleComponent {
         tableName: this.ddb.table.TableName,
         schema: this.formBuilder.group(this.columns.reduce((acc, column) => {
           acc[column] = this.formBuilder.group({
+            showAs: this.ddbschema[column].showAs, 
             tag: this.ddbschema[column].tag,
             type: this.ddbschema[column].type
-          });
+          } as SchemeFormGroup);
           return acc;
         }, { })),
         visibility: this.formBuilder.group(this.columns.reduce((acc, column) => {

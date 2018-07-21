@@ -25,10 +25,14 @@ export interface Schema {
 
 // TODO: provisional
 export interface Scheme {
-  interpretAs: 'date' | 'millis' | null;
+  showAs: 'currency' | 'date' | 'millis' | null;
   tag: string;
   type: 'boolean' | 'number' | 'string' | any;
 }
+
+export type SchemeFormGroup = {
+  [P in keyof Scheme]: any;
+};
 
 @State<DDBSchemasStateModel>({
   name: 'ddbschemas',
@@ -45,7 +49,7 @@ export interface Scheme {
         .filter(column => !acc[column])
         .forEach(column => {
           const scheme: Scheme = {
-            interpretAs: null,
+            showAs: null,
             tag: column,
             type: typeof row[column]
           };

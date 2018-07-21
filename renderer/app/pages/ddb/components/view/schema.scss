@@ -7,15 +7,7 @@ form {
   .columns {
     display: grid;
     grid-gap: 8px;
-    grid-template-columns: auto 1fr auto;
-  }
-
-  input {
-    background-color: transparent;
-    border: 0;
-    color: var(--text-color);
-    outline: 0;
-    width: 100%;
+    grid-template-columns: auto 1fr 56px auto;
   }
 
   .okAndCancel {

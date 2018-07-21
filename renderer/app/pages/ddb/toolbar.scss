@@ -9,19 +9,4 @@ header {
   grid-template-columns: auto auto;
   justify-content: start;
   padding-left: 12px;
-
-  select {
-    background-color: transparent;
-    border: 0;
-    color: var(--text-color);
-    cursor: pointer;
-    font-size: 0.8rem;
-    outline: 0;
-
-    option {
-      background-color: var(--mat-grey-800);
-    }
-
-  }
-
 }
