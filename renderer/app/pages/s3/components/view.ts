@@ -62,7 +62,7 @@ export class ViewComponent extends LifecycleComponent {
 
   // bind OnChange handlers
 
-  @OnChange('s3view') patchView(): void {
+  @OnChange('s3view') newState(): void {
     if (this.s3view && this.s3view.visibility)
       this.viewForm.patchValue({ visibility: this.s3view.visibility }, { emitEvent: true });
   }

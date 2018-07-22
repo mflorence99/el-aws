@@ -46,7 +46,7 @@ export class BucketFilterComponent extends LifecycleComponent {
         match: '',
         period: ['', Validators.required]
       } as S3FilterFormGroup);
-      this.newFilter();
+      this.newState();
       this.cdf.detectChanges();
     });
   }
@@ -58,7 +58,7 @@ export class BucketFilterComponent extends LifecycleComponent {
 
   // bind OnChange handlers
 
-  @OnChange('s3filter') newFilter() {
+  @OnChange('s3filter') newState() {
     if (this.s3filter) {
       this.filter = <S3Filter>this.s3filter[this.desc.name];
       if (this.filterForm) {

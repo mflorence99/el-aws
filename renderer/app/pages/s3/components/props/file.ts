@@ -84,7 +84,7 @@ export class FilePropsComponent extends LifecycleComponent {
           TagSet: ''
         })
       } as FileMetadataFormGroup);
-      this.newMetadata();
+      this.newState();
       this.cdf.detectChanges();
     });
   }
@@ -103,7 +103,7 @@ export class FilePropsComponent extends LifecycleComponent {
 
   // bind OnChange handlers
 
-  @OnChange('s3meta') newMetadata() {
+  @OnChange('s3meta') newState() {
     if (this.s3meta) {
       this.metadata = <FileMetadata>this.s3meta[this.desc.path];
       if (this.propsForm) {

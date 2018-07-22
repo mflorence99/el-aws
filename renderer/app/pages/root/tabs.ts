@@ -48,7 +48,7 @@ export class TabsComponent extends LifecycleComponent {
 
   // bind OnChange handlers
 
-  @OnChange('router') newRoute() {
+  @OnChange('router') newState() {
     if (this.router.state) {
       const route = this.router.state.url;
       console.log('%c Navigate to', 'color: orange', route);

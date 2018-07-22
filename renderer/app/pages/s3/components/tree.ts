@@ -275,7 +275,7 @@ export class TreeComponent extends LifecycleComponent {
 
   // bind OnChange handlers
 
-  @OnChange('prefs', 's3', 's3meta', 's3view') onChange(): void {
+  @OnChange('prefs', 's3', 's3meta', 's3view') newState(): void {
     if (this.prefs && this.s3 && this.s3meta && this.s3view)
       this.updateDescriptors();
   }

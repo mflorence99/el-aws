@@ -9,14 +9,14 @@ import { S3ViewStateModel } from '../state/s3view';
  */
 
 export interface Dictionary {
-  isDate: boolean;
-  isQuantity: boolean;
-  isString: boolean;
+  isDate?: boolean;
+  isQuantity?: boolean;
+  isString?: boolean;
   name: string;
-  showIcon: boolean;
-  showMono: boolean;
+  showIcon?: boolean;
+  showMono?: boolean;
   tag: string;
-  width: number;
+  width?: number;
 }
 
 /**
@@ -34,7 +34,7 @@ export class DictionaryService {
       { name: 'timestamp', tag: 'Timestamp', isDate: true },
       { name: 'storage', tag: 'Storage', isString: true },
       { name: 'owner', tag: 'Owner', isString: true }
-    ] as Dictionary[];
+    ];
   }
 
   /** Return the dictionary for a particular s3view */

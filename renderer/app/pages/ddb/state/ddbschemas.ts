@@ -23,8 +23,8 @@ export interface Schema {
   [column: string]: Scheme;
 }
 
-// TODO: provisional
 export interface Scheme {
+  column?: string;
   showAs: 'currency' | 'date' | 'millis' | null;
   tag: string;
   type: 'boolean' | 'number' | 'string' | any;

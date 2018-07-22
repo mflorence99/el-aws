@@ -1,7 +1,9 @@
 import { BarrelModule } from '../../../barrel';
 import { ComponentsModule as CommonComponentsModule } from '../../../components/module';
+import { HeaderComponent } from './header';
 import { NgModule } from '@angular/core';
 import { SelectTableComponent } from './select-table';
+import { TableComponent } from './table';
 import { ViewComponent } from './view';
 import { ViewFilterComponent } from './view/filter';
 import { ViewSchemaComponent } from './view/schema';
@@ -11,7 +13,9 @@ import { ViewSchemaComponent } from './view/schema';
  */
 
 const COMPONENTS = [
+  HeaderComponent,
   SelectTableComponent,
+  TableComponent,
   ViewComponent,
   ViewFilterComponent,
   ViewSchemaComponent

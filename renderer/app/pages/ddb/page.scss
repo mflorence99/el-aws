@@ -2,3 +2,19 @@
   display: block;
   height: 100%;
 }
+
+lib-drawer-container {
+  height: 100%;
+  overflow: hidden;
+
+  --elaws-header-height: 140px;
+
+  elaws-header {
+    height: var(--elaws-header-height);
+  }
+
+  elaws-table {
+    height: calc(100% - var(--elaws-header-height));
+  }
+
+}

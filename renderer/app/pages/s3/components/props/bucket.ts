@@ -89,7 +89,7 @@ export class BucketPropsComponent extends LifecycleComponent {
           WebsiteEnabled: ''
         })
       } as BucketMetadataFormGroup);
-      this.newMetadata();
+      this.newState();
       this.cdf.detectChanges();
     });
   }
@@ -101,7 +101,7 @@ export class BucketPropsComponent extends LifecycleComponent {
 
   // bind OnChange handlers
 
-  @OnChange('s3meta') newMetadata() {
+  @OnChange('s3meta') newState() {
     if (this.s3meta) {
       this.metadata = <BucketMetadata>this.s3meta[this.desc.path];
       if (this.propsForm) { 

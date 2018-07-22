@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy } from '@angular/core';
 import { Component } from '@angular/core';
 import { DDBStateModel } from '../../state/ddb';
+import { DictionaryService } from '../../services/dictionary';
 import { DrawerPanelComponent } from 'ellib';
 import { FormBuilder } from '@angular/forms';
 import { FormGroup } from '@angular/forms';
@@ -53,7 +54,8 @@ export class ViewSchemaComponent extends LifecycleComponent {
   viewAndSchemaForm: FormGroup;
 
   /** ctor */
-  constructor(private drawerPanel: DrawerPanelComponent,
+  constructor(private dictSvc: DictionaryService,
+              private drawerPanel: DrawerPanelComponent,
               private formBuilder: FormBuilder) {
     super();
   }
@@ -65,12 +67,10 @@ export class ViewSchemaComponent extends LifecycleComponent {
 
   // bind OnChange handlers
 
-  @OnChange('ddb', 'ddbschema', 'ddbView') newSchema(): void {
+  @OnChange('ddb', 'ddbschema', 'ddbView') newState(): void {
     if (this.ddb && this.ddbschema && this.ddbview) {
       // all the columns
-      this.columns = Object.keys(this.ddbschema).sort((a, b) => {
-        return a.toLowerCase().localeCompare(b.toLowerCase());
-      });
+      this.columns = this.dictSvc.columns(this.ddb, this.ddbschema);
       // create view form controls
       this.viewAndSchemaForm = this.formBuilder.group({
         atLeastOne: [true, Validators.required],

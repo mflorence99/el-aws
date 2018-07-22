@@ -101,7 +101,7 @@ export interface DDBStateModel {
     if (tableName) {
       dispatch(new Message({ text: `Loading table ${tableName} ...` }));
       this.ddbSvc.describeTable(tableName, (table: DDB.TableDescription) => {
-        patchState({ table });
+        patchState({ rows: null, table });
         this.zone.run(() => {
           dispatch(new LoadRows({ tableName }));
         });

@@ -77,7 +77,7 @@ export class HeaderComponent extends LifecycleComponent
 
   // bind OnChange handlers
 
-  @OnChange('s3view') onView(): void {
+  @OnChange('s3view') newState(): void {
     if (this.s3view)
       this.dictionary = this.dictSvc.dictionaryForView(this.s3view);
   }

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy } from '@angular/core';
 import { Component } from '@angular/core';
-import { DDBState } from '../state/ddb';
+import { DDBStateModel } from '../state/ddb';
 import { Filter } from '../state/ddbfilters';
 import { Input } from '@angular/core';
 import { Schema } from '../state/ddbschemas';
@@ -22,7 +22,7 @@ import { ViewSchemaComponent } from './view/schema';
 
 export class ViewComponent {
 
-  @Input() ddb = { } as DDBState;
+  @Input() ddb = { } as DDBStateModel;
   @Input() ddbfilter = { } as Filter;
   @Input() ddbschema = { } as Schema;
   @Input() ddbview = { } as View;

@@ -45,7 +45,7 @@ export class SetupComponent extends LifecycleComponent {
 
   // bind OnChange handlers
 
-  @OnChange('prefs') patchPrefs() {
+  @OnChange('prefs') newState() {
     if (this.prefs)
       this.prefsForm.patchValue(this.prefs, { emitEvent: false });
   }

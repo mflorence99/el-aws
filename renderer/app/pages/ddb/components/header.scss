@@ -1,0 +1,12 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+header {
+  align-items: center;
+  display: flex;
+  height: 100%;
+  flex-direction: row;
+  justify-content: flex-start;
+}

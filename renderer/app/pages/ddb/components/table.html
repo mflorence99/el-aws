@@ -1,0 +1,34 @@
+<main>
+
+  <div
+    *ngIf="isLoadingRows()"
+    class="no-data">
+
+    <fa-icon
+      [icon]="['fas', 'spinner']"
+      [pulse]="true"
+      size="4x">
+    </fa-icon>
+
+  </div>
+
+  <div
+    *ngIf="!isTableSelected()"
+    class="no-data">
+
+    <div class="message">
+
+      <fa-icon
+        [icon]="['fas', 'exclamation']"
+        size="2x">
+      </fa-icon>
+
+      <div>
+        Please select a DDB table
+      </div>
+
+    </div>
+
+  </div>
+
+</main>

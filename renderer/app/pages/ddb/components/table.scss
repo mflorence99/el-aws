@@ -1,0 +1,32 @@
+:host {
+  display: block;
+  height: 100%;
+  overflow: auto
+}
+
+main {
+  height: 100%;
+
+  .no-data {
+    align-items: center;
+    color: var(--mat-grey-400);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    height: 100%;
+
+    .message {
+      align-items: center;
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-start;
+
+      fa-icon {
+        margin-right: 8px;
+      }
+
+    }
+
+  }
+
+}

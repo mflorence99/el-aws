@@ -4,6 +4,7 @@ import { ComponentsModule as DDBComponentsModule } from './components/module';
 import { DDBCtrlComponent } from './ctrl';
 import { DDBPageComponent } from './page';
 import { DDBService } from './services/ddb';
+import { DictionaryService } from './services/dictionary';
 import { NgModule } from '@angular/core';
 import { NgxsModule } from '@ngxs/store';
 import { RouterModule } from '@angular/router';
@@ -34,7 +35,8 @@ const ROUTES: Routes = [
 ];
 
 const SERVICES = [
-  DDBService
+  DDBService,
+  DictionaryService
 ];
 
 @NgModule({
