@@ -111,12 +111,13 @@ export interface DDBStateModel {
   }
 
   @Action(RowsLoaded)
-  rowsLoaded({ dispatch, patchState }: StateContext<DDBStateModel>,
+  rowsLoaded({ dispatch, getState, patchState }: StateContext<DDBStateModel>,
              { payload }: RowsLoaded) {
     const { tableName, rows } = payload;
+    const state = getState();
     patchState({ rows });
     // build up the schema as we see new data
-    dispatch(new InitSchema({ tableName, rows }));
+    dispatch(new InitSchema({ tableName, rows, attrs: state.table.AttributeDefinitions }));
   }
 
 }

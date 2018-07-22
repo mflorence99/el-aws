@@ -14,7 +14,8 @@ export class DictionaryService {
   /** Get the schema columns in alpha order, but those definewd in table first */
   columns(ddb: DDBStateModel,
           ddbschema: Schema): string[] {
-    const attrs = ddb.table.AttributeDefinitions.map(def => def.AttributeName);
+    const attrs = ddb.table.AttributeDefinitions
+      .map(def => def.AttributeName);
     const columns = Object.keys(ddbschema)
       .filter(column => !attrs.includes(column))
       .sort((a, b) => {

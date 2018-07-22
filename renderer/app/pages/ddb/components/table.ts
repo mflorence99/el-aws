@@ -30,7 +30,17 @@ export class TableComponent extends LifecycleComponent {
     return this.isTableSelected() && !this.ddb.rows;
   }
 
-  /** Rows loading? */
+  /** Empty table (or all data filtered out)? */
+  isTableEmpty(): boolean {
+    return this.isTableSelected() && !!this.ddb.rows && (this.ddb.rows.length === 0);
+  }
+
+  /** Non-empty table? */
+  isTablePopulated(): boolean {
+    return this.isTableSelected() && !!this.ddb.rows && (this.ddb.rows.length === 0);
+  }
+
+  /** Table selected? */
   isTableSelected(): boolean {
     return !!this.ddb.table;
   }

@@ -13,6 +13,25 @@
   </div>
 
   <div
+    *ngIf="isTableEmpty()"
+    class="no-data">
+
+    <div class="message">
+
+      <fa-icon
+        [icon]="['fas', 'exclamation']"
+        size="2x">
+      </fa-icon>
+
+      <div>
+        No rows match filter criteria
+      </div>
+
+    </div>
+
+  </div>
+
+  <div
     *ngIf="!isTableSelected()"
     class="no-data">
 

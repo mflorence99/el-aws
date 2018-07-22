@@ -13,6 +13,7 @@ import { Store } from '@ngxs/store';
 import { View } from '../state/ddbviews';
 
 import { config } from '../../../config';
+import { isObjectEmpty } from 'ellib';
 
 /**
  * DynamoDB service
@@ -71,30 +72,33 @@ export class DDBService {
        lastEvaluatedKey: DDB.Key,
        cb: (rows: any[],
             lastEvaluatedKey: DDB.Key) => void): void {
-    // snapshot the state
-    const ddbschema: Schema = this.store.selectSnapshot((state: FeatureState) => state.ddbschemas)[tableName];
-    const ddbview: View = this.store.selectSnapshot((state: FeatureState) => state.ddbviews)[tableName];
+    // snapshot the view
+    const ddbview: View = this.store.selectSnapshot((state: FeatureState) => state.ddbviews)[tableName] || { visibility: { } };
+    const projectionExpression = Object.keys(ddbview.visibility)
+      .filter(column => ddbview.visibility && ddbview.visibility[column])
+      .reduce((acc, column) => {
+        acc.push(this.safeAttributeName(column));
+        return acc;
+      }, []).join(', ');
+    // snapshot the schema
+    const ddbschema: Schema = this.store.selectSnapshot((state: FeatureState) => state.ddbschemas)[tableName] || { };
+    const attributeNames = Object.keys(ddbschema)
+      .filter(column => ddbview.visibility && ddbview.visibility[column])
+      .reduce((acc, column) => {
+        acc[this.safeAttributeName(column)] = column;
+        return acc;
+      }, { });
     // use state to build scan parameters
     const params = {
       ExclusiveStartKey: lastEvaluatedKey,
-      ExpressionAttributeNames: Object.keys(ddbschema)
-        .filter(column => ddbview.visibility[column])
-        .reduce((acc, column) => {
-          acc[this.safeAttributeName(column)] = column;
-          return acc;
-        }, { }),
+      ExpressionAttributeNames: isObjectEmpty(attributeNames)? null : attributeNames,
       Limit: config.ddb.maxRowsPerScan,
-      ProjectionExpression: Object.keys(ddbview.visibility || { })
-        .filter(column => ddbview.visibility[column])
-        .reduce((acc, column) => {
-          acc.push(this.safeAttributeName(column));
-          return acc;
-        }, []).join(', '),
+      ProjectionExpression: projectionExpression || null,
       TableName: tableName
     };
     // now read data
     this.ddb.scan(params, (err, data: DDB.ScanOutput) => {
-      this.trace('scan', params, err, data);
+      this.trace('scan', params, err, { data: 'suppressed' });
       if (err)
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
       else {
