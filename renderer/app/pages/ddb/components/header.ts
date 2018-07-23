@@ -23,10 +23,10 @@ import { View } from '../state/ddbviews';
 
 export class HeaderComponent extends LifecycleComponent {
 
-  @Input() ddb = {} as DDBStateModel;
-  @Input() ddbschema = {} as Schema;
-  @Input() ddbview = {} as View;
-  @Input() prefs = {} as PrefsStateModel;
+  @Input() ddb = { } as DDBStateModel;
+  @Input() ddbschema = { } as Schema;
+  @Input() ddbview = { } as View;
+  @Input() prefs = { } as PrefsStateModel;
 
   schemes: Scheme[] = [];
 
