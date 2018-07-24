@@ -11,12 +11,19 @@
     <option value="">Select DDB table ...</option>
 
     <option
-      [selected]="tableName === table?.TableName"
-      [value]="tableName"
+      [selected]="tableName[0] === (ddb$ | async)?.table?.TableName"
+      [value]="tableName[0]"
       *ngFor="let tableName of tableNames">
-      {{ tableName }}
+      {{ tableName[1] }}
     </option>
 
   </select>
+
+  <a
+    (click)="onLoadRows()"
+    *ngIf="(ddb$ | async)?.lastEvaluatedKey"
+    mat-button>
+    More ...
+  </a>
 
 </header>

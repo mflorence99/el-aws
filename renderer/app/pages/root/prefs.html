@@ -104,8 +104,7 @@
 
     </mat-expansion-panel>
 
-    <mat-expansion-panel
-      *ngIf="window.route === '/s3'">
+    <mat-expansion-panel>
 
       <mat-expansion-panel-header>
         <mat-panel-title>
@@ -116,6 +115,7 @@
       <div class="group outer">
 
         <mat-radio-group
+          *ngIf="window.route === '/s3'"
           class="group"
           formControlName="quantityFormat">
 
@@ -144,8 +144,7 @@
 
     </mat-expansion-panel>
 
-    <mat-expansion-panel
-      *ngIf="window.route === '/s3'">
+    <mat-expansion-panel>
 
       <mat-expansion-panel-header>
         <mat-panel-title>

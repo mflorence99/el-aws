@@ -14,6 +14,8 @@ import { Validators } from '@angular/forms';
 import { View } from '../../state/ddbviews';
 import { ViewVisibility } from '../../state/ddbviews';
 
+import { config } from '../../../../config';
+import { debounce } from 'ellib';
 import { map } from 'rxjs/operators';
 
 /**
@@ -53,11 +55,14 @@ export class ViewSchemaComponent extends LifecycleComponent {
 
   viewAndSchemaForm: FormGroup;
 
+  private newStateImpl: Function;
+
   /** ctor */
   constructor(private dictSvc: DictionaryService,
               private drawerPanel: DrawerPanelComponent,
               private formBuilder: FormBuilder) {
     super();
+    this.newStateImpl = debounce(this._newStateImpl, config.ddb.schemaRefreshThrottle);
   }
 
   /** Close drawer */
@@ -68,37 +73,42 @@ export class ViewSchemaComponent extends LifecycleComponent {
   // bind OnChange handlers
 
   @OnChange('ddb', 'ddbschema', 'ddbView') newState(): void {
-    if (this.ddb && this.ddbschema && this.ddbview) {
-      // all the columns
-      this.columns = this.dictSvc.columns(this.ddb, this.ddbschema);
-      // create view form controls
-      this.viewAndSchemaForm = this.formBuilder.group({
-        atLeastOne: [true, Validators.required],
-        submitted: false,
-        tableName: this.ddb.table.TableName,
-        schema: this.formBuilder.group(this.columns.reduce((acc, column) => {
-          acc[column] = this.formBuilder.group({
-            showAs: this.ddbschema[column].showAs, 
-            tag: this.ddbschema[column].tag,
-            type: this.ddbschema[column].type
-          } as SchemeFormGroup);
-          return acc;
-        }, { })),
-        visibility: this.formBuilder.group(this.columns.reduce((acc, column) => {
-          acc[column] = this.ddbview.visibility[column];
-          return acc;
-        }, { }))
-      } as ViewAndSchemaFormGroup);
-      // make sure at least one visibility
-      this.viewAndSchemaForm.get('visibility').valueChanges
-        .pipe(
-          map(visibility => Object.entries(visibility)),
-          map(entries => entries.some(entry => !!entry[1])),
-          map(atLeastOne => atLeastOne ? 'atLeastOne' : null)
-        ).subscribe(atLeastOne => {
-          this.viewAndSchemaForm.get('atLeastOne').setValue(atLeastOne);
-        });
-    }
+    if (this.ddb && this.ddbschema && this.ddbview) 
+      this.newStateImpl();
+  }
+
+  // private methods
+
+  private _newStateImpl(): void {
+    // all the columns
+    this.columns = this.dictSvc.columns(this.ddb, this.ddbschema);
+    // create view form controls
+    this.viewAndSchemaForm = this.formBuilder.group({
+      atLeastOne: [true, Validators.required],
+      submitted: false,
+      tableName: this.ddb.table.TableName,
+      schema: this.formBuilder.group(this.columns.reduce((acc, column) => {
+        acc[column] = this.formBuilder.group({
+          showAs: this.ddbschema[column].showAs,
+          tag: this.ddbschema[column].tag,
+          type: this.ddbschema[column].type
+        } as SchemeFormGroup);
+        return acc;
+      }, { })),
+      visibility: this.formBuilder.group(this.columns.reduce((acc, column) => {
+        acc[column] = this.ddbview.visibility[column];
+        return acc;
+      }, { }))
+    } as ViewAndSchemaFormGroup);
+    // make sure at least one visibility
+    this.viewAndSchemaForm.get('visibility').valueChanges
+      .pipe(
+        map(visibility => Object.entries(visibility)),
+        map(entries => entries.some(entry => !!entry[1])),
+        map(atLeastOne => atLeastOne ? 'atLeastOne' : null)
+      ).subscribe(atLeastOne => {
+        this.viewAndSchemaForm.get('atLeastOne').setValue(atLeastOne);
+      });
   }
 
 }

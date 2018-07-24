@@ -67,7 +67,7 @@ export class TreeComponent extends LifecycleComponent {
 
   subToActions: Subscription;
 
-  private updateDescriptors: Function;
+  private newStateImpl: Function;
 
   /** ctor */
   constructor(private cdf: ChangeDetectorRef,
@@ -77,7 +77,7 @@ export class TreeComponent extends LifecycleComponent {
               private store: Store,
               private zone: NgZone) {
     super();
-    this.updateDescriptors = debounce(this._updateDescriptors, config.s3.treeRefreshThrottle);
+    this.newStateImpl = debounce(this._newStateImpl, config.s3.treeRefreshThrottle);
   }
 
   /** Are all buckets loaded? */
@@ -277,12 +277,12 @@ export class TreeComponent extends LifecycleComponent {
 
   @OnChange('prefs', 's3', 's3meta', 's3view') newState(): void {
     if (this.prefs && this.s3 && this.s3meta && this.s3view)
-      this.updateDescriptors();
+      this.newStateImpl();
   }
 
   // private methods
 
-  private _updateDescriptors(): void {
+  private _newStateImpl(): void {
     this.dictionary = this.dictSvc.dictionaryForView(this.s3view);
     this.s3view.paths.forEach(path => {
       this.descriptorsByPath[path] =

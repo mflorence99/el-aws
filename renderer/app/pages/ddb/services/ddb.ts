@@ -92,8 +92,9 @@ export class DDBService {
     const params = {
       ExclusiveStartKey: lastEvaluatedKey,
       ExpressionAttributeNames: isObjectEmpty(attributeNames)? null : attributeNames,
-      Limit: config.ddb.maxRowsPerScan,
+      Limit: config.ddb.maxRowsPerPage,
       ProjectionExpression: projectionExpression || null,
+      Select: projectionExpression ? 'SPECIFIC_ATTRIBUTES' : 'ALL_ATTRIBUTES',
       TableName: tableName
     };
     // now read data

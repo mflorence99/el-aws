@@ -1,12 +1,14 @@
-import * as DDB from 'aws-sdk/clients/dynamodb';
-
 import { ChangeDetectionStrategy } from '@angular/core';
 import { ChangeDetectorRef } from '@angular/core';
 import { Component } from '@angular/core';
 import { DDBService } from './services/ddb';
 import { DDBState } from './state/ddb';
+import { DDBStateModel } from './state/ddb';
+import { LoadRows } from './state/ddb';
 import { LoadTable } from './state/ddb';
+import { Observable } from 'rxjs/Observable';
 import { OnInit } from '@angular/core';
+import { Select } from '@ngxs/store';
 import { Store } from '@ngxs/store';
 
 /**
@@ -22,8 +24,9 @@ import { Store } from '@ngxs/store';
 
 export class ToolbarComponent implements OnInit { 
 
-  table: DDB.TableDescription;
-  tableNames: string[] = [];
+  @Select(DDBState) ddb$: Observable<DDBStateModel>;
+
+  tableNames: string[][] = [];
 
   /** ctor */
   constructor(private cdf: ChangeDetectorRef,
@@ -32,6 +35,10 @@ export class ToolbarComponent implements OnInit {
 
   // event handlers
 
+  onLoadRows(): void {
+    this.store.dispatch(new LoadRows());
+  }
+
   onLoadTable(tableName: string): void {
     this.store.dispatch(new LoadTable({ tableName }));
   }
@@ -39,9 +46,16 @@ export class ToolbarComponent implements OnInit {
   // lifecycle methods
 
   ngOnInit(): void {
-    this.table = this.store.selectSnapshot(DDBState.getTable);
     this.ddbSvc.listTables(tableNames => {
-      this.tableNames = tableNames.sort();
+      this.tableNames = tableNames
+        .sort()
+        // TODO: very specif to our use case -- make more general
+        .map(tableName => {
+          const ix = tableName.lastIndexOf('.');
+          if (ix === -1)
+            return [tableName, tableName];
+          else return [tableName, tableName.substring(ix + 1)];
+        });
       this.cdf.detectChanges();
     });
   }

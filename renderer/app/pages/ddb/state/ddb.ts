@@ -9,18 +9,11 @@ import { Selector } from '@ngxs/store';
 import { State } from '@ngxs/store';
 import { StateContext } from '@ngxs/store';
 
-import { config } from '../../../config';
-
 /** NOTE: actions must come first because of AST */
-
-export class ExtendRows {
-  static readonly type = '[DDB] extend rows';
-  constructor(public readonly payload: { tableName: string, lastEvaluatedKey: DDB.Key, extensionNum: number }) { }
-}
 
 export class LoadRows {
   static readonly type = '[DDB] load rows';
-  constructor(public readonly payload: { tableName: string }) { }
+  constructor(public readonly payload?: any) { }
 }
 
 export class LoadTable {
@@ -30,10 +23,13 @@ export class LoadTable {
 
 export class RowsLoaded {
   static readonly type = '[DDB] rows loaded';
-  constructor(public readonly payload: { tableName: string, rows: any[] }) { }
+  constructor(public readonly payload: { tableName: string, rows: any[], lastEvaluatedKey: DDB.Key }) { }
 }
 
 export interface DDBStateModel {
+  index: number;
+  lastEvaluatedKey: DDB.Key;
+  loading: boolean;
   rows: any[];
   table: DDB.TableDescription;
 }
@@ -41,6 +37,9 @@ export interface DDBStateModel {
 @State<DDBStateModel>({
   name: 'ddb',
   defaults: { 
+    index: 0,
+    lastEvaluatedKey: null,
+    loading: false,
     rows: null,
     table: null
   }
@@ -54,42 +53,19 @@ export interface DDBStateModel {
   constructor(private ddbSvc: DDBService,
               private zone: NgZone) { }
 
-  @Action(ExtendRows)
-  extendRows({ dispatch, getState }: StateContext<DDBStateModel>,
-             { payload }: ExtendRows) {
-    const { tableName, lastEvaluatedKey, extensionNum } = payload;
-    this.ddbSvc.scan(tableName,
-                     lastEvaluatedKey,
-                     (rows: any[],
-                      lastEvaluatedKey: DDB.Key) => {
-      this.zone.run(() => {
-        if (rows.length > 0) {
-          rows = getState().rows.concat(rows);
-          dispatch(new RowsLoaded({ tableName, rows }));
-        }
-        dispatch(new Message({ text: `Extended ${tableName} rows` }));
-        // keep going if there's more
-        if (lastEvaluatedKey && (rows.length < config.ddb.maxRows) && (extensionNum < config.ddb.maxRowExtensions))
-          dispatch(new ExtendRows({ tableName, lastEvaluatedKey, extensionNum: extensionNum + 1 }));
-      });
-    });
-  }
-
   @Action(LoadRows)
-  loadRows({ dispatch }: StateContext<DDBStateModel>,
+  loadRows({ dispatch, getState, patchState }: StateContext<DDBStateModel>,
            { payload }: LoadRows) {
-    const { tableName } = payload;
+    const state = getState();
+    const tableName = state.table.TableName;
     dispatch(new Message({ text: `Loading ${tableName} rows ...` }));
+    patchState({ loading: true });
     this.ddbSvc.scan(tableName,
-                     null,
+                     state.lastEvaluatedKey,
                      (rows: any[], 
                       lastEvaluatedKey: DDB.Key) => {
       this.zone.run(() => {
-        dispatch(new RowsLoaded({ tableName, rows }));
-        dispatch(new Message({ text: `Loaded ${tableName} rows` }));
-        // keep going if there's more
-        if (lastEvaluatedKey && (rows.length < config.ddb.maxRows))
-          dispatch(new ExtendRows({ tableName, lastEvaluatedKey, extensionNum: 1 }));
+        dispatch(new RowsLoaded({ tableName, rows, lastEvaluatedKey }));
       });
     });
   }
@@ -101,23 +77,27 @@ export interface DDBStateModel {
     if (tableName) {
       dispatch(new Message({ text: `Loading table ${tableName} ...` }));
       this.ddbSvc.describeTable(tableName, (table: DDB.TableDescription) => {
-        patchState({ rows: null, table });
+        patchState({ index: 0, lastEvaluatedKey: null, rows: null, table });
         this.zone.run(() => {
-          dispatch(new LoadRows({ tableName }));
+          dispatch(new LoadRows());
         });
       });
     }
-    else patchState({ rows: null, table: null });
+    else patchState({ index: 0, lastEvaluatedKey: null, rows: null, table: null });
   }
 
   @Action(RowsLoaded)
   rowsLoaded({ dispatch, getState, patchState }: StateContext<DDBStateModel>,
              { payload }: RowsLoaded) {
-    const { tableName, rows } = payload;
+    const { tableName, rows, lastEvaluatedKey } = payload;
     const state = getState();
-    patchState({ rows });
-    // build up the schema as we see new data
-    dispatch(new InitSchema({ tableName, rows, attrs: state.table.AttributeDefinitions }));
+    const index = state.lastEvaluatedKey? state.index + state.rows.length : 0;
+    patchState({ index, lastEvaluatedKey, loading: false, rows });
+    this.zone.run(() => {
+      dispatch(new Message({ text: `Loaded ${tableName} rows ${index + 1} through ${index + rows.length}` }));
+      // build up the schema as we see new data
+      dispatch(new InitSchema({ tableName, rows, attrs: state.table.AttributeDefinitions }));
+    });
   }
 
 }

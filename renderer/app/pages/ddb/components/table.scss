@@ -29,4 +29,27 @@ main {
 
   }
 
+  table {
+    border-collapse: collapse;
+    width: 100%;
+
+    td {
+      font-size: 0.75rem;
+      min-width: 2rem;
+      padding: 6px;
+      vertical-align: top;
+
+      &.gridlines {
+        border: 1px dotted var(--mat-grey-700);
+      }
+
+      &.index {
+        font-weight: bold;
+        text-align: right;
+      }
+
+    }
+
+  }
+
 }

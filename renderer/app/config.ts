@@ -53,11 +53,14 @@ export class Config {
   // DynamoDB config
 
   ddb = {
+    headerRefreshThrottle: 0,
+    headerSlantAngle: 45 * (Math.PI / 180),
     maxRetries: 10,
-    maxRowExtensions: 10,
-    maxRows: 1000,
-    maxRowsPerScan: 500,
-    maxTables: 100
+    // TODO: temporary
+    maxRowsPerPage: 50,
+    maxTables: 100,
+    schemaRefreshThrottle: 0,
+    tableRefreshThrottle: 0
   };
 
   // S3 config

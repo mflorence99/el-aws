@@ -1,5 +1,27 @@
 <main>
 
+  <table
+    *ngIf="isTablePopulated()">
+
+    <tr
+      *ngFor="let row of ddb.rows; let ix = index">
+
+      <td
+        [ngClass]="{gridlines: prefs.showGridLines}"
+        class="index">
+        {{ ddb.index + ix + 1 }}.
+      </td>
+
+      <td
+        [ngClass]="{gridlines: prefs.showGridLines}"
+        *ngFor="let scheme of schemes">
+        {{ row[scheme.column] | libBreakable }}
+      </td>
+
+    </tr>
+
+  </table>
+
   <div
     *ngIf="isLoadingRows()"
     class="no-data">
