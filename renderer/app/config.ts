@@ -55,14 +55,15 @@ export class Config {
   ddb = {
     headerLineHeight: 12,
     headerPadding: 6,
-    headerRefreshThrottle: 0,
+    headerRedrawThrottle: 10,
+    headerRefreshThrottle: 5,
     headerSlantAngle: 30,
     maxRetries: 10,
     // TODO: temporary
     maxRowsPerPage: 50,
     maxTables: 100,
-    schemaRefreshThrottle: 0,
-    tableRefreshThrottle: 0
+    schemaRefreshThrottle: 10,
+    tableRefreshThrottle: 10
   };
 
   // S3 config

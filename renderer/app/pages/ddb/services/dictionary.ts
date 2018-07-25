@@ -26,9 +26,8 @@ export class DictionaryService {
 
   /** Return the rows for a particular view */
   rowsForView(rows: any[],
-              schemes: Scheme[],
               ddbview: View): any[] {
-    return ddbview.sortColumn? this.sort(rows, schemes, ddbview) : rows;
+    return (ddbview.sortColumn && rows)? this.sort(rows, ddbview) : rows;
   }
 
   /** Return the schema for a particular view */
@@ -47,9 +46,7 @@ export class DictionaryService {
   // private methods
 
   private sort(rows: any[],
-               schemes: Scheme[],
                ddbview: View): any[] {
-    const scheme = schemes.find(scheme => scheme.column === ddbview.sortColumn);
     const col = ddbview.sortColumn;
     const dir = ddbview.sortDir || 1;
     return rows.sort((a, b) => {
@@ -61,11 +58,12 @@ export class DictionaryService {
         return +1 * dir;
       // @see https://stackoverflow.com/questions/17387435/
       //        javascript-sort-array-of-objects-by-a-boolean-property
-      else if (scheme.type === 'boolean')
+      // NOTE: need to sort by what field IS, not what it is coerced to
+      else if (typeof a[col] === 'boolean')
         return (b[col] - a[col]) * dir;
-      else if (scheme.type === 'number')
+      else if (typeof a[col] === 'number')
         return (a[col] - b[col]) * dir;
-      else if (scheme.type === 'string')
+      else if (typeof a[col] === 'string')
         return a[col].toLowerCase().localeCompare(b[col].toLowerCase()) * dir;
       else return 0;
     });

@@ -19,6 +19,7 @@ import { OnChange } from 'ellib';
 import { Output } from '@angular/core';
 import { PrefsState } from '../../state/prefs';
 import { PrefsStateModel } from '../../state/prefs';
+import { ReloadTable } from './state/ddb';
 import { Schema } from './state/ddbschemas';
 import { Select } from '@ngxs/store';
 import { ShowPagePrefs } from '../../state/window';
@@ -109,6 +110,7 @@ export class DDBCtrlComponent extends LifecycleComponent {
         this.store.dispatch(new UpdateVisibility({ tableName, visibility }));
         const schema: Schema = { ...this.viewAndSchemaForm.schema };
         this.store.dispatch(new UpdateSchema({ tableName, schema }));
+        this.store.dispatch(new ReloadTable());
       });
     }
   }

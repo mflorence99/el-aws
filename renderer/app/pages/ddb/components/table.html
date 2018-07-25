@@ -13,7 +13,8 @@
       </td>
 
       <td
-        [ngClass]="{gridlines: prefs.showGridLines}"
+        [ngClass]="{gridlines: prefs.showGridLines,
+                    hover: hoverColumn === scheme.column}"
         *ngFor="let scheme of schemes">
         {{ row[scheme.column] | libBreakable }}
       </td>

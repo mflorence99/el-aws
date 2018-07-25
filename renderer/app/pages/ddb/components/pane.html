@@ -1,11 +1,14 @@
 <elaws-header
+  (columnHover)="table.onColumnHover($event)"
   [ddb]="ddb"
   [ddbschema]="ddbschema"
   [ddbview]="ddbview"
-  [prefs]="prefs">
+  [prefs]="prefs"
+  #header>
 </elaws-header>  
 
 <elaws-table
+  (newTable)="header.onNewTable()"
   [ddb]="ddb"
   [ddbschema]="ddbschema"
   [ddbview]="ddbview"
