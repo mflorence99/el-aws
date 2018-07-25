@@ -1,0 +1,19 @@
+<ng-container
+  [ngSwitch]="scheme.type">
+
+  <div
+    *ngSwitchCase="'boolean'"
+    class="boolean">
+
+    <fa-icon
+      [icon]="[asBoolean()? 'fas' : 'far', 'circle']">
+    </fa-icon>
+
+  </div>
+
+  <div
+    *ngSwitchDefault>
+    {{ row[scheme.column] | libBreakable }}
+  </div>
+
+</ng-container>

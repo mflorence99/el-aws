@@ -1,4 +1,5 @@
 import { BarrelModule } from '../../../barrel';
+import { CellComponent } from './cell';
 import { ComponentsModule as CommonComponentsModule } from '../../../components/module';
 import { HeaderComponent } from './header';
 import { NgModule } from '@angular/core';
@@ -14,6 +15,7 @@ import { ViewSchemaComponent } from './view/schema';
  */
 
 const COMPONENTS = [
+  CellComponent,
   HeaderComponent,
   PaneComponent,
   SelectTableComponent,

@@ -16,7 +16,12 @@
         [ngClass]="{gridlines: prefs.showGridLines,
                     hover: hoverColumn === scheme.column}"
         *ngFor="let scheme of schemes">
-        {{ row[scheme.column] | libBreakable }}
+
+        <elaws-cell
+          [row]="row"
+          [scheme]="scheme">
+        </elaws-cell>
+        
       </td>
 
     </tr>

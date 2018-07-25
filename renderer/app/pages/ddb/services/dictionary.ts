@@ -13,7 +13,7 @@ export class DictionaryService {
 
   /** Get the schema columns in alpha order, but those definewd in table first */
   columns(ddb: DDBStateModel,
-          ddbschema: Schema): string[] {
+    ddbschema: Schema): string[] {
     const attrs = ddb.table.AttributeDefinitions
       .map(def => def.AttributeName);
     const columns = Object.keys(ddbschema)
@@ -26,14 +26,15 @@ export class DictionaryService {
 
   /** Return the rows for a particular view */
   rowsForView(rows: any[],
-              ddbview: View): any[] {
-    return (ddbview.sortColumn && rows)? this.sort(rows, ddbview) : rows;
+    schemes: Scheme[],
+    ddbview: View): any[] {
+    return (ddbview.sortColumn && rows)? this.sort(rows, schemes, ddbview) : rows;
   }
 
   /** Return the schema for a particular view */
   schemaForView(ddb: DDBStateModel,
-                ddbschema: Schema,
-                ddbview: View): Scheme[] {
+    ddbschema: Schema,
+    ddbview: View): Scheme[] {
     return this.columns(ddb, ddbschema)
       .filter(column => ddbview.visibility && ddbview.visibility[column])
       .reduce((acc, column) => {
@@ -46,7 +47,9 @@ export class DictionaryService {
   // private methods
 
   private sort(rows: any[],
-               ddbview: View): any[] {
+    schemes: Scheme[],
+    ddbview: View): any[] {
+    const scheme = schemes.find(scheme => scheme.column === ddbview.sortColumn);
     const col = ddbview.sortColumn;
     const dir = ddbview.sortDir || 1;
     return rows.sort((a, b) => {
@@ -58,13 +61,12 @@ export class DictionaryService {
         return +1 * dir;
       // @see https://stackoverflow.com/questions/17387435/
       //        javascript-sort-array-of-objects-by-a-boolean-property
-      // NOTE: need to sort by what field IS, not what it is coerced to
-      else if (typeof a[col] === 'boolean')
-        return (b[col] - a[col]) * dir;
-      else if (typeof a[col] === 'number')
-        return (a[col] - b[col]) * dir;
-      else if (typeof a[col] === 'string')
-        return a[col].toLowerCase().localeCompare(b[col].toLowerCase()) * dir;
+      else if (scheme.type === 'boolean')
+        return (<any>Boolean(b[col]) - <any>Boolean(a[col])) * dir;
+      else if (scheme.type === 'number')
+        return (Number(a[col]) - Number(b[col])) * dir;
+      else if (scheme.type === 'string')
+        return String(a[col]).toLowerCase().localeCompare(String(b[col]).toLowerCase()) * dir;
       else return 0;
     });
   }
