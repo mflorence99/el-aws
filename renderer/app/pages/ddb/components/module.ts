@@ -3,6 +3,7 @@ import { ColumnComponent } from './column';
 import { ComponentsModule as CommonComponentsModule } from '../../../components/module';
 import { HeaderComponent } from './header';
 import { NgModule } from '@angular/core';
+import { PaneComponent } from './pane';
 import { SelectTableComponent } from './select-table';
 import { TableComponent } from './table';
 import { ViewComponent } from './view';
@@ -16,6 +17,7 @@ import { ViewSchemaComponent } from './view/schema';
 const COMPONENTS = [
   ColumnComponent,
   HeaderComponent,
+  PaneComponent,
   SelectTableComponent,
   TableComponent,
   ViewComponent,

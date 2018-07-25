@@ -1,20 +1,11 @@
 <lib-drawer-container>
 
-  <elaws-header
+  <elaws-pane
     [ddb]="ctrl.ddb$ | async"
     [ddbschema]="ctrl.ddbschema$ | async"
     [ddbview]="ctrl.ddbview$ | async"
-    [prefs]="ctrl.prefs$ | async"
-    [table]="table">
-  </elaws-header>  
-
-  <elaws-table
-    [ddb]="ctrl.ddb$ | async"
-    [ddbschema]="ctrl.ddbschema$ | async"
-    [ddbview]="ctrl.ddbview$ | async"
-    [prefs]="ctrl.prefs$ | async"
-    #table>
-  </elaws-table>  
+    [prefs]="ctrl.prefs$ | async">
+  </elaws-pane>  
 
   <lib-drawer-panel
     #viewDrawer

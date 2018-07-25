@@ -21,6 +21,11 @@ export class LoadTable {
   constructor(public readonly payload: { tableName: string }) { }
 }
 
+export class ReloadTable {
+  static readonly type = '[DDB] reload table';
+  constructor(public readonly payload?: any) { }
+}
+
 export class RowsLoaded {
   static readonly type = '[DDB] rows loaded';
   constructor(public readonly payload: { tableName: string, rows: any[], lastEvaluatedKey: DDB.Key }) { }
@@ -84,6 +89,14 @@ export interface DDBStateModel {
       });
     }
     else patchState({ index: 0, lastEvaluatedKey: null, rows: null, table: null });
+  }
+
+  @Action(ReloadTable)
+  reloadTable({ dispatch, getState }: StateContext<DDBStateModel>,
+              { payload }: ReloadTable) {
+    const state = getState();
+    if (state.table)
+      dispatch(new LoadTable({ tableName: state.table.TableName }));
   }
 
   @Action(RowsLoaded)

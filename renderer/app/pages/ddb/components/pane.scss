@@ -1,0 +1,19 @@
+:host {
+  display: block;
+  height: 100%;
+  overflow: hidden;
+
+  --elaws-header-height: 64px;
+  --elaws-header-margin: 0px;
+
+}
+
+elaws-header {
+  height: var(--elaws-header-height);
+  margin-top: var(--elaws-header-margin);
+}
+
+elaws-table {
+  height: calc(100% - var(--elaws-header-height) - var(--elaws-header-margin));
+}
+

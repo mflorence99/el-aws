@@ -6,7 +6,7 @@
   </fa-icon>
 
   <select
-    (change)="onLoadTable($event.target.value)">
+    (change)="loadTable($event.target.value)">
 
     <option value="">Select DDB table ...</option>
 
@@ -19,11 +19,26 @@
 
   </select>
 
-  <a
-    (click)="onLoadRows()"
+  <button 
+    (click)="reloadTable()"
+    *ngIf="(ddb$ | async)?.table"
+    matTooltip="Reload table"
+    mat-icon-button>
+    <fa-icon 
+      [icon]="['fas', 'fast-backward']"
+      size="lg">
+    </fa-icon>
+  </button>
+
+  <button 
+    (click)="loadMoreRows()"
     *ngIf="(ddb$ | async)?.lastEvaluatedKey"
-    mat-button>
-    More ...
-  </a>
+    matTooltip="Show next set of rows"
+    mat-icon-button>
+    <fa-icon 
+      [icon]="['fas', 'step-forward']"
+      size="lg">
+    </fa-icon>
+  </button>
 
 </header>

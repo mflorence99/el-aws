@@ -8,6 +8,7 @@ import { LoadRows } from './state/ddb';
 import { LoadTable } from './state/ddb';
 import { Observable } from 'rxjs/Observable';
 import { OnInit } from '@angular/core';
+import { ReloadTable } from './state/ddb';
 import { Select } from '@ngxs/store';
 import { Store } from '@ngxs/store';
 
@@ -35,12 +36,16 @@ export class ToolbarComponent implements OnInit {
 
   // event handlers
 
-  onLoadRows(): void {
+  loadMoreRows(): void {
     this.store.dispatch(new LoadRows());
   }
 
-  onLoadTable(tableName: string): void {
+  loadTable(tableName: string): void {
     this.store.dispatch(new LoadTable({ tableName }));
+  }
+
+  reloadTable(): void {
+    this.store.dispatch(new ReloadTable());
   }
 
   // lifecycle methods

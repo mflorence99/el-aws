@@ -73,7 +73,7 @@ export class ViewSchemaComponent extends LifecycleComponent {
   // bind OnChange handlers
 
   @OnChange('ddb', 'ddbschema', 'ddbView') newState(): void {
-    if (this.ddb && this.ddbschema && this.ddbview) 
+    if (this.ddb && this.ddb.table && this.ddbschema && this.ddbview) 
       this.newStateImpl();
   }
 

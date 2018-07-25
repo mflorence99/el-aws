@@ -53,8 +53,10 @@ export class Config {
   // DynamoDB config
 
   ddb = {
+    headerLineHeight: 12,
+    headerPadding: 6,
     headerRefreshThrottle: 0,
-    headerSlantAngle: 45 * (Math.PI / 180),
+    headerSlantAngle: 30,
     maxRetries: 10,
     // TODO: temporary
     maxRowsPerPage: 50,

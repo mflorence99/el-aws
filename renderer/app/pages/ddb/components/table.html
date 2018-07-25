@@ -1,7 +1,7 @@
 <main>
 
   <table
-    *ngIf="isTablePopulated()">
+    *ngIf="pane.isTablePopulated()">
 
     <tr
       *ngFor="let row of ddb.rows; let ix = index">
@@ -23,7 +23,7 @@
   </table>
 
   <div
-    *ngIf="isLoadingRows()"
+    *ngIf="pane.isLoadingRows()"
     class="no-data">
 
     <fa-icon
@@ -35,7 +35,7 @@
   </div>
 
   <div
-    *ngIf="isTableEmpty()"
+    *ngIf="pane.isTableEmpty()"
     class="no-data">
 
     <div class="message">
@@ -54,7 +54,7 @@
   </div>
 
   <div
-    *ngIf="!isTableSelected()"
+    *ngIf="!pane.isTableSelected()"
     class="no-data">
 
     <div class="message">
