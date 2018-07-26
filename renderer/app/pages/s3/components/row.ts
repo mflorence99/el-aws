@@ -39,8 +39,8 @@ export class RowComponent {
   @Input() level = 0;
   @Input() path: string;
   @Input() prefs = { } as PrefsStateModel;
+  @Input() s3selection = { } as S3SelectionStateModel;
   @Input() s3view = { } as S3ViewStateModel;
-  @Input() selection = { } as S3SelectionStateModel;
 
   /** ctor */
   constructor(private store: Store,
@@ -52,7 +52,7 @@ export class RowComponent {
                 desc: Descriptor): void {
     // if the context isn't part of the selection,
     // then it becomes the selection
-    if (!this.selection.paths.includes(desc.path)) {
+    if (!this.s3selection.paths.includes(desc.path)) {
       this.store.dispatch([
         new ClearSelection(),
         new AddPathToSelection({ path: desc.path })
@@ -77,7 +77,7 @@ export class RowComponent {
            desc: Descriptor): void {
     const actions = [];
     if (event.shiftKey) {
-      if (this.selection.paths.length === 0)
+      if (this.s3selection.paths.length === 0)
         actions.push(new AddPathToSelection({ path: desc.path }));
       else {
         // get all visible paths, in order
@@ -91,7 +91,7 @@ export class RowComponent {
         const ix = paths.indexOf(desc.path);
         let lo = Number.MAX_SAFE_INTEGER;
         let hi = Number.MIN_SAFE_INTEGER;
-        this.selection.paths.forEach(path => {
+        this.s3selection.paths.forEach(path => {
           lo = Math.min(lo, paths.indexOf(path));
           hi = Math.max(hi, paths.indexOf(path));
         });

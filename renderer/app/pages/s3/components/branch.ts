@@ -31,13 +31,13 @@ export class BranchComponent implements OnInit {
   @Input() contextMenu: ContextMenuComponent;
   @Input() descriptorsByPath: { [path: string]: Descriptor[] } = { };
   @Input() dictionary: Dictionary[] = [];
-  @Input() s3 = { } as S3StateModel;
-  @Input() s3filter = { } as S3FilterStateModel;
   @Input() level = 0;
   @Input() path: string;
   @Input() prefs = { } as PrefsStateModel;
+  @Input() s3 = { } as S3StateModel;
+  @Input() s3filter = { } as S3FilterStateModel;
+  @Input() s3selection = { } as S3SelectionStateModel;
   @Input() s3view = { } as S3ViewStateModel;
-  @Input() selection = { } as S3SelectionStateModel;
 
   /** ctor */
   constructor(private store: Store,

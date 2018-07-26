@@ -141,12 +141,12 @@ export interface DDBSelectionStateModel {
     const index = this.store.selectSnapshot(DDBState.getIndex);
     let text = '';
     if (rows.length === 1)
-      text = `${rows[0] + index + 1} selected`;
+      text = `Row ${rows[0] + index + 1} selected`;
     else if (rows.length > 1) {
       const others = pluralize(rows.length, {
         '=1': 'one other', 'other': '# others'
       });
-      text = `${rows[0] + index + 1} and ${others} selected`;
+      text = `Rows ${rows[0] + index + 1} and ${others} selected`;
     }
     dispatch(new Message({ text }));
   }

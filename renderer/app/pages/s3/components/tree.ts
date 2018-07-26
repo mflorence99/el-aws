@@ -50,7 +50,7 @@ export class TreeComponent extends LifecycleComponent {
   @Input() s3 = { } as S3StateModel;
   @Input() s3filter = { } as S3FilterStateModel;
   @Input() s3meta = { } as S3MetaStateModel;
-  @Input() selection = { } as S3SelectionStateModel;
+  @Input() s3selection = { } as S3SelectionStateModel;
   @Input() s3view = { } as S3ViewStateModel;
 
   @Output() createBucket = new EventEmitter<void>();
@@ -258,8 +258,8 @@ export class TreeComponent extends LifecycleComponent {
       // these commands affect the entire selection
 
       case 'delete-objects':
-        this.store.dispatch(new DeleteObjects({ paths: this.selection.paths }));
-        this.store.dispatch(new RemovePaths({ paths: this.selection.paths }));
+        this.store.dispatch(new DeleteObjects({ paths: this.s3selection.paths }));
+        this.store.dispatch(new RemovePaths({ paths: this.s3selection.paths }));
         break;
 
     }

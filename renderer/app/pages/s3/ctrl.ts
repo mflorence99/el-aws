@@ -76,7 +76,7 @@ export class S3CtrlComponent extends LifecycleComponent {
   @Select(S3State) s3$: Observable<S3StateModel>;
   @Select(S3FilterState) s3filter$: Observable<S3FilterStateModel>;
   @Select(S3MetaState) s3meta$: Observable<S3MetaStateModel>;
-  @Select(S3SelectionState) selection$: Observable<S3SelectionStateModel>;
+  @Select(S3SelectionState) s3selection$: Observable<S3SelectionStateModel>;
   @Select(S3ViewState) s3view$: Observable<S3ViewStateModel>;
 
   subToCancel: Subscription;
