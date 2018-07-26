@@ -11,6 +11,7 @@ export class UpdatePrefs {
 }
 
 export type DateFmt = 'ago' | 'shortDate' | 'mediumDate' | 'longDate' | 'fullDate';
+export type NumberFmt = 'abbrev' | 'number';
 export type QuantityFmt = 'abbrev' | 'bytes' | 'number';
 export type SortOrder = 'alpha' | 'first' | 'last';
 export type TimeFmt = 'none' | 'shortTime' | 'mediumTime' | 'longTime' | 'fullTime';
@@ -23,6 +24,7 @@ export interface PrefsStateModel {
     ec2: string;
     s3: string;
   };
+  numberFormat?: NumberFmt;
   quantityFormat?: QuantityFmt;
   region: string;
   showGridLines?: boolean;
@@ -45,6 +47,7 @@ export type PrefsStateModelFormGroup = {
       ec2: '',
       s3: ''
     },
+    numberFormat: 'number',
     quantityFormat: 'bytes',
     region: 'us-east-1',
     showGridLines: true,

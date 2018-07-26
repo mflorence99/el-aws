@@ -115,11 +115,30 @@
       <div class="group outer">
 
         <mat-radio-group
+          *ngIf="window.route !== '/s3'"
+          class="group"
+          formControlName="numberFormat">
+
+          <div class="drawer-label">
+            How to Show Numbers
+          </div>
+
+          <mat-radio-button value="number">
+            {{ size | libNumeral:'0,0' }}
+          </mat-radio-button>
+          <mat-radio-button value="abbrev">
+            {{ size | libNumeral:'0a' }}
+          </mat-radio-button>
+
+        </mat-radio-group>
+
+        <mat-radio-group
+          *ngIf="window.route === '/s3'"
           class="group"
           formControlName="quantityFormat">
 
           <div class="drawer-label">
-            How to Show Quantities
+            How to Show Sizes
           </div>
 
           <mat-radio-button value="number">

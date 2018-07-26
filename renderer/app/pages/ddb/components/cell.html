@@ -1,5 +1,5 @@
 <ng-container
-  [ngSwitch]="scheme.type">
+  [ngSwitch]="typeOf()">
 
   <div
     *ngSwitchCase="'boolean'"
@@ -12,8 +12,83 @@
   </div>
 
   <div
+    *ngSwitchCase="'currency'"
+    class="number">
+    {{ asNumber() | currency }}
+  </div>
+
+  <div
+    *ngSwitchCase="'date'"
+    class="nowrap">
+
+    <ng-container
+      *ngIf="prefs.dateFormat === 'ago'">
+      {{ asDate() | libTimeAgo }}
+    </ng-container>
+
+    <ng-container
+      *ngIf="asDate()">
+
+      <ng-container
+        *ngIf="(prefs.dateFormat !== 'ago') && (prefs.timeFormat === 'none')">
+        {{ asDate() | date:prefs.dateFormat }}
+      </ng-container>
+
+      <div
+        *ngIf="(prefs.dateFormat !== 'ago') && (prefs.timeFormat !== 'none')"
+        class="datetime">
+
+        <div>
+          {{ asDate() | date:prefs.dateFormat }}
+        </div>
+
+        <div>&nbsp;</div>
+
+        <div>
+          {{ asDate() | date:prefs.timeFormat }}
+        </div>
+
+      </div>
+
+    </ng-container>
+
+    <ng-container
+      *ngIf="!asDate()">
+      &ndash;
+    </ng-container>
+
+  </div>
+
+  <div
+    *ngSwitchCase="'nowrap'"
+    class="nowrap">
+    {{ asString() }}
+  </div>
+
+  <div
+    *ngSwitchCase="'number'"
+    class="number">
+
+    <ng-container
+      *ngIf="prefs.numberFormat === 'abbrev'">
+      {{ asNumber() | libNumeral:'0a' }}
+    </ng-container>
+
+    <ng-container
+      *ngIf="prefs.numberFormat === 'number'">
+      {{ asNumber() | libNumeral:'0,0' }}
+    </ng-container>
+
+  </div>
+
+  <div
+    [innerHTML]="asString() | libLinkify"
+    *ngSwitchCase="'url'">
+  </div>
+
+  <div
     *ngSwitchDefault>
-    {{ row[scheme.column] | libBreakable }}
+    {{ asString() | libBreakable }}
   </div>
 
 </ng-container>

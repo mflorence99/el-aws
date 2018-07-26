@@ -46,6 +46,7 @@ export class PrefsComponent extends LifecycleComponent {
         ec2: ['', [Validators.pattern(config.urlValidationPattern)]],
         s3: ['', [Validators.pattern(config.urlValidationPattern)]]
       }),
+      numberFormat: '',
       quantityFormat: '',
       region: ['', Validators.required],
       showGridLines: false,

@@ -111,7 +111,7 @@ export class HeaderComponent extends LifecycleComponent {
   private buildColumns(cells: HTMLElement[]): void {
     this.columns = [];
     this.cx = 0;
-    for (let ix = 0; ix < cells.length; ix++) {
+    for (let ix = 0, x = 0; ix < cells.length; ix++) {
       const rect = <DOMRect>cells[ix].getBoundingClientRect();
       // NOTE: the first column is just the row number and not part of the schema
       const sort = ((ix === 0) || (this.ddbview.sortColumn !== this.schemes[ix - 1].column))?
@@ -128,8 +128,10 @@ export class HeaderComponent extends LifecycleComponent {
           .toUpperCase()
           .split(/[^a-zA-Z0-9']+/)
           .concat(sort? [sort] : []), 
-        x: rect.x 
+        x: x 
       });
+      // assume all coumns are adjacent
+      x += rect.width;
       this.cx = Math.max(this.cx, rect.x + rect.width);
     }
   }
@@ -223,10 +225,11 @@ export class HeaderComponent extends LifecycleComponent {
     // adjust each fragment for desired alignment
     frags.forEach(frag => {
       const leftOver = leftOvers[frag.y];
+      const lineNum = frag.y / this.lineHeight;
       if (align === 'center')
         frag.x += leftOver / 2;
       else if (align === 'right')
-        frag.x += leftOver;
+        frag.x += leftOver + (dx * lineNum);
     });
     // finally, callback
     cb(frags, numLines);
@@ -276,7 +279,8 @@ export class HeaderComponent extends LifecycleComponent {
       .forEach(column => {
         this.ctx.save();
         this.ctx.clip(column.path);
-        if ((column.cx / this.lineHeight) <= 4)
+        // NOTE: columns below a certain magic width have slanted headers
+        if ((column.cx / this.lineHeight) < config.ddb.headerSlantThreshold)
           this.drawColumnSlanted(column);
         else this.drawColumnHorizontal(column);
         this.ctx.restore();

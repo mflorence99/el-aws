@@ -58,6 +58,7 @@ export class Config {
     headerRedrawThrottle: 10,
     headerRefreshThrottle: 5,
     headerSlantAngle: 30,
+    headerSlantThreshold: 4,
     maxRetries: 10,
     // TODO: temporary
     maxRowsPerPage: 50,

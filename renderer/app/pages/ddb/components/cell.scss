@@ -6,3 +6,17 @@
 .boolean {
   color: var(--accent-color);
 }
+
+.datetime {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.number {
+  text-align: right;
+}
