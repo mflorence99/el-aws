@@ -17,7 +17,8 @@
       <td
         [ngClass]="{gridlines: prefs.showGridLines,
                     hover: hoverColumn === scheme.column,
-                    selected: scheme.column === ddbselection.column}"
+                    selected: (scheme.column === ddbselection.column)
+                           || (scheme.column === ddbview.sortColumn)}"
         *ngFor="let scheme of schemes">
 
         <elaws-cell

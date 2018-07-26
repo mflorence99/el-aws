@@ -328,9 +328,12 @@ export class HeaderComponent extends LifecycleComponent {
     this.ctx.save();
     this.columns.forEach((column, ix) => {
       if (ix > 0) {
-        this.ctx.fillStyle = (column.hover)? this.hoverFill : 
-          ((this.ddbselection.column === column.scheme.column)? 
-            this.selectedFill : this.normalFill);
+        if (column.hover)
+          this.ctx.fillStyle = this.hoverFill;
+        else if ((this.ddbselection.column === column.scheme.column)
+              || (this.ddbview.sortColumn === column.scheme.column))
+          this.ctx.fillStyle = this.selectedFill;
+        else this.ctx.fillStyle = this.normalFill;
         this.ctx.fill(column.path);
       }
     });
