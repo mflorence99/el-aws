@@ -171,7 +171,6 @@ export class HeaderComponent extends LifecycleComponent {
 
   private drawColumn(column: Column,
                      cx: number,
-                     cy: number,
                      dx: number,
                      align: 'left' | 'center' | 'right',
                      cb: (frags: Fragment[], numLines: number) => void): void {
@@ -180,16 +179,12 @@ export class HeaderComponent extends LifecycleComponent {
     // mark out where each tag fragment should be drawn
     const frags: Fragment[] = [];
     let newLine = false, numLines = 1;
-    const maxLines = Math.trunc(cy / this.lineHeight) + 1;
     for (let ix = 0; ix < column.tag.length;) {
       let part = column.tag[ix];
       // if jumping to new line, adjust prior fragments
       if (newLine) {
         newLine = false;
         numLines += 1;
-        // full up?
-        if (numLines > maxLines)
-          break;
         frags.forEach(frag => (frag.x -= dx) && (frag.y -= this.lineHeight));
         x = 0;
       }
@@ -241,10 +236,9 @@ export class HeaderComponent extends LifecycleComponent {
     const theta = config.ddb.headerSlantAngle * (Math.PI / 180);
     const dx = this.lineHeight * Math.tan(theta);
     const cx = column.cx - (2 * this.padding) - dx;
-    const cy = this.canvas.height;
     // set origin to bottom line and draw the column
     this.ctx.translate(column.x + this.padding, this.canvas.height - this.padding);
-    this.drawColumn(column, cx, cy, dx, 'left', 
+    this.drawColumn(column, cx, dx, 'left', 
       (frags: Fragment[], numLines: number) => {
         frags.forEach(frag => this.ctx.fillText(frag.part, frag.x, frag.y));
         // NOTE: calculate maxHeight so we can condense the header
@@ -255,17 +249,17 @@ export class HeaderComponent extends LifecycleComponent {
 
   private drawColumnSlanted(column: Column): void {
     const theta = config.ddb.headerSlantAngle * (Math.PI / 180);
+    const phi = (90 - config.ddb.headerSlantAngle) * (Math.PI / 180);
     const dx = -(this.lineHeight * Math.tan(theta));
-    const cx = (this.canvas.height / Math.cos(theta)) - (2 * this.padding);
-    const cy = (column.cx * Math.cos(theta)) - (2 * this.padding);
+    const cx = (this.canvas.height / Math.cos(theta)) - (2 *this.padding);
     // set origin to bottom line and rotate then draw the column
     // TODO: don't know why this isn't straight padding
     const fudge = (3 * this.padding) / 2;
     this.ctx.translate(column.x + fudge - (this.canvas.height * Math.tan(theta)), this.padding);
-    const phi = (90 - config.ddb.headerSlantAngle) * (Math.PI / 180);
     this.ctx.rotate(phi);
-    this.drawColumn(column, cx, cy, dx, 'right',
+    this.drawColumn(column, cx, dx, 'right',
       (frags: Fragment[], numLines: number) => {
+        const cy = (column.cx * Math.cos(theta)) - (2 * this.padding);
         // NOTE: center single column
         if (numLines === 1)
           frags.forEach(frag => (frag.x -= dx + this.padding) && (frag.y -= (cy - this.lineHeight)));
@@ -280,10 +274,12 @@ export class HeaderComponent extends LifecycleComponent {
     this.columns
       .filter(column => !!column.tag)
       .forEach(column => {
+        this.ctx.save();
+        this.ctx.clip(column.path);
         if ((column.cx / this.lineHeight) <= 4)
           this.drawColumnSlanted(column);
         else this.drawColumnHorizontal(column);
-        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+        this.ctx.restore();
       });
   }
 
@@ -319,12 +315,12 @@ export class HeaderComponent extends LifecycleComponent {
   }
 
   private fillColumns(): void {
+    this.ctx.save();
     this.columns.forEach(column => {
-      const fillStyle = this.ctx.fillStyle;
       this.ctx.fillStyle = (column.hover)? this.hoverFill : this.normalFill;
       this.ctx.fill(column.path);
-      this.ctx.fillStyle = fillStyle;
     });
+    this.ctx.restore();
   }
 
   private hitTestImpl(event: MouseEvent): void {
