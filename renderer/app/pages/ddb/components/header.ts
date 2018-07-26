@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy } from '@angular/core';
+import { ClearSelection } from '../state/ddbselection';
 import { Component } from '@angular/core';
+import { DDBSelectionStateModel } from '../state/ddbselection';
 import { DDBStateModel } from '../state/ddb';
 import { DictionaryService } from '../services/dictionary';
 import { ElementRef } from '@angular/core';
@@ -13,6 +15,7 @@ import { PaneComponent } from './pane';
 import { PrefsStateModel } from '../../../state/prefs';
 import { Schema } from '../state/ddbschemas';
 import { Scheme } from '../state/ddbschemas';
+import { SelectColumn } from '../state/ddbselection';
 import { Store } from '@ngxs/store';
 import { UpdateSort } from '../state/ddbviews';
 import { View } from '../state/ddbviews';
@@ -36,6 +39,7 @@ export class HeaderComponent extends LifecycleComponent {
 
   @Input() ddb = { } as DDBStateModel;
   @Input() ddbschema = { } as Schema;
+  @Input() ddbselection = { } as DDBSelectionStateModel;
   @Input() ddbview = { } as View;
   @Input() prefs = { } as PrefsStateModel;
 
@@ -53,11 +57,12 @@ export class HeaderComponent extends LifecycleComponent {
   private columns: Column[] = [];
   private ctx: CanvasRenderingContext2D;
   private cx: number;
+  private hoverFill: string;
   private lineHeight = config.ddb.headerLineHeight;
   private maxHeight: number;
   private normalFill: string;
   private padding = config.ddb.headerPadding;
-  private hoverFill: string;
+  private selectedFill: string;
 
   /** ctor */
   constructor(private dictSvc: DictionaryService,
@@ -156,6 +161,7 @@ export class HeaderComponent extends LifecycleComponent {
     this.ctx.setLineDash([1, 1]);
     this.normalFill = style.getPropertyValue('--mat-grey-900');
     this.hoverFill = style.getPropertyValue('--mat-grey-800');
+    this.selectedFill = style.getPropertyValue('--mat-blue-grey-800');
   }
 
   private defineColumnPaths(): void {
@@ -320,9 +326,13 @@ export class HeaderComponent extends LifecycleComponent {
 
   private fillColumns(): void {
     this.ctx.save();
-    this.columns.forEach(column => {
-      this.ctx.fillStyle = (column.hover)? this.hoverFill : this.normalFill;
-      this.ctx.fill(column.path);
+    this.columns.forEach((column, ix) => {
+      if (ix > 0) {
+        this.ctx.fillStyle = (column.hover)? this.hoverFill : 
+          ((this.ddbselection.column === column.scheme.column)? 
+            this.selectedFill : this.normalFill);
+        this.ctx.fill(column.path);
+      }
     });
     this.ctx.restore();
   }
@@ -349,7 +359,11 @@ export class HeaderComponent extends LifecycleComponent {
         if (this.ddbview.sortColumn === sortColumn)
           sortDir = this.ddbview.sortDir * -1;
         const tableName = this.ddb.table.TableName;
-        this.store.dispatch(new UpdateSort({ sortColumn, sortDir, tableName }));
+        this.store.dispatch([
+          new ClearSelection(),
+          new SelectColumn({ column: sortColumn }),
+          new UpdateSort({ sortColumn, sortDir, tableName })
+        ]);
       }
     }
   }

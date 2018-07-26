@@ -74,7 +74,7 @@ export class RowComponent {
   }
 
   onSelect(event: MouseEvent,
-    desc: Descriptor): void {
+           desc: Descriptor): void {
     const actions = [];
     if (event.shiftKey) {
       if (this.selection.paths.length === 0)

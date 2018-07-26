@@ -6,6 +6,8 @@ import { DDBFiltersState } from './state/ddbfilters';
 import { DDBFiltersStateModel } from './state/ddbfilters';
 import { DDBSchemasState } from './state/ddbschemas';
 import { DDBSchemasStateModel } from './state/ddbschemas';
+import { DDBSelectionState } from './state/ddbselection';
+import { DDBSelectionStateModel } from './state/ddbselection';
 import { DDBState } from './state/ddb';
 import { DDBStateModel } from './state/ddb';
 import { DDBViewsState } from './state/ddbviews';
@@ -59,6 +61,7 @@ export class DDBCtrlComponent extends LifecycleComponent {
   @Select(DDBFiltersState) ddbfilters$: Observable<DDBFiltersStateModel>;
   @Select(DDBSchemasState) ddbschemas$: Observable<DDBSchemasStateModel>;
   @Select(DDBViewsState) ddbviews$: Observable<DDBViewsStateModel>;
+  @Select(DDBSelectionState) ddbselection$: Observable<DDBSelectionStateModel>;
   @Select(PrefsState) prefs$: Observable<PrefsStateModel>;
 
   ddbfilter$: Observable<Filter> = this.ddb$.pipe(

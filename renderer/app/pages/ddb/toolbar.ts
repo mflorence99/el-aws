@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy } from '@angular/core';
 import { ChangeDetectorRef } from '@angular/core';
+import { ClearSelection } from './state/ddbselection';
 import { Component } from '@angular/core';
 import { DDBService } from './services/ddb';
 import { DDBState } from './state/ddb';
@@ -37,15 +38,15 @@ export class ToolbarComponent implements OnInit {
   // event handlers
 
   loadMoreRows(): void {
-    this.store.dispatch(new LoadRows());
+    this.store.dispatch([new ClearSelection(), new LoadRows()]);
   }
 
   loadTable(tableName: string): void {
-    this.store.dispatch(new LoadTable({ tableName }));
+    this.store.dispatch([new ClearSelection(), new LoadTable({ tableName })]);
   }
 
   reloadTable(): void {
-    this.store.dispatch(new ReloadTable());
+    this.store.dispatch([new ClearSelection(), new ReloadTable()]);
   }
 
   // lifecycle methods

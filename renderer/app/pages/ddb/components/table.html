@@ -4,6 +4,8 @@
     *ngIf="pane.isTablePopulated()">
 
     <tr
+      (click)="onSelect($event, ix)"
+      [ngClass]="{selected: ddbselection.rows.includes(ix)}"
       *ngFor="let row of ddb.rows; let ix = index">
 
       <td
@@ -14,7 +16,8 @@
 
       <td
         [ngClass]="{gridlines: prefs.showGridLines,
-                    hover: hoverColumn === scheme.column}"
+                    hover: hoverColumn === scheme.column,
+                    selected: scheme.column === ddbselection.column}"
         *ngFor="let scheme of schemes">
 
         <elaws-cell

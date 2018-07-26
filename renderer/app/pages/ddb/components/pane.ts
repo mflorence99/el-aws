@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy } from '@angular/core';
 import { Component } from '@angular/core';
+import { DDBSelectionStateModel } from '../state/ddbselection';
 import { DDBStateModel } from '../state/ddb';
 import { ElementRef } from '@angular/core';
 import { Input } from '@angular/core';
@@ -22,6 +23,7 @@ export class PaneComponent {
 
   @Input() ddb = { } as DDBStateModel;
   @Input() ddbschema = { } as Schema;
+  @Input() ddbselection = { } as DDBSelectionStateModel;
   @Input() ddbview = { } as View;
   @Input() prefs = { } as PrefsStateModel;
 

@@ -50,6 +50,10 @@ export interface DDBStateModel {
   }
 }) export class DDBState {
 
+  @Selector() static getIndex(state: DDBStateModel): number {
+    return state.index;
+  }
+
   @Selector() static getTable(state: DDBStateModel): DDB.TableDescription {
     return state.table;
   }

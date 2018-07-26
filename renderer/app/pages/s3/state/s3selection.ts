@@ -45,7 +45,7 @@ export interface S3SelectionStateModel {
 @State<S3SelectionStateModel>({
   name: 's3selection',
   defaults: {
-    paths: [],
+    paths: []
   }
 }) export class S3SelectionState {
 
