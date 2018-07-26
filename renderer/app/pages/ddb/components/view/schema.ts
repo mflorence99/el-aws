@@ -14,8 +14,6 @@ import { Validators } from '@angular/forms';
 import { View } from '../../state/ddbviews';
 import { ViewVisibility } from '../../state/ddbviews';
 
-import { config } from '../../../../config';
-import { debounce } from 'ellib';
 import { map } from 'rxjs/operators';
 
 /**
@@ -55,14 +53,11 @@ export class ViewSchemaComponent extends LifecycleComponent {
 
   viewAndSchemaForm: FormGroup;
 
-  private newStateImpl: Function;
-
   /** ctor */
   constructor(private dictSvc: DictionaryService,
               private drawerPanel: DrawerPanelComponent,
               private formBuilder: FormBuilder) {
     super();
-    this.newStateImpl = debounce(this._newStateImpl, config.ddb.schemaRefreshThrottle);
   }
 
   /** Close drawer */
@@ -79,7 +74,7 @@ export class ViewSchemaComponent extends LifecycleComponent {
 
   // private methods
 
-  private _newStateImpl(): void {
+  private newStateImpl(): void {
     // all the columns
     this.columns = this.dictSvc.columns(this.ddb, this.ddbschema);
     // create view form controls

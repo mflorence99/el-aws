@@ -63,7 +63,6 @@ export class Config {
     // TODO: temporary
     maxRowsPerPage: 50,
     maxTables: 100,
-    schemaRefreshThrottle: 10,
     tableRefreshThrottle: 10
   };
 
