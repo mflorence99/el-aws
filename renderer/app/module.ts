@@ -50,6 +50,12 @@ const ROUTES: Routes = [
     },
 
     {
+      path: 'ddb/:tableName',
+      loadChildren: './pages/ddb/module#DDBPageModule',
+      canActivate: [DDBGuard]
+    },
+
+    {
       path: 'ec2',    
       loadChildren: './pages/ec2/module#EC2PageModule',
       canActivate: [EC2Guard],    
@@ -114,7 +120,7 @@ const SERVICES = [
       storage: StorageOption.LocalStorage
     }),
     NgxsReduxDevtoolsPluginModule.forRoot({disabled: !window['DEV_MODE']}),
-    RouterModule.forRoot(ROUTES, { enableTracing: false })
+    RouterModule.forRoot(ROUTES, { enableTracing: false, useHash: true })
   ],
 
   providers: [

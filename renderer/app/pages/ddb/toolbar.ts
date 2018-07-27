@@ -6,7 +6,7 @@ import { DDBService } from './services/ddb';
 import { DDBState } from './state/ddb';
 import { DDBStateModel } from './state/ddb';
 import { LoadRows } from './state/ddb';
-import { LoadTable } from './state/ddb';
+import { Navigate } from '@ngxs/router-plugin';
 import { Observable } from 'rxjs/Observable';
 import { OnInit } from '@angular/core';
 import { ReloadTable } from './state/ddb';
@@ -42,7 +42,7 @@ export class ToolbarComponent implements OnInit {
   }
 
   loadTable(tableName: string): void {
-    this.store.dispatch([new ClearSelection(), new LoadTable({ tableName })]);
+    this.store.dispatch(new Navigate(['/ddb', tableName]));
   }
 
   reloadTable(): void {
@@ -55,7 +55,7 @@ export class ToolbarComponent implements OnInit {
     this.ddbSvc.listTables(tableNames => {
       this.tableNames = tableNames
         .sort()
-        // TODO: very specif to our use case -- make more general
+        // TODO: very specific to our use case -- make more general
         .map(tableName => {
           const ix = tableName.lastIndexOf('.');
           if (ix === -1)

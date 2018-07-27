@@ -1,6 +1,8 @@
 import { Actions } from '@ngxs/store';
+import { ActivatedRoute } from '@angular/router';
 import { AutoUnsubscribe } from 'ellib';
 import { ChangeDetectionStrategy } from '@angular/core';
+import { ClearSelection } from './state/ddbselection';
 import { Component } from '@angular/core';
 import { DDBFiltersState } from './state/ddbfilters';
 import { DDBFiltersStateModel } from './state/ddbfilters';
@@ -16,9 +18,12 @@ import { EventEmitter } from '@angular/core';
 import { Filter } from './state/ddbfilters';
 import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
+import { LoadTable } from './state/ddb';
+import { Navigate } from '@ngxs/router-plugin';
 import { Observable } from 'rxjs/Observable';
 import { OnChange } from 'ellib';
 import { Output } from '@angular/core';
+import { ParamMap } from '@angular/router';
 import { PrefsState } from '../../state/prefs';
 import { PrefsStateModel } from '../../state/prefs';
 import { ReloadTable } from './state/ddb';
@@ -91,13 +96,16 @@ export class DDBCtrlComponent extends LifecycleComponent {
     })
   );
 
+  subToRouteParams: Subscription;
   subToShowPagePrefs: Subscription;
 
   /** ctor */
   constructor(private actions$: Actions,
+              private route: ActivatedRoute,
               private store: Store) {
     super();
     this.handleActions();
+    this.handleRouteParams();
   }    
 
   // bind OnChange handlers
@@ -124,6 +132,21 @@ export class DDBCtrlComponent extends LifecycleComponent {
     // listen for open prefs
     this.subToShowPagePrefs = this.actions$.pipe(ofAction(ShowPagePrefs))
       .subscribe(() => this.openView.emit());
+  }
+
+  private handleRouteParams(): void {
+    this.subToRouteParams = this.route.paramMap
+      .subscribe((params: ParamMap) => {
+        const tableName = params.get('tableName');
+        // NOTE: if no tableName route param, try latest state
+        // we need to rewrite the URL in that case, rather than loading directly
+        let table = null;
+        if (!tableName) 
+          table = this.store.selectSnapshot(DDBState.getTable);
+        if (table)
+          this.store.dispatch(new Navigate(['/ddb', table.TableName]));
+        else this.store.dispatch([new ClearSelection(), new LoadTable({ tableName })]);
+      });
   }
 
 }
