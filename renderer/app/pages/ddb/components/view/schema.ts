@@ -84,6 +84,7 @@ export class ViewSchemaComponent extends LifecycleComponent {
       tableName: this.ddb.table.TableName,
       schema: this.formBuilder.group(this.columns.reduce((acc, column) => {
         acc[column] = this.formBuilder.group({
+          column: column,
           showAs: this.ddbschema[column].showAs,
           tag: this.ddbschema[column].tag,
           type: this.ddbschema[column].type

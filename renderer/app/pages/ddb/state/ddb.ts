@@ -2,6 +2,7 @@ import * as DDB from 'aws-sdk/clients/dynamodb';
 
 import { Action } from '@ngxs/store';
 import { DDBService } from '../services/ddb';
+import { InitFilter } from './ddbfilters';
 import { InitSchema } from './ddbschemas';
 import { Message } from '../../../state/status';
 import { NgZone } from '@angular/core';
@@ -89,6 +90,8 @@ export interface DDBStateModel {
         patchState({ index: 0, lastEvaluatedKey: null, rows: null, table });
         this.zone.run(() => {
           dispatch(new LoadRows());
+          // initialize the filter as we load new tables
+          dispatch(new InitFilter({ tableName }));
         });
       });
     }

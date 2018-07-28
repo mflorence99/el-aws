@@ -67,5 +67,10 @@
     "@schematics/angular:directive": {
       "prefix": "elaws"
     }
+  },
+  "cli": {
+    "warnings": {
+      "typescriptMismatch": false
+    }
   }
 }

@@ -1,0 +1,83 @@
+<form
+  (submit)="close()"
+  [formGroup]="filterForm"
+  [libRxfSubmit]="filterForm"
+  *ngIf="filterForm"
+  novalidate>
+
+  <input
+    formControlName="tableName"
+    type="hidden">
+
+  <div class="drawer-label">
+    All filters are AND'ed together.
+  </div>
+
+  <ng-container
+    formGroupName="filter">
+
+    <ng-container
+      *ngFor="let column of columns">
+
+      <ng-container
+        [formGroupName]="column">
+
+        <ng-container
+          [ngSwitch]="ddbschema[column].type">
+
+          <div
+            *ngSwitchCase="'string'">
+
+            <mat-form-field>
+              <fa-icon 
+                [icon]="['fas', 'filter']"
+                [ngClass]="{un: !comparand.value}"
+                class="filtered"
+                matPrefix>
+              </fa-icon>
+              <input
+                [placeholder]="column"
+                #comparand
+                formControlName="comparand"
+                matInput
+                type="text">
+              <a
+                (click)="clearComparand(column)"
+                mat-button
+                mat-icon-button
+                matSuffix>
+                <fa-icon 
+                  [icon]="['fas', 'times']">
+                </fa-icon>
+              </a>
+            </mat-form-field>
+
+          </div>
+
+        </ng-container>
+
+      </ng-container>
+
+    </ng-container>
+
+  </ng-container>
+
+  <div class="okAndCancel">
+
+    <a
+      (click)="close()"
+      mat-button>
+      Cancel
+    </a>
+
+    <button
+      [disabled]="filterForm.invalid"
+      color="primary"
+      mat-raised-button
+      type="submit">
+      OK
+    </button>
+
+  </div>
+
+</form>

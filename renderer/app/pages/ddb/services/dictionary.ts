@@ -13,7 +13,8 @@ export class DictionaryService {
 
   /** Get the schema columns in alpha order, but those definewd in table first */
   columns(ddb: DDBStateModel,
-    ddbschema: Schema): string[] {
+          ddbschema: Schema,
+          onlyFilterable = false): string[] {
     const attrs = ddb.table.AttributeDefinitions
       .map(def => def.AttributeName);
     const columns = Object.keys(ddbschema)
@@ -21,7 +22,7 @@ export class DictionaryService {
       .sort((a, b) => {
         return a.toLowerCase().localeCompare(b.toLowerCase());
       });
-    return attrs.concat(columns);
+    return onlyFilterable? columns: attrs.concat(columns);
   }
 
   /** Return the rows for a particular view */
@@ -38,8 +39,7 @@ export class DictionaryService {
     return this.columns(ddb, ddbschema)
       .filter(column => ddbview.visibility && ddbview.visibility[column])
       .reduce((acc, column) => {
-        // NOTE: as we separate the schemes from the schema, add in the column
-        acc.push({ column, ...ddbschema[column] });
+        acc.push({ ...ddbschema[column] });
         return acc;
       }, []);
   }

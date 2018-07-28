@@ -16,6 +16,7 @@ import { DDBViewsState } from './state/ddbviews';
 import { DDBViewsStateModel } from './state/ddbviews';
 import { EventEmitter } from '@angular/core';
 import { Filter } from './state/ddbfilters';
+import { FilterForm } from './components/view/filter';
 import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { LoadTable } from './state/ddb';
@@ -32,6 +33,7 @@ import { Select } from '@ngxs/store';
 import { ShowPagePrefs } from '../../state/window';
 import { Store } from '@ngxs/store';
 import { Subscription } from 'rxjs/Subscription';
+import { UpdateFilter } from './state/ddbfilters';
 import { UpdateSchema } from './state/ddbschemas';
 import { UpdateVisibility } from './state/ddbviews';
 import { View } from './state/ddbviews';
@@ -58,6 +60,7 @@ import { switchMap } from 'rxjs/operators';
 @AutoUnsubscribe()
 export class DDBCtrlComponent extends LifecycleComponent {
 
+  @Input() filterForm = { } as FilterForm;
   @Input() viewAndSchemaForm = { } as ViewAndSchemaForm;
 
   @Output() openView = new EventEmitter<any>();
@@ -109,6 +112,20 @@ export class DDBCtrlComponent extends LifecycleComponent {
   }    
 
   // bind OnChange handlers
+
+  @OnChange('filterForm') saveFilter(): void {
+    if (this.filterForm && this.filterForm.submitted) {
+      // TODO: why do we need this in Electron? and only running live?
+      // at worst, running in NgZone should work -- but otherwise a DOM
+      // event is necessary to force change detection
+      nextTick(() => {
+        const tableName = this.filterForm.tableName;
+        const filter: Filter = { ...this.filterForm.filter };
+        this.store.dispatch(new UpdateFilter({ tableName, filter }));
+        this.store.dispatch(new ReloadTable());
+      });
+    }
+  }
 
   @OnChange('viewAndSchemaForm') saveViewAndSchema(): void {
     if (this.viewAndSchemaForm && this.viewAndSchemaForm.submitted) {

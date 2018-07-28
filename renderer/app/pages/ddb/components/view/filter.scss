@@ -1,0 +1,28 @@
+form {
+  display: grid;
+  grid-gap: 16px;
+  grid-template-columns: 1fr;
+
+  .filtered {
+    color: var(--accent-color);
+    padding-right: 16px;
+    visibility: visible;
+
+    &.un {
+      visibility: hidden;
+    }
+
+  }
+
+  mat-form-field {
+    width: 100%;
+  }
+
+  .okAndCancel {
+    display: grid;
+    grid-gap: 16px;
+    grid-template-columns: auto auto;
+    justify-content: right;
+  }
+
+}

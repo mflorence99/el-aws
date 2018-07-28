@@ -2,6 +2,7 @@ import * as DDB from 'aws-sdk/clients/dynamodb';
 
 import { DynamoDB } from 'aws-sdk';
 import { FeatureState } from '../state/feature';
+import { Filter } from '../state/ddbfilters';
 import { Injectable } from '@angular/core';
 import { Message } from '../../../state/status';
 import { Observable } from 'rxjs';
@@ -80,18 +81,34 @@ export class DDBService {
         acc.push(this.safeAttributeName(column));
         return acc;
       }, []).join(', ');
+    // snapshot the filter
+    const ddbfilter: Filter = this.store.selectSnapshot((state: FeatureState) => state.ddbfilters)[tableName] || {};
     // snapshot the schema
     const ddbschema: Schema = this.store.selectSnapshot((state: FeatureState) => state.ddbschemas)[tableName] || { };
     const attributeNames = Object.keys(ddbschema)
-      .filter(column => ddbview.visibility && ddbview.visibility[column])
+      .filter(column => {
+        return (ddbfilter[column] && ddbfilter[column].comparand) 
+            || (ddbview.visibility && ddbview.visibility[column]);
+      })
       .reduce((acc, column) => {
         acc[this.safeAttributeName(column)] = column;
         return acc;
       }, { });
+    const attributeValues = Object.keys(ddbfilter)
+      .filter(column => (ddbfilter[column] && ddbfilter[column].comparand))
+      .reduce((acc, column) => {
+        acc[this.safeAttributeValue(column)] = { 'S': ddbfilter[column].comparand };
+        return acc;
+      }, { });
+    const filterExpression = Object.keys(ddbfilter)
+      .filter(column => (ddbfilter[column] && ddbfilter[column].comparand))
+      .map(column => `contains(${this.safeAttributeName(column)}, ${this.safeAttributeValue(column)})`); 
     // use state to build scan parameters
     const params = {
       ExclusiveStartKey: lastEvaluatedKey,
       ExpressionAttributeNames: isObjectEmpty(attributeNames)? null : attributeNames,
+      ExpressionAttributeValues: isObjectEmpty(attributeValues)? null : attributeValues,
+      FilterExpression: (filterExpression.length === 0) ? null : filterExpression.join(' and '),
       Limit: config.ddb.maxRowsPerPage,
       ProjectionExpression: projectionExpression || null,
       Select: projectionExpression ? 'SPECIFIC_ATTRIBUTES' : 'ALL_ATTRIBUTES',
@@ -133,6 +150,10 @@ export class DDBService {
 
   private safeAttributeName(column: string): string {
     return `#${column.toUpperCase()}`;
+  }
+
+  private safeAttributeValue(column: string): string {
+    return `:val_${column.toLowerCase()}`;
   }
 
   private trace(op: string,

@@ -26,7 +26,7 @@ export interface Schema {
 }
 
 export interface Scheme {
-  column?: string;
+  column: string;
   showAs: 'currency' | 'date' | 'nowrap' | 'url' | null;
   tag: string;
   type: 'boolean' | 'number' | 'string' | any;
@@ -52,6 +52,7 @@ export type SchemeFormGroup = {
         .filter(column => !acc[column])
         .forEach(column => {
           const scheme: Scheme = {
+            column: column,
             showAs: null,
             tag: column,
             type: typeof row[column]

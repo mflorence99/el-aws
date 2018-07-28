@@ -4,6 +4,11 @@ import { StateContext } from '@ngxs/store';
 
 /** NOTE: actions must come first because of AST */
 
+export class InitFilter {
+  static readonly type = '[DDBFilters] init filter';
+  constructor(public readonly payload: { tableName: string }) { }
+}
+
 export class UpdateFilter {
   static readonly type = '[DDBFilters] update filter';
   constructor(public readonly payload: { tableName: string, filter: Filter }) { }
@@ -17,13 +22,28 @@ export interface Filter {
   [column: string]: FilterExpression;
 }
 
-// TODO: placeholder
-export type FilterExpression = any;
+export interface FilterExpression {
+  column: string;
+  comparand: string;
+}
+
+export type FilterExpressionFormGroup = {
+  [P in keyof FilterExpression]: any;
+};
 
 @State<DDBFiltersStateModel>({
   name: 'ddbfilters',
   defaults: { }
 }) export class DDBFiltersState {
+
+  @Action(InitFilter)
+  initFilter({ getState, patchState }: StateContext<DDBFiltersStateModel>,
+             { payload }: InitFilter) {
+    const { tableName } = payload;
+    const state = getState();
+    if (!state[tableName])
+      patchState({ [tableName]: { } });
+  }
 
   @Action(UpdateFilter)
   updateFilter({ patchState }: StateContext<DDBFiltersStateModel>,

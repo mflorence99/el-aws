@@ -26,6 +26,7 @@
 
 <elaws-ddb-ctrl
   (openView)="viewDrawer.open()"
+  [filterForm]="view.filter?.filterForm?.valueChanges | async"
   [viewAndSchemaForm]="view.schema?.viewAndSchemaForm?.valueChanges | async"
   #ctrl>
 </elaws-ddb-ctrl> 
