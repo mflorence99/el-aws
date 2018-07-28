@@ -170,10 +170,10 @@ export interface S3StateModel {
         if (paths.length === 1)
           text = `${paths[0]} deleted`;
         else if (paths.length > 1) {
-          const others = pluralize(paths.length, {
+          const others = pluralize(paths.length - 1, {
             '=1': 'one other', 'other': '# others'
           });
-          text = `${paths[0]} and ${others} selected`;
+          text = `${paths[0]} and ${others} deleted`;
         }
         dispatch(new Message({ text }));
         dispatch(new Progress({ state: 'completed' }));

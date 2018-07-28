@@ -143,10 +143,10 @@ export interface DDBSelectionStateModel {
     if (rows.length === 1)
       text = `Row ${rows[0] + index + 1} selected`;
     else if (rows.length > 1) {
-      const others = pluralize(rows.length, {
+      const others = pluralize(rows.length - 1, {
         '=1': 'one other', 'other': '# others'
       });
-      text = `Rows ${rows[0] + index + 1} and ${others} selected`;
+      text = `Row ${rows[0] + index + 1} and ${others} selected`;
     }
     dispatch(new Message({ text }));
   }
