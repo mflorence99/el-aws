@@ -13,54 +13,137 @@
     All filters are AND'ed together.
   </div>
 
-  <ng-container
+  <div
+    class="columns"
     formGroupName="filter">
 
     <ng-container
       *ngFor="let column of columns">
 
       <ng-container
-        [formGroupName]="column">
+        [formGroupName]="column"
+        [ngSwitch]="typeOf(column)">
+
+        <mat-form-field
+          *ngSwitchCase="'boolean'"
+           style="grid-column-start: span 2">
+          <fa-icon 
+            [icon]="['fas', 'filter']"
+            [ngClass]="{un: !comparand.value}"
+            class="filtered"
+            matPrefix>
+          </fa-icon>
+          <mat-select
+            [placeholder]="column"
+            #comparand
+            formControlName="comparand">
+
+            <mat-option 
+              value="">
+            </mat-option>
+
+            <mat-option 
+              value="true">
+              &#x2b24;&nbsp;TRUE
+            </mat-option>
+
+            <mat-option 
+              value="false">
+              &#x2b55;&nbsp;FALSE
+            </mat-option>
+
+          </mat-select>
+          <a
+            (click)="clearComparand(column)"
+            mat-button
+            mat-icon-button
+            matSuffix>
+            <fa-icon 
+              [icon]="['fas', 'times']">
+            </fa-icon>
+          </a>
+        </mat-form-field>
 
         <ng-container
-          [ngSwitch]="ddbschema[column].type">
+          *ngSwitchCase="'number'">
 
-          <div
-            *ngSwitchCase="'string'">
-
-            <mat-form-field>
+          <mat-form-field>
+            <fa-icon 
+              [icon]="['fas', 'filter']"
+              [ngClass]="{un: !comparand.value}"
+              class="filtered"
+              matPrefix>
+            </fa-icon>
+            <input
+              #comparand
+              formControlName="comparand"
+              placeholder="Low {{ column }}"
+              matInput
+              pattern="[0-9]*"
+              type="text">
+            <a
+              (click)="clearComparand(column)"
+              mat-button
+              mat-icon-button
+              matSuffix>
               <fa-icon 
-                [icon]="['fas', 'filter']"
-                [ngClass]="{un: !comparand.value}"
-                class="filtered"
-                matPrefix>
+                [icon]="['fas', 'times']">
               </fa-icon>
-              <input
-                [placeholder]="column"
-                #comparand
-                formControlName="comparand"
-                matInput
-                type="text">
-              <a
-                (click)="clearComparand(column)"
-                mat-button
-                mat-icon-button
-                matSuffix>
-                <fa-icon 
-                  [icon]="['fas', 'times']">
-                </fa-icon>
-              </a>
-            </mat-form-field>
+            </a>
+          </mat-form-field>
 
-          </div>
+          <mat-form-field>
+            <input
+              [libRxfDisabled]="!comparand.value"
+              formControlName="comparand2"
+              placeholder="High"
+              matInput
+              pattern="[0-9]*"
+              type="text">
+            <a
+              (click)="clearComparand2(column)"
+              mat-button
+              mat-icon-button
+              matSuffix>
+              <fa-icon 
+                [icon]="['fas', 'times']">
+              </fa-icon>
+            </a>
+          </mat-form-field>
 
         </ng-container>
+
+        <mat-form-field
+          *ngSwitchCase="'string'"
+           style="grid-column-start: span 2">
+          <fa-icon 
+            [icon]="['fas', 'filter']"
+            [ngClass]="{un: !comparand.value}"
+            class="filtered"
+            matPrefix>
+          </fa-icon>
+          <input
+            [placeholder]="column"
+            #comparand
+            formControlName="comparand"
+            matInput
+            type="text">
+          <a
+            (click)="clearComparand(column)"
+            mat-button
+            mat-icon-button
+            matSuffix>
+            <fa-icon 
+              [icon]="['fas', 'times']">
+            </fa-icon>
+          </a>
+        </mat-form-field>
 
       </ng-container>
 
     </ng-container>
 
-  </ng-container>
+  </div>
 
   <div class="okAndCancel">
 
