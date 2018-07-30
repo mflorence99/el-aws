@@ -60,9 +60,10 @@ export class Config {
     headerSlantAngle: 30,
     headerSlantThreshold: 4,
     maxRetries: 10,
-    // TODO: temporary
-    maxRowsPerPage: 50,
+    maxRowsPerPage: 100,
     maxTables: 100,
+    scrollAnimDuration: 250,
+    scrollAnimSteps: 10,
     tableRefreshThrottle: 10
   };
 

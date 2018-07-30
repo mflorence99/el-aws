@@ -34,6 +34,30 @@
   </table>
 
   <div
+    (click)="scrollLeft()"
+    *ngIf="pane.isTablePopulated() && canScrollLeft()" 
+    class="left scroller">
+
+    <fa-icon
+      [icon]="['fas', 'chevron-circle-left']"
+      size="4x">
+    </fa-icon>
+
+  </div>
+
+  <div
+    (click)="scrollRight()"
+    *ngIf="pane.isTablePopulated() && canScrollRight()" 
+    class="right scroller">
+
+    <fa-icon
+      [icon]="['fas', 'chevron-circle-right']"
+      size="4x">
+    </fa-icon>
+
+  </div>
+
+  <div
     *ngIf="pane.isLoadingRows()"
     class="no-data">
 

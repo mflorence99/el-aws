@@ -5,6 +5,7 @@ import { Component } from '@angular/core';
 import { DDBSelectionStateModel } from '../state/ddbselection';
 import { DDBStateModel } from '../state/ddb';
 import { DictionaryService } from '../services/dictionary';
+import { ElementRef } from '@angular/core';
 import { EventEmitter } from '@angular/core';
 import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
@@ -21,6 +22,8 @@ import { View } from '../state/ddbviews';
 
 import { config } from '../../../config';
 import { debounce } from 'ellib';
+import { take } from 'rxjs/operators';
+import { timer } from 'rxjs';
 
 /**
  * DDB table component
@@ -52,10 +55,48 @@ export class TableComponent extends LifecycleComponent {
   /** ctor */
   constructor(private cdf: ChangeDetectorRef,
               private dictSvc: DictionaryService,
+              private element: ElementRef,
               public pane: PaneComponent, 
               private store: Store) {
     super();
     this.newStateImpl = debounce(this._newStateImpl, config.ddb.tableRefreshThrottle);
+  }
+
+  /** Can we scroll left? */
+  canScrollLeft(): boolean {
+    const el = this.element.nativeElement;
+    return (el.scrollWidth - el.scrollLeft) > el.clientWidth;
+  }
+
+  /** Can we scroll right? */
+  canScrollRight(): boolean {
+    const el = this.element.nativeElement;
+    return el.scrollLeft > el.clientLeft;
+  }
+
+  /** Scroll left */
+  scrollLeft(): void {
+    const el = this.element.nativeElement;
+    const cx = Math.min(el.clientWidth / 2, el.scrollWidth - el.clientWidth - el.scrollLeft);
+    timer(0, config.ddb.scrollAnimDuration / config.ddb.scrollAnimSteps)
+      .pipe(take(config.ddb.scrollAnimSteps))
+      .subscribe((ix: number) => {
+        el.scrollLeft += cx / config.ddb.scrollAnimSteps;
+        this.newTable.emit();
+      });
+  }
+
+  /** Scroll left */
+  scrollRight(): void {
+    const el = this.element.nativeElement;
+    const cx = Math.min(el.clientWidth / 2, el.scrollLeft);
+    timer(0, config.ddb.scrollAnimDuration / config.ddb.scrollAnimSteps)
+      .pipe(take(config.ddb.scrollAnimSteps))
+      .subscribe((ix: number) => {
+        el.scrollLeft -= cx / config.ddb.scrollAnimSteps;
+        this.newTable.emit();
+      });
+    this.newTable.emit();
   }
 
   // event handlers

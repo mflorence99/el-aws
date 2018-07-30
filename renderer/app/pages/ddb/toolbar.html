@@ -25,7 +25,7 @@
     matTooltip="Reload table"
     mat-icon-button>
     <fa-icon 
-      [icon]="['fas', 'fast-backward']"
+      [icon]="['fas', 'sync']"
       size="lg">
     </fa-icon>
   </button>
@@ -33,12 +33,8 @@
   <button 
     (click)="loadMoreRows()"
     *ngIf="(ddb$ | async)?.lastEvaluatedKey"
-    matTooltip="Show next set of rows"
-    mat-icon-button>
-    <fa-icon 
-      [icon]="['fas', 'step-forward']"
-      size="lg">
-    </fa-icon>
+    mat-button>
+    More...
   </button>
 
 </header>

@@ -22,7 +22,7 @@
 
       <ng-container
         [formGroupName]="column"
-        [ngSwitch]="typeOf(column)">
+        [ngSwitch]="ddbschema[column].type">
 
         <mat-form-field
           *ngSwitchCase="'boolean'"
@@ -37,21 +37,17 @@
             [placeholder]="column"
             #comparand
             formControlName="comparand">
-
             <mat-option 
               value="">
             </mat-option>
-
             <mat-option 
               value="true">
               &#x2b24;&nbsp;TRUE
             </mat-option>
-
             <mat-option 
               value="false">
               &#x2b55;&nbsp;FALSE
             </mat-option>
-
           </mat-select>
           <a
             (click)="clearComparand(column)"

@@ -71,12 +71,6 @@ export class ViewFilterComponent extends LifecycleComponent {
     this.drawerPanel.close();
   }
 
-  /** Synthesize a switchable type for the UI */
-  typeOf(column: string): string {
-    return this.ddbschema[column].showAs? 
-      this.ddbschema[column].showAs : this.ddbschema[column].type;
-  }
-
   // bind OnChange handlers
 
   @OnChange('ddb', 'ddbfilter', 'ddbschema') newState(): void {

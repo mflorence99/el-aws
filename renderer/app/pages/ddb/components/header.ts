@@ -113,10 +113,10 @@ export class HeaderComponent extends LifecycleComponent {
     this.drawHeaderImpl();
   }
 
-  private buildColumns(cells: HTMLElement[]): void {
+  private buildColumns(cells: Element[]): void {
     this.columns = [];
     this.cx = 0;
-    for (let ix = 0, x = 0; ix < cells.length; ix++) {
+    for (let ix = 0; ix < cells.length; ix++) {
       const rect = <DOMRect>cells[ix].getBoundingClientRect();
       // NOTE: the first column is just the row number and not part of the schema
       const sort = ((ix === 0) || (this.ddbview.sortColumn !== this.schemes[ix - 1].column))?
@@ -133,10 +133,8 @@ export class HeaderComponent extends LifecycleComponent {
           .toUpperCase()
           .split(/[^a-zA-Z0-9']+/)
           .concat(sort? [sort] : []), 
-        x: x 
+        x: rect.x 
       });
-      // assume all coumns are adjacent
-      x += rect.width;
       this.cx = Math.max(this.cx, rect.x + rect.width);
     }
   }
@@ -307,10 +305,10 @@ export class HeaderComponent extends LifecycleComponent {
 
   private drawHeaderImpl(force = true): void {
     if (this.ddb.rows && this._canvas && this.schemes && (this.schemes.length > 0)) {
-      const row = this.pane.element.nativeElement.querySelector('table tr');
+      const row = this.pane.element.nativeElement.querySelectorAll('table tr:first-child td');
       if (row) {
         if (force) {
-          const cells: HTMLElement[] = Array.from(row.querySelectorAll('td'));
+          const cells: Element[] = Array.from(row);
           this.buildColumns(cells);
           this.configureCanvas();
           this.defineColumnPaths();

@@ -27,15 +27,15 @@ export class DictionaryService {
 
   /** Return the rows for a particular view */
   rowsForView(rows: any[],
-    schemes: Scheme[],
-    ddbview: View): any[] {
+              schemes: Scheme[],
+              ddbview: View): any[] {
     return (ddbview.sortColumn && rows)? this.sort(rows, schemes, ddbview) : rows;
   }
 
   /** Return the schema for a particular view */
   schemaForView(ddb: DDBStateModel,
-    ddbschema: Schema,
-    ddbview: View): Scheme[] {
+                ddbschema: Schema,
+                ddbview: View): Scheme[] {
     return this.columns(ddb, ddbschema)
       .filter(column => ddbview.visibility && ddbview.visibility[column])
       .reduce((acc, column) => {
@@ -47,8 +47,8 @@ export class DictionaryService {
   // private methods
 
   private sort(rows: any[],
-    schemes: Scheme[],
-    ddbview: View): any[] {
+               schemes: Scheme[],
+               ddbview: View): any[] {
     const scheme = schemes.find(scheme => scheme.column === ddbview.sortColumn);
     const col = ddbview.sortColumn;
     const dir = ddbview.sortDir || 1;
