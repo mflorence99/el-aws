@@ -61,9 +61,20 @@ export class ViewFilterComponent extends LifecycleComponent {
     this.filterForm.patchValue({ filter: { [column]: { comparand: '' } } });
   }
 
+  /** Clear comparand */
+  clearComparand2(column: string): void {
+    this.filterForm.patchValue({ filter: { [column]: { comparand2: '' } } });
+  }
+
   /** Close drawer */
   close(): void {
     this.drawerPanel.close();
+  }
+
+  /** Synthesize a switchable type for the UI */
+  typeOf(column: string): string {
+    return this.ddbschema[column].showAs? 
+      this.ddbschema[column].showAs : this.ddbschema[column].type;
   }
 
   // bind OnChange handlers
@@ -84,7 +95,11 @@ export class ViewFilterComponent extends LifecycleComponent {
       filter: this.formBuilder.group(this.columns.reduce((acc, column) => {
         acc[column] = this.formBuilder.group({
           column: column,
-          comparand: nullSafe(this.ddbfilter[column], 'comparand')
+          comparand: nullSafe(this.ddbfilter[column], 'comparand'),
+          comparand2: { 
+            value: nullSafe(this.ddbfilter[column], 'comparand2'), 
+            disabled: !nullSafe(this.ddbfilter[column], 'comparand') 
+          }
         } as FilterExpressionFormGroup);
         return acc;
       }, { }))

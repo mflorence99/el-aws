@@ -25,6 +25,7 @@ export interface Filter {
 export interface FilterExpression {
   column: string;
   comparand: string;
+  comparand2: string;
 }
 
 export type FilterExpressionFormGroup = {
