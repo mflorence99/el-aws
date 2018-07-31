@@ -4,9 +4,7 @@
   overflow: auto;
 }
 
-main {
-  height: 100%;
-  position: relative;
+lib-scroll-container {
 
   .no-data {
     align-items: center;
@@ -26,27 +24,6 @@ main {
         margin-right: 8px;
       }
 
-    }
-
-  }
-
-  .scroller {
-    color: var(--mat-grey-600);
-    cursor: pointer;
-    opacity: 0.5;
-    position: fixed;
-    top: 50%;
-
-    &:hover {
-      opacity: 0.9;
-    }
-
-    &.left {
-      left: 16px;
-    }
-
-    &.right {
-      right: 16px;
     }
 
   }
