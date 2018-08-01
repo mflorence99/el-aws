@@ -49,6 +49,9 @@ export class TableComponent extends LifecycleComponent {
 
   schemes: Scheme[] = [];
 
+  trackCols: Function;
+  trackRows: Function;
+
   private newStateImpl: Function;
 
   /** ctor */
@@ -58,18 +61,8 @@ export class TableComponent extends LifecycleComponent {
               private store: Store) {
     super();
     this.newStateImpl = debounce(this._newStateImpl, config.ddb.tableRefreshThrottle);
-  }
-
-  /** TODO: temporary */
-  trackCols(index: number,
-            scheme: Scheme): string {
-    return scheme.column;
-  }
-
-  /** TODO: temporary */
-  trackRows(index: number,
-            row: any): any {
-    return row.id;
+    this.trackCols = this.trackColsImpl.bind(this);
+    this.trackRows = this.trackRowsImpl.bind(this);
   }
 
   // event handlers
@@ -117,6 +110,16 @@ export class TableComponent extends LifecycleComponent {
     this.ddb.rows = this.dictSvc.rowsForView(this.ddb.rows, this.schemes, this.ddbview);
     this.cdf.detectChanges();
     this.newTable.emit();
+  }
+
+  private trackColsImpl(index: number,
+                        scheme: Scheme): string {
+    return scheme.column;
+  }
+
+  private trackRowsImpl(index: number,
+                        row: any): any {
+    return this.dictSvc.makeRowID(this.ddb, row);
   }
 
 }

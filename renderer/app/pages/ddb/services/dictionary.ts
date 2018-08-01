@@ -1,3 +1,5 @@
+import * as DDB from 'aws-sdk/clients/dynamodb';
+
 import { DDBStateModel } from '../state/ddb';
 import { Injectable } from '@angular/core';
 import { Schema } from '../state/ddbschemas';
@@ -23,6 +25,14 @@ export class DictionaryService {
         return a.toLowerCase().localeCompare(b.toLowerCase());
       });
     return onlyFilterable? columns: attrs.concat(columns);
+  }
+
+  /** Make an unique row ID */
+  makeRowID(ddb: DDBStateModel,
+            row: any): string {
+    return ddb.table.KeySchema.reduce((acc, element: DDB.KeySchemaElement) => {
+      return `${acc}-${row[element.AttributeName]}`;
+    }, '');
   }
 
   /** Return the rows for a particular view */

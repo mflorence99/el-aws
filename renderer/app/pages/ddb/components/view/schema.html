@@ -34,7 +34,7 @@
     </div>
 
     <ng-container
-      *ngFor="let column of columns">
+      *ngFor="let column of columns; trackBy: trackColumns">
 
       <ng-container
         formGroupName="visibility">

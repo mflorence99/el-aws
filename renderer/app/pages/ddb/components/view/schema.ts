@@ -56,6 +56,8 @@ export class ViewSchemaComponent extends LifecycleComponent {
 
   columns: string[] = [];
 
+  trackColumns: Function;
+
   viewAndSchemaForm: FormGroup;
 
   private newStateImpl: Function;
@@ -67,6 +69,7 @@ export class ViewSchemaComponent extends LifecycleComponent {
               private formBuilder: FormBuilder) {
     super();
     this.newStateImpl = debounce(this._newStateImpl, config.ddb.schemaRefreshThrottle);
+    this.trackColumns = this.trackColumnsImpl.bind(this);
   }
 
   /** Close drawer */
@@ -118,6 +121,11 @@ export class ViewSchemaComponent extends LifecycleComponent {
       });
     // now we're ready to render form
     this.cdf.detectChanges();
+  }
+
+  private trackColumnsImpl(index: number,
+                           column: string): string {
+    return `${this.ddb.table.TableName}-${column}`;
   }
 
 }

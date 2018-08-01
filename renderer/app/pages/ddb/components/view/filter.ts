@@ -54,6 +54,8 @@ export class ViewFilterComponent extends LifecycleComponent {
 
   filterForm: FormGroup;
 
+  trackColumns: Function;
+
   private newStateImpl: Function;
 
   /** ctor */
@@ -63,6 +65,7 @@ export class ViewFilterComponent extends LifecycleComponent {
               private formBuilder: FormBuilder) {
     super();
     this.newStateImpl = debounce(this._newStateImpl, config.ddb.filterRefreshThrottle);
+    this.trackColumns = this.trackColumnsImpl.bind(this);
   }
 
   /** Clear comparand */
@@ -111,6 +114,11 @@ export class ViewFilterComponent extends LifecycleComponent {
     } as FilterFormGroup );
     // now we're ready to render form
     this.cdf.detectChanges();
+  }
+
+  private trackColumnsImpl(index: number,
+                           column: string): string {
+    return `${this.ddb.table.TableName}-${column}`;
   }
 
 }
