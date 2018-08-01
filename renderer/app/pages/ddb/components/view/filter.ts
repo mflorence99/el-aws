@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectorRef } from '@angular/core';
 import { Component } from '@angular/core';
 import { DDBStateModel } from '../../state/ddb';
 import { DictionaryService } from '../../services/dictionary';
@@ -12,6 +13,9 @@ import { LifecycleComponent } from 'ellib';
 import { OnChange } from 'ellib';
 import { Schema } from '../../state/ddbschemas';
 
+import { config } from '../../../../config';
+import { debounce } from 'ellib';
+import { inOutAnimation } from 'ellib';
 import { nullSafe } from 'ellib';
 
 /**
@@ -33,6 +37,7 @@ type FilterFormGroup = {
  */
 
 @Component({
+  animations: [inOutAnimation()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'elaws-view-filter',
   templateUrl: 'filter.html',
@@ -49,11 +54,15 @@ export class ViewFilterComponent extends LifecycleComponent {
 
   filterForm: FormGroup;
 
+  private newStateImpl: Function;
+
   /** ctor */
-  constructor(private dictSvc: DictionaryService,
+  constructor(private cdf: ChangeDetectorRef,
+              private dictSvc: DictionaryService,
               private drawerPanel: DrawerPanelComponent,
               private formBuilder: FormBuilder) {
     super();
+    this.newStateImpl = debounce(this._newStateImpl, config.ddb.filterRefreshThrottle);
   }
 
   /** Clear comparand */
@@ -74,13 +83,15 @@ export class ViewFilterComponent extends LifecycleComponent {
   // bind OnChange handlers
 
   @OnChange('ddb', 'ddbfilter', 'ddbschema') newState(): void {
+    // NOTE: inhibit form render until we're ready
+    this.columns = [];
     if (this.ddb && this.ddb.table && this.ddbfilter && this.ddbschema)
       this.newStateImpl();
   }
 
   // private methods
 
-  private newStateImpl(): void {
+  private _newStateImpl(): void {
     // all the columns
     this.columns = this.dictSvc.columns(this.ddb, this.ddbschema, true /* onlyFilterable */);
     // create view form controls
@@ -98,6 +109,8 @@ export class ViewFilterComponent extends LifecycleComponent {
         return acc;
       }, { }))
     } as FilterFormGroup );
+    // now we're ready to render form
+    this.cdf.detectChanges();
   }
 
 }

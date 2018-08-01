@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectorRef } from '@angular/core';
 import { Component } from '@angular/core';
 import { DDBStateModel } from '../../state/ddb';
 import { DictionaryService } from '../../services/dictionary';
@@ -14,6 +15,9 @@ import { Validators } from '@angular/forms';
 import { View } from '../../state/ddbviews';
 import { ViewVisibility } from '../../state/ddbviews';
 
+import { config } from '../../../../config';
+import { debounce } from 'ellib';
+import { inOutAnimation } from 'ellib';
 import { map } from 'rxjs/operators';
 
 /**
@@ -37,6 +41,7 @@ type ViewAndSchemaFormGroup = {
  */
 
 @Component({
+  animations: [inOutAnimation()],
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'elaws-view-schema',
   templateUrl: 'schema.html',
@@ -53,11 +58,15 @@ export class ViewSchemaComponent extends LifecycleComponent {
 
   viewAndSchemaForm: FormGroup;
 
+  private newStateImpl: Function;
+
   /** ctor */
-  constructor(private dictSvc: DictionaryService,
+  constructor(private cdf: ChangeDetectorRef,
+              private dictSvc: DictionaryService,
               private drawerPanel: DrawerPanelComponent,
               private formBuilder: FormBuilder) {
     super();
+    this.newStateImpl = debounce(this._newStateImpl, config.ddb.schemaRefreshThrottle);
   }
 
   /** Close drawer */
@@ -68,13 +77,15 @@ export class ViewSchemaComponent extends LifecycleComponent {
   // bind OnChange handlers
 
   @OnChange('ddb', 'ddbschema', 'ddbView') newState(): void {
+    // NOTE: inhibit form render until we're ready
+    this.columns = [];
     if (this.ddb && this.ddb.table && this.ddbschema && this.ddbview) 
       this.newStateImpl();
   }
 
   // private methods
 
-  private newStateImpl(): void {
+  private _newStateImpl(): void {
     // all the columns
     this.columns = this.dictSvc.columns(this.ddb, this.ddbschema);
     // create view form controls
@@ -105,6 +116,8 @@ export class ViewSchemaComponent extends LifecycleComponent {
       ).subscribe(atLeastOne => {
         this.viewAndSchemaForm.get('atLeastOne').setValue(atLeastOne);
       });
+    // now we're ready to render form
+    this.cdf.detectChanges();
   }
 
 }

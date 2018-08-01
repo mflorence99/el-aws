@@ -103,7 +103,6 @@ export class TableComponent extends LifecycleComponent {
   private _newStateImpl(): void {
     this.schemes = this.dictSvc.schemaForView(this.ddb, this.ddbschema, this.ddbview);
     this.ddb.rows = this.dictSvc.rowsForView(this.ddb.rows, this.schemes, this.ddbview);
-    // TODO: we need this to draw the scrollers initially -- why??
     this.cdf.detectChanges();
     this.newTable.emit();
   }

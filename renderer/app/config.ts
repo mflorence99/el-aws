@@ -53,6 +53,7 @@ export class Config {
   // DynamoDB config
 
   ddb = {
+    filterRefreshThrottle: 100,
     headerLineHeight: 12,
     headerPadding: 6,
     headerRedrawThrottle: 10,
@@ -62,6 +63,7 @@ export class Config {
     maxRetries: 10,
     maxRowsPerPage: 100,
     maxTables: 100,
+    schemaRefreshThrottle: 100,
     scrollAnimDuration: 250,
     scrollAnimSteps: 10,
     tableRefreshThrottle: 10
