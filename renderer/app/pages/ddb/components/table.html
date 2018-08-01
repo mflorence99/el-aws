@@ -7,7 +7,7 @@
     <tr
       (click)="onSelect($event, ix)"
       [ngClass]="{selected: ddbselection.rows.includes(ix)}"
-      *ngFor="let row of ddb.rows; let ix = index">
+      *ngFor="let row of ddb.rows; let ix = index; trackBy: trackRows">
 
       <td
         [ngClass]="{gridlines: prefs.showGridLines}"
@@ -20,7 +20,7 @@
                     hover: hoverColumn === scheme.column,
                     selected: (scheme.column === ddbselection.column)
                            || (scheme.column === ddbview.sortColumn)}"
-        *ngFor="let scheme of schemes">
+        *ngFor="let scheme of schemes; trackBy: trackCols">
 
         <elaws-cell
           [prefs]="prefs"

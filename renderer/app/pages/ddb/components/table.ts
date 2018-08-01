@@ -60,6 +60,18 @@ export class TableComponent extends LifecycleComponent {
     this.newStateImpl = debounce(this._newStateImpl, config.ddb.tableRefreshThrottle);
   }
 
+  /** TODO: temporary */
+  trackCols(index: number,
+            scheme: Scheme): string {
+    return scheme.column;
+  }
+
+  /** TODO: temporary */
+  trackRows(index: number,
+            row: any): any {
+    return row.id;
+  }
+
   // event handlers
 
   onColumnHover(column: string) {
@@ -93,7 +105,7 @@ export class TableComponent extends LifecycleComponent {
 
   // bind OnChange handlers
 
-  @OnChange('ddb', 'ddbschema', 'ddbview') newState(): void {
+  @OnChange('ddb', 'ddbschema', 'ddbview') newState(_ddb, _ddbschema, _ddbview): void {
     if (this.ddb && this.ddb.table && this.ddbschema && this.ddbview)
       this.newStateImpl();
   }

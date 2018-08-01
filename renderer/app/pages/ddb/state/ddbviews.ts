@@ -27,11 +27,6 @@ export class UpdateVisibility {
   constructor(public readonly payload: { tableName: string, visibility: ViewVisibility }) { }
 }
 
-export class UpdateWidths {
-  static readonly type = '[DDBViews] update widths';
-  constructor(public readonly payload: { tableName: string, widths: ViewWidths }) { }
-}
-
 export interface DDBViewsStateModel {
   [tableName: string]: View;
 }
@@ -41,15 +36,10 @@ export interface View {
   sortDir?: number;
   submitted?: boolean;
   visibility?: ViewVisibility;
-  widths?: ViewWidths;
 }
 
 export interface ViewVisibility {
   [column: string]: boolean;
-}
-
-export interface ViewWidths {
-  [column: string]: number;
 }
 
 @State<DDBViewsStateModel>({
@@ -67,8 +57,7 @@ export interface ViewWidths {
         visibility: Object.keys(schema).reduce((acc, column) => {
           acc[column] = true;
           return acc;
-        }, { }),
-        widths: { }
+        }, { })
       };
       patchState({ [tableName]: view });
     }
@@ -99,14 +88,6 @@ export interface ViewWidths {
     const updated = isObjectEqual(visibility, view.visibility) ?
       { ...view, visibility } : { ...view, visibility, widths: { } };
     patchState({ [tableName]: updated });
-  }
-
-  @Action(UpdateWidths)
-  updateWidths({ getState, patchState }: StateContext<DDBViewsStateModel>,
-               { payload }: UpdateWidths) {
-    const { tableName, widths } = payload;
-    const view = getState()[tableName];
-    patchState({ [tableName]: { ...view, widths } });
   }
 
 }
