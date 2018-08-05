@@ -13,6 +13,19 @@ import { UpdatePrefs } from '../../state/prefs';
 import { nextTick } from 'ellib';
 
 /**
+ * Model forms
+ */
+
+export type SetupFormGroup = {
+  [P in keyof PrefsStateModel]: any;
+};
+
+export interface SetupForm {
+  setup: SetupFormGroup;
+  submitted: boolean;
+}
+
+/**
  * Setup controller
  */
 
@@ -25,7 +38,7 @@ import { nextTick } from 'ellib';
 
 export class SetupCtrlComponent extends LifecycleComponent {
 
-  @Input() prefsForm = { } as PrefsStateModel;
+  @Input() setupForm = { } as SetupForm;
 
   @Select(PrefsState) prefs$: Observable<PrefsStateModel>;
 
@@ -36,13 +49,13 @@ export class SetupCtrlComponent extends LifecycleComponent {
 
   // bind OnChange handlers
 
-  @OnChange('prefsForm') savePrefs() {
-    if (this.prefsForm && this.prefsForm.submitted) {
+  @OnChange('setupForm') savePrefs() {
+    if (this.setupForm && this.setupForm.submitted) {
       // TODO: why do we need this in Electron? and only running live?
       // at worst, running in NgZone should work -- but otherwise a DOM
       // event is necessary to force change detection
       nextTick(() => {
-        this.store.dispatch(new UpdatePrefs(this.prefsForm));
+        this.store.dispatch(new UpdatePrefs(this.setupForm.setup));
       });
     }
   }

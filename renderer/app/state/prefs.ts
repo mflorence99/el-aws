@@ -17,25 +17,20 @@ export type SortOrder = 'alpha' | 'first' | 'last';
 export type TimeFmt = 'none' | 'shortTime' | 'mediumTime' | 'longTime' | 'fullTime';
 
 export interface PrefsStateModel {
-  configured?: boolean;
-  dateFormat?: DateFmt;
+  configured: boolean;
+  dateFormat: DateFmt;
   endpoints: {
     ddb: string;
     ec2: string;
     s3: string;
   };
-  numberFormat?: NumberFmt;
-  quantityFormat?: QuantityFmt;
+  numberFormat: NumberFmt;
+  quantityFormat: QuantityFmt;
   region: string;
-  showGridLines?: boolean;
-  sortDirectories?: SortOrder;
-  submitted?: boolean;
-  timeFormat?: TimeFmt;
+  showGridLines: boolean;
+  sortDirectories: SortOrder;
+  timeFormat: TimeFmt;
 }
-
-export type PrefsStateModelFormGroup = {
-  [P in keyof PrefsStateModel]: any;
-};
 
 @State<PrefsStateModel>({
   name: 'prefs',

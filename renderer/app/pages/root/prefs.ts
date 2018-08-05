@@ -6,8 +6,8 @@ import { FormGroup } from '@angular/forms';
 import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { OnChange } from 'ellib';
+import { PrefsFormGroup } from './ctrl';
 import { PrefsStateModel } from '../../state/prefs';
-import { PrefsStateModelFormGroup } from '../../state/prefs';
 import { Validators } from '@angular/forms';
 import { WindowStateModel } from '../../state/window';
 
@@ -40,19 +40,21 @@ export class PrefsComponent extends LifecycleComponent {
     super();
     // create prefs form controls
     this.prefsForm = this.formBuilder.group({
-      dateFormat: '',
-      endpoints: this.formBuilder.group({
-        ddb: ['', [Validators.pattern(config.urlValidationPattern)]],
-        ec2: ['', [Validators.pattern(config.urlValidationPattern)]],
-        s3: ['', [Validators.pattern(config.urlValidationPattern)]]
-      }),
-      numberFormat: '',
-      quantityFormat: '',
-      region: ['', Validators.required],
-      showGridLines: false,
-      sortDirectories: '',
-      timeFormat: ''
-    } as PrefsStateModelFormGroup);
+      prefs: this.formBuilder.group({
+        dateFormat: '',
+        endpoints: this.formBuilder.group({
+          ddb: ['', [Validators.pattern(config.urlValidationPattern)]],
+          ec2: ['', [Validators.pattern(config.urlValidationPattern)]],
+          s3: ['', [Validators.pattern(config.urlValidationPattern)]]
+        }),
+        numberFormat: '',
+        quantityFormat: '',
+        region: ['', Validators.required],
+        showGridLines: false,
+        sortDirectories: '',
+        timeFormat: ''
+      } as PrefsFormGroup)
+    });
   }
 
   /** Close drawer */
@@ -64,7 +66,7 @@ export class PrefsComponent extends LifecycleComponent {
 
   @OnChange('prefs') newState() {
     if (this.prefs)
-      this.prefsForm.patchValue(this.prefs, { emitEvent: false });
+      this.prefsForm.patchValue({ prefs: this.prefs }, { emitEvent: false });
   }
 
 }

@@ -42,6 +42,19 @@ import { ofAction } from '@ngxs/store';
 import { take } from 'rxjs/operators';
 
 /**
+ * Model forms
+ */
+
+export type PrefsFormGroup = {
+  [P in keyof PrefsStateModel]: any;
+};
+
+export interface PrefsForm {
+  prefs: PrefsFormGroup;
+  submitted: boolean;
+}
+
+/**
  * Root controller
  */
 
@@ -55,7 +68,7 @@ import { take } from 'rxjs/operators';
 @AutoUnsubscribe()
 export class RootCtrlComponent extends LifecycleComponent {       
 
-  @Input() prefsForm = { } as PrefsStateModel;
+  @Input() prefsForm = { } as PrefsForm;
 
   @Select(PrefsState) prefs$: Observable<PrefsStateModel>;
   // TODO: should expose @ngxs/router-plugin
@@ -126,7 +139,7 @@ export class RootCtrlComponent extends LifecycleComponent {
       // at worst, running in NgZone should work -- but otherwise a DOM
       // event is necessary to force change detection
       nextTick(() => {
-        this.store.dispatch(new UpdatePrefs(this.prefsForm));
+        this.store.dispatch(new UpdatePrefs(this.prefsForm.prefs));
       });
     }
   }

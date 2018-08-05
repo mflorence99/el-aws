@@ -21,12 +21,13 @@
 </p>
 
 <form 
-  [formGroup]="prefsForm"
-  [libRxfSubmit]="prefsForm"
+  [formGroup]="setupForm"
+  [libRxfSubmit]="setupForm"
   novalidate>
 
   <div
-    class="group">
+    class="group"
+    formGroupName="setup">
 
     <ng-container
       formGroupName="endpoints">
@@ -64,7 +65,9 @@
 
   </div>
 
-  <div class="buttons">
+  <div 
+    class="buttons"
+    formGroupName="setup">
 
     <mat-checkbox
       formControlName="configured">
@@ -72,7 +75,7 @@
     </mat-checkbox>
 
     <button 
-      [disabled]="prefsForm.invalid"
+      [disabled]="setupForm.invalid"
       color="primary"
       mat-raised-button
       type="submit">
