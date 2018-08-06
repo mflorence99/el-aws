@@ -62,6 +62,16 @@ export interface CreateBucketForm {
   submitted: boolean;
 }
 
+export type ViewVisibilityFormGroup = {
+  [P in keyof ViewVisibility]: any;
+};
+
+export interface ViewForm {
+  atLeastOne: boolean;
+  visibility: ViewVisibilityFormGroup;
+  submitted: boolean;
+}
+
 /**
  * S3 controller
  */
@@ -80,7 +90,7 @@ export class S3CtrlComponent extends LifecycleComponent {
   @Input() bucketPropsForm = { } as BucketMetadata;
   @Input() createBucketForm = { } as CreateBucketForm;
   @Input() filePropsForm = { } as FileMetadata;
-  @Input() viewForm = { } as S3ViewStateModel;
+  @Input() viewForm = { } as ViewForm;
 
   @Output() loaded = new EventEmitter<boolean>();
   @Output() openView = new EventEmitter<any>();

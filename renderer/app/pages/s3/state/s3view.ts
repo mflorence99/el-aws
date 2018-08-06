@@ -59,19 +59,13 @@ export interface LRUCache {
 }
 
 export interface S3ViewStateModel {
-  atLeastOne?: boolean;
   lru?: LRUCache;
   paths?: string[];
   sortColumn?: string;
   sortDir?: number;
-  submitted?: boolean;
   visibility?: ViewVisibility;
   widths?: ViewWidths;
 }
-
-export type S3ViewStateModelFormGroup = {
-  [P in keyof S3ViewStateModel]: any;
-};
 
 export interface ViewVisibility {
   [column: string]: boolean;
