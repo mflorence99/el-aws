@@ -50,6 +50,19 @@ import { nextTick } from 'ellib';
 import { ofAction } from '@ngxs/store';
 
 /**
+ * Model forms
+ */
+
+export type CreateBucketFormGroup = {
+  [P in keyof CreateBucketRequest]: any;
+};
+
+export interface CreateBucketForm {
+  request: CreateBucketRequest;
+  submitted: boolean;
+}
+
+/**
  * S3 controller
  */
 
@@ -65,7 +78,7 @@ export class S3CtrlComponent extends LifecycleComponent {
 
   @Input() bucketFilterForm = { } as S3Filter;
   @Input() bucketPropsForm = { } as BucketMetadata;
-  @Input() createBucketForm = { } as CreateBucketRequest;
+  @Input() createBucketForm = { } as CreateBucketForm;
   @Input() filePropsForm = { } as FileMetadata;
   @Input() viewForm = { } as S3ViewStateModel;
 
@@ -134,7 +147,7 @@ export class S3CtrlComponent extends LifecycleComponent {
       // at worst, running in NgZone should work -- but otherwise a DOM
       // event is necessary to force change detection
       nextTick(() => {
-        this.store.dispatch(new CreateBucket({ request: this.createBucketForm }));
+        this.store.dispatch(new CreateBucket({ request: this.createBucketForm.request }));
       });
     }
   }

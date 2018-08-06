@@ -77,12 +77,7 @@ export interface CreateBucketRequest {
   ACL: S3.BucketCannedACL;
   Bucket: S3.BucketName;
   Region: S3.BucketLocationConstraint;
-  submitted?: boolean;
 }
-
-export type CreateBucketRequestFormGroup = {
-  [P in keyof CreateBucketRequest]: any;
-};
 
 export interface Descriptor {
   account: string;
