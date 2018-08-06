@@ -52,7 +52,7 @@ export class CreateBucketComponent implements OnInit {
 
   ngOnInit(): void {
     // set defaults
-    this.createForm.patchValue({ ACL: 'private', Region: this.prefs.region });
+    this.createForm.patchValue({ request: { ACL: 'private', Region: this.prefs.region } });
   }
 
 }

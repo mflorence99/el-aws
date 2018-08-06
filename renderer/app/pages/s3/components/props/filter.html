@@ -27,22 +27,27 @@
   *ngIf="filterForm"
   novalidate>
 
-  <input
-    formControlName="bucket"
-    type="hidden">
-            
-  <mat-form-field>
-    <input 
-      formControlName="match"
-      placeholder="Enter match glob eg: **/*.csv"
-      matInput
-      type="text">
-  </mat-form-field>
+  <ng-container
+    formGroupName="filter">
 
-  <elaws-select-period
-    formControlName="period"
-    placeholder="Select date range to show">
-  </elaws-select-period>
+    <input
+      formControlName="bucket"
+      type="hidden">
+              
+    <mat-form-field>
+      <input 
+        formControlName="match"
+        placeholder="Enter match glob eg: **/*.csv"
+        matInput
+        type="text">
+    </mat-form-field>
+
+    <elaws-select-period
+      formControlName="period"
+      placeholder="Select date range to show">
+    </elaws-select-period>
+
+  </ng-container>
 
   <div class="okAndCancel">
 

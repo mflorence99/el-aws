@@ -62,6 +62,15 @@ export interface CreateBucketForm {
   submitted: boolean;
 }
 
+export type BucketFilterFormGroup = {
+  [P in keyof S3Filter]: any;
+};
+
+export interface BucketFilterForm {
+  filter: S3Filter;
+  submitted: boolean;
+}
+
 export type ViewVisibilityFormGroup = {
   [P in keyof ViewVisibility]: any;
 };
@@ -86,7 +95,7 @@ export interface ViewForm {
 @AutoUnsubscribe()
 export class S3CtrlComponent extends LifecycleComponent {
 
-  @Input() bucketFilterForm = { } as S3Filter;
+  @Input() bucketFilterForm = { } as BucketFilterForm;
   @Input() bucketPropsForm = { } as BucketMetadata;
   @Input() createBucketForm = { } as CreateBucketForm;
   @Input() filePropsForm = { } as FileMetadata;
@@ -129,8 +138,8 @@ export class S3CtrlComponent extends LifecycleComponent {
       // at worst, running in NgZone should work -- but otherwise a DOM
       // event is necessary to force change detection
       nextTick(() => {
-        const bucket = this.bucketFilterForm.bucket;
-        this.store.dispatch(new SetFilter({ bucket, filter: this.bucketFilterForm }));
+        const bucket = this.bucketFilterForm.filter.bucket;
+        this.store.dispatch(new SetFilter({ bucket, filter: this.bucketFilterForm.filter }));
         // touch everything open with this path
         this.store.selectSnapshot(S3ViewState.getPaths)
           .filter(path => path.startsWith(bucket))

@@ -1,3 +1,4 @@
+import { BucketFilterFormGroup } from '../../ctrl';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { ChangeDetectorRef } from '@angular/core';
 import { Component } from '@angular/core';
@@ -9,7 +10,6 @@ import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { OnChange } from 'ellib';
 import { S3Filter } from '../../state/s3filter';
-import { S3FilterFormGroup } from '../../state/s3filter';
 import { S3FilterState } from '../../state/s3filter';
 import { S3FilterStateModel } from '../../state/s3filter';
 import { Validators } from '@angular/forms';
@@ -42,10 +42,12 @@ export class BucketFilterComponent extends LifecycleComponent {
     this.drawerPanel.opened.subscribe(context => {
       this.desc = <Descriptor>context;
       this.filterForm = this.formBuilder.group({
-        bucket: '',
-        match: '',
-        period: ['', Validators.required]
-      } as S3FilterFormGroup);
+        filter: this.formBuilder.group({
+          bucket: '',
+          match: '',
+          period: ['', Validators.required]
+        } as BucketFilterFormGroup)
+      });
       this.newState();
       this.cdf.detectChanges();
     });
@@ -65,7 +67,7 @@ export class BucketFilterComponent extends LifecycleComponent {
         this.filterForm.reset();
         if (!this.filter)
           this.filter = { bucket: this.desc.name, ...S3FilterState.filterDefaults() };
-        this.filterForm.patchValue(this.filter, { emitEvent: false });
+        this.filterForm.patchValue({ filter: this.filter }, { emitEvent: false });
       }
     }
   }
