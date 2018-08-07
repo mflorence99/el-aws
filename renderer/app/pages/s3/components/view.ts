@@ -43,7 +43,6 @@ export class ViewComponent extends LifecycleComponent {
     // create view form controls
     this.viewForm = this.formBuilder.group({
       atLeastOne: ['', Validators.required],
-      submitted: '',
       visibility: this.formBuilder.group(visibility)
     });
     // make sure at least one visibility

@@ -79,7 +79,6 @@ export class ViewSchemaComponent extends LifecycleComponent {
     // create view form controls
     this.viewAndSchemaForm = this.formBuilder.group({
       atLeastOne: [true, Validators.required],
-      submitted: false,
       tableName: this.ddb.table.TableName,
       schema: this.formBuilder.group(this.columns.reduce((acc, column) => {
         acc[column] = this.formBuilder.group({
