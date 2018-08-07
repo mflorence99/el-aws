@@ -286,7 +286,7 @@ export class S3Service {
         acc[key] = data[key].value || { };
         console.log(`%c${key} %c${JSON.stringify(acc[key])}`, 'color: black', 'color: grey');
         return acc;
-      }, { path } as BucketMetadata);
+      }, { } as BucketMetadata);
       console.groupEnd();
       cb(metadata);
     });
@@ -378,7 +378,7 @@ export class S3Service {
         acc[key] = data[key].value || { };
         console.log(`%c${key} %c${JSON.stringify(acc[key])}`, 'color: black', 'color: grey');
         return acc;
-      }, { path } as FileMetadata);
+      }, { } as FileMetadata);
       console.groupEnd();
       cb(metadata);
     });

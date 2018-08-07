@@ -71,6 +71,26 @@ export interface BucketFilterForm {
   submitted: boolean;
 }
 
+export type BucketPropsFormGroup = {
+  [P in keyof BucketMetadata]: any;
+};
+
+export interface BucketPropsForm {
+  metadata: BucketPropsFormGroup;
+  path: string;
+  submitted: boolean;
+}
+
+export type FilePropsFormGroup = {
+  [P in keyof FileMetadata]: any;
+};
+
+export interface FilePropsForm {
+  metadata: FilePropsFormGroup;
+  path: string;
+  submitted: boolean;
+}
+
 export type ViewVisibilityFormGroup = {
   [P in keyof ViewVisibility]: any;
 };
@@ -96,9 +116,9 @@ export interface ViewForm {
 export class S3CtrlComponent extends LifecycleComponent {
 
   @Input() bucketFilterForm = { } as BucketFilterForm;
-  @Input() bucketPropsForm = { } as BucketMetadata;
+  @Input() bucketPropsForm = { } as BucketPropsForm;
   @Input() createBucketForm = { } as CreateBucketForm;
-  @Input() filePropsForm = { } as FileMetadata;
+  @Input() filePropsForm = { } as FilePropsForm;
   @Input() viewForm = { } as ViewForm;
 
   @Output() loaded = new EventEmitter<boolean>();
@@ -155,7 +175,8 @@ export class S3CtrlComponent extends LifecycleComponent {
       // event is necessary to force change detection
       nextTick(() => {
         const path = this.bucketPropsForm.path;
-        this.store.dispatch(new UpdateBucketMetadata({ path, metadata: this.bucketPropsForm }));
+        const metadata = this.bucketPropsForm.metadata;
+        this.store.dispatch(new UpdateBucketMetadata({ path, metadata }));
       });
     }
   }
@@ -178,7 +199,8 @@ export class S3CtrlComponent extends LifecycleComponent {
       // event is necessary to force change detection
       nextTick(() => {
         const path = this.filePropsForm.path;
-        this.store.dispatch(new UpdateFileMetadata({ path, metadata: this.filePropsForm }));
+        const metadata = this.filePropsForm.metadata;
+        this.store.dispatch(new UpdateFileMetadata({ path, metadata}));
       });
     }
   }

@@ -1,5 +1,5 @@
 import { BucketMetadata } from '../../state/s3meta';
-import { BucketMetadataFormGroup } from '../../state/s3meta';
+import { BucketPropsFormGroup } from '../../ctrl';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { ChangeDetectorRef } from '@angular/core';
 import { Component } from '@angular/core';
@@ -53,42 +53,44 @@ export class BucketPropsComponent extends LifecycleComponent {
       this.desc = <Descriptor>context;
       this.store.dispatch(new LoadBucketMetadata({ path: this.desc.path }));
       this.propsForm = this.formBuilder.group({
-        acceleration: this.formBuilder.group({
-          Status: ''
-        }),
-        acl: this.formBuilder.group({
-          Grants: this.formBuilder.array([
-            // NOTE: exactly 3 times
-            this.formBuilder.group({ Grantee: '', ReadAcl: '', ReadObjects: '', WriteAcl: '', WriteObjects: '' }),
-            this.formBuilder.group({ Grantee: '', ReadAcl: '', ReadObjects: '', WriteAcl: '', WriteObjects: '' }),
-            this.formBuilder.group({ Grantee: '', ReadAcl: '', ReadObjects: '', WriteAcl: '', WriteObjects: '' })
-          ]),
-          Owner: ''
-        }),
-        encryption: this.formBuilder.group({
-          SSEAlgorithm: '',
-          KMSMasterKeyID: ''
-        }),
-        logging: this.formBuilder.group({
-          LoggingEnabled: '',
-          TargetBucket: '',
-          TargetPrefix: ''
-        }),
         path: '',
-        tagging: this.formBuilder.group({
-          TagSet: ''
-        }),
-        versioning: this.formBuilder.group({
-          Status: ''
-        }),
-        website: this.formBuilder.group({
-          ErrorDocument: '',
-          IndexDocument: '',
-          RedirectHostName: '',
-          RedirectProtocol: '',
-          WebsiteEnabled: ''
-        })
-      } as BucketMetadataFormGroup);
+        metadata: this.formBuilder.group({
+          acceleration: this.formBuilder.group({
+            Status: ''
+          }),
+          acl: this.formBuilder.group({
+            Grants: this.formBuilder.array([
+              // NOTE: exactly 3 times
+              this.formBuilder.group({ Grantee: '', ReadAcl: '', ReadObjects: '', WriteAcl: '', WriteObjects: '' }),
+              this.formBuilder.group({ Grantee: '', ReadAcl: '', ReadObjects: '', WriteAcl: '', WriteObjects: '' }),
+              this.formBuilder.group({ Grantee: '', ReadAcl: '', ReadObjects: '', WriteAcl: '', WriteObjects: '' })
+            ]),
+            Owner: ''
+          }),
+          encryption: this.formBuilder.group({
+            SSEAlgorithm: '',
+            KMSMasterKeyID: ''
+          }),
+          logging: this.formBuilder.group({
+            LoggingEnabled: '',
+            TargetBucket: '',
+            TargetPrefix: ''
+          }),
+          tagging: this.formBuilder.group({
+            TagSet: ''
+          }),
+          versioning: this.formBuilder.group({
+            Status: ''
+          }),
+          website: this.formBuilder.group({
+            ErrorDocument: '',
+            IndexDocument: '',
+            RedirectHostName: '',
+            RedirectProtocol: '',
+            WebsiteEnabled: ''
+          })
+        } as BucketPropsFormGroup)
+      });
       this.newState();
       this.cdf.detectChanges();
     });
@@ -107,7 +109,7 @@ export class BucketPropsComponent extends LifecycleComponent {
       if (this.propsForm) { 
         this.propsForm.reset();
         if (this.metadata) 
-          this.propsForm.patchValue(this.metadata, { emitEvent: false });
+          this.propsForm.patchValue({ metadata: this.metadata, path: this.desc.path }, { emitEvent: false });
       }
     }
   }

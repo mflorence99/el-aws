@@ -28,7 +28,8 @@
     formControlName="path"
     type="hidden">
 
-  <mat-accordion>
+  <mat-accordion
+    formGroupName="metadata">
 
     <ng-container 
       formGroupName="head">
@@ -42,7 +43,7 @@
           <mat-panel-title>
             Encryption
             <div 
-            [ngClass]="{invalid: !propsForm.get('head.encryption').valid}"
+            [ngClass]="{invalid: !propsForm.get('metadata.head.encryption').valid}"
             class="drawer-label">
               {{ metadata?.head?.encryption?.SSEAlgorithm || 'Default' }}
             </div>
@@ -121,7 +122,7 @@
           <mat-panel-title>
             Metadata
             <div 
-            [ngClass]="{invalid: !propsForm.get('head.metadata').valid}"
+            [ngClass]="{invalid: !propsForm.get('metadata.head.metadata').valid}"
             class="drawer-label">
             {{ metadataCount() | i18nPlural: metadataLabelMapping }}
             </div>
@@ -192,7 +193,7 @@
         <mat-panel-title>
           Permissions    
           <div 
-            [ngClass]="{invalid: !propsForm.get('acl').valid || (metadata?.acl?.Summary === 'Public')}"
+            [ngClass]="{invalid: !propsForm.get('metadata.acl').valid || (metadata?.acl?.Summary === 'Public')}"
             class="drawer-label">
             {{ metadata?.acl?.Summary || 'Private' }}
           </div>
@@ -267,7 +268,7 @@
           <mat-panel-title>
             Storage Class
             <div 
-            [ngClass]="{invalid: !propsForm.get('head.storage').valid}"
+            [ngClass]="{invalid: !propsForm.get('metadata.head.storage').valid}"
             class="drawer-label">
               {{ metadata?.head?.storage?.StorageClass || desc.storage }}
             </div>
@@ -325,6 +326,33 @@
 
     </ng-container>
 
+    <!-- "TOUCHED" FLAGS -->
+
+    <ng-container 
+      formGroupName="head">
+
+      <ng-container 
+        formGroupName="touched">
+
+        <input 
+          [ngModel]="propsForm.get('metadata.head.encryption').touched" 
+          formControlName="encryption"
+          type="hidden">
+
+        <input 
+          [ngModel]="propsForm.get('metadata.head.metadata').touched" 
+          formControlName="metadata"
+          type="hidden">
+
+        <input 
+          [ngModel]="propsForm.get('metadata.head.storage').touched" 
+          formControlName="storage"
+          type="hidden">
+
+      </ng-container>
+
+    </ng-container>
+
     <!-- TAGGING -->
 
     <mat-expansion-panel
@@ -334,7 +362,7 @@
         <mat-panel-title>
           Tags
           <div 
-            [ngClass]="{invalid: !propsForm.get('tagging').valid}"
+            [ngClass]="{invalid: !propsForm.get('metadata.tagging').valid}"
             class="drawer-label">
             {{ metadata?.tagging?.TagSet?.length? (metadata.tagging.TagSet.length | i18nPlural: tagLabelMapping) : 'None' }}
           </div>
@@ -379,31 +407,6 @@
     </mat-expansion-panel>
 
   </mat-accordion>
-
-  <ng-container 
-    formGroupName="head">
-
-    <ng-container 
-      formGroupName="touched">
-
-      <input 
-        [ngModel]="propsForm.get('head.encryption').touched" 
-        formControlName="encryption"
-        type="hidden">
-
-      <input 
-        [ngModel]="propsForm.get('head.metadata').touched" 
-        formControlName="metadata"
-        type="hidden">
-
-      <input 
-        [ngModel]="propsForm.get('head.storage').touched" 
-        formControlName="storage"
-        type="hidden">
-
-    </ng-container>
-
-  </ng-container>
 
   <div class="okAndCancel">
 

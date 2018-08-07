@@ -47,16 +47,10 @@ export interface BucketMetadata {
   encryption: BucketMetadataEncryption;
   loading?: boolean;
   logging: BucketMetadataLogging;
-  path: string;
-  submitted?: boolean;
   tagging: BucketMetadataTagging;
-  versioning?: BucketMetadataVersioning;
+  versioning: BucketMetadataVersioning;
   website: BucketMetadataWebsite;
 }
-
-export type BucketMetadataFormGroup = {
-  [P in keyof BucketMetadata]: any;
-};
 
 export interface BucketMetadataAcceleration {
   Status: S3.BucketAccelerateStatus;
@@ -107,14 +101,8 @@ export interface FileMetadata {
   acl: FileMetadataAcl;
   head: FileMetadataHead;
   loading?: boolean;
-  path: string;
-  submitted?: boolean;
   tagging: FileMetadataTagging;
 }
-
-export type FileMetadataFormGroup = {
-  [P in keyof FileMetadata]: any;
-};
 
 export interface FileMetadataAcl {
   Grants: FileMetadataAclGrant[];

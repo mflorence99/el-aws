@@ -31,7 +31,8 @@
     formControlName="path"
     type="hidden">
 
-  <mat-accordion>
+  <mat-accordion
+    formGroupName="metadata">
 
     <!-- ACCELERATE -->
 
@@ -42,7 +43,7 @@
         <mat-panel-title>
           Acceleration    
           <div 
-            [ngClass]="{invalid: !propsForm.get('acceleration').valid}"
+            [ngClass]="{invalid: !propsForm.get('metadata.acceleration').valid}"
             class="drawer-label">
             {{ metadata?.acceleration?.Status || 'Off' }}
           </div>
@@ -80,7 +81,7 @@
         <mat-panel-title>
           Encryption
           <div 
-            [ngClass]="{invalid: !propsForm.get('encryption').valid}"
+            [ngClass]="{invalid: !propsForm.get('metadata.encryption').valid}"
             class="drawer-label">
             {{ metadata?.encryption?.SSEAlgorithm || 'None' }}
           </div>
@@ -154,7 +155,7 @@
         <mat-panel-title>
           Logging
           <div 
-            [ngClass]="{invalid: !propsForm.get('logging').valid}"
+            [ngClass]="{invalid: !propsForm.get('metadata.logging').valid}"
             class="drawer-label">
             {{ metadata?.logging?.LoggingEnabled || 'Off' }}
           </div>
@@ -228,7 +229,7 @@
         <mat-panel-title>
           Permissions    
           <div 
-            [ngClass]="{invalid: !propsForm.get('acl').valid || (metadata?.acl?.Summary === 'Public')}"
+            [ngClass]="{invalid: !propsForm.get('metadata.acl').valid || (metadata?.acl?.Summary === 'Public')}"
             class="drawer-label">
             {{ metadata?.acl?.Summary || 'Private' }}
           </div>
@@ -306,7 +307,7 @@
         <mat-panel-title>
           Tags
           <div 
-            [ngClass]="{invalid: !propsForm.get('tagging').valid}"
+            [ngClass]="{invalid: !propsForm.get('metadata.tagging').valid}"
             class="drawer-label">
             {{ metadata?.tagging?.TagSet?.length? (metadata.tagging.TagSet.length | i18nPlural: tagLabelMapping) : 'None' }}
           </div>
@@ -359,7 +360,7 @@
         <mat-panel-title>
           Versioning
           <div 
-            [ngClass]="{invalid: !propsForm.get('versioning').valid}"
+            [ngClass]="{invalid: !propsForm.get('metadata.versioning').valid}"
             class="drawer-label">
             {{ metadata?.versioning?.Status || 'Off' }}
           </div>
@@ -404,7 +405,7 @@
         <mat-panel-title>
           Website Hosting
           <div 
-            [ngClass]="{invalid: !propsForm.get('website').valid}"
+            [ngClass]="{invalid: !propsForm.get('metadata.website').valid}"
             class="drawer-label">
             {{ metadata?.website?.WebsiteEnabled || 'Off' }}
           </div>
