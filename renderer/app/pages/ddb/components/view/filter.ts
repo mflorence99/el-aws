@@ -6,6 +6,7 @@ import { DictionaryService } from '../../services/dictionary';
 import { DrawerPanelComponent } from 'ellib';
 import { Filter } from '../../state/ddbfilters';
 import { FilterExpressionFormGroup } from '../../state/ddbfilters';
+import { FilterFormGroup } from '../../ctrl';
 import { FormBuilder } from '@angular/forms';
 import { FormGroup } from '@angular/forms';
 import { Input } from '@angular/core';
@@ -21,16 +22,6 @@ import { nullSafe } from 'ellib';
 /**
  * Model combined filter form
  */
-
-export interface FilterForm {
-  filter: Filter;
-  submitted: boolean;
-  tableName: string;
-}
-
-type FilterFormGroup = {
-  [P in keyof FilterForm]: any;
-};
 
 /**
  * Filter component
@@ -110,8 +101,8 @@ export class ViewFilterComponent extends LifecycleComponent {
           }
         } as FilterExpressionFormGroup);
         return acc;
-      }, { }))
-    } as FilterFormGroup );
+      }, { } as FilterFormGroup))
+    });
     // now we're ready to render form
     this.cdf.detectChanges();
   }

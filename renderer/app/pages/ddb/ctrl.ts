@@ -16,7 +16,6 @@ import { DDBViewsState } from './state/ddbviews';
 import { DDBViewsStateModel } from './state/ddbviews';
 import { EventEmitter } from '@angular/core';
 import { Filter } from './state/ddbfilters';
-import { FilterForm } from './components/view/filter';
 import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { LoadTable } from './state/ddb';
@@ -45,6 +44,20 @@ import { map } from 'rxjs/operators';
 import { nextTick } from 'ellib';
 import { ofAction } from '@ngxs/store';
 import { switchMap } from 'rxjs/operators';
+
+/**
+ * Model forms
+ */
+
+export type FilterFormGroup = {
+  [P in keyof Filter]: any;
+};
+
+export interface FilterForm {
+  filter: FilterFormGroup;
+  submitted: boolean;
+  tableName: string;
+}
 
 /**
  * DDB controller
