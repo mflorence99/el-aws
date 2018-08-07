@@ -32,10 +32,9 @@ export interface DDBViewsStateModel {
 }
 
 export interface View {
-  sortColumn?: string;
-  sortDir?: number;
-  submitted?: boolean;
-  visibility?: ViewVisibility;
+  sortColumn: string;
+  sortDir: number;
+  visibility: ViewVisibility;
 }
 
 export interface ViewVisibility {
@@ -54,6 +53,8 @@ export interface ViewVisibility {
     let view = getState()[tableName];
     if (!view) {
       view = {
+        sortColumn: null,
+        sortDir: 1,
         visibility: Object.keys(schema).reduce((acc, column) => {
           acc[column] = true;
           return acc;

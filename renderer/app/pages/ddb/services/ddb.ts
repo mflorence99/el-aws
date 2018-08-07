@@ -76,7 +76,7 @@ export class DDBService {
     // take a state snapshot
     const ddbfilter: Filter = this.store.selectSnapshot((state: FeatureState) => state.ddbfilters)[tableName] || {};
     const ddbschema: Schema = this.store.selectSnapshot((state: FeatureState) => state.ddbschemas)[tableName] || { };
-    const ddbview: View = this.store.selectSnapshot((state: FeatureState) => state.ddbviews)[tableName] || { visibility: { } };
+    const ddbview: View = this.store.selectSnapshot((state: FeatureState) => state.ddbviews)[tableName] || { sortColumn: null, sortDir: 1, visibility: { } };
     // use state to build scan parameters
     const params = {
       ExclusiveStartKey: lastEvaluatedKey,
