@@ -10,31 +10,16 @@ import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { OnChange } from 'ellib';
 import { Schema } from '../../state/ddbschemas';
-import { SchemeFormGroup } from '../../state/ddbschemas';
+import { SchemaFormGroup } from '../../ctrl';
+import { SchemeFormGroup } from '../../ctrl';
 import { Validators } from '@angular/forms';
 import { View } from '../../state/ddbviews';
-import { ViewVisibility } from '../../state/ddbviews';
+import { ViewVisibilityFormGroup } from '../../ctrl';
 
 import { config } from '../../../../config';
 import { debounce } from 'ellib';
 import { inOutAnimation } from 'ellib';
 import { map } from 'rxjs/operators';
-
-/**
- * Model combined view and schema form
- */
-
-export interface ViewAndSchemaForm {
-  atLeastOne: boolean;
-  submitted: boolean;
-  tableName: string;
-  schema: Schema;
-  visibility: ViewVisibility;
-}
-
-type ViewAndSchemaFormGroup = {
-  [P in keyof ViewAndSchemaForm]: any;
-};
 
 /**
  * Schema component
@@ -104,12 +89,12 @@ export class ViewSchemaComponent extends LifecycleComponent {
           type: this.ddbschema[column].type
         } as SchemeFormGroup);
         return acc;
-      }, { })),
+      }, { } as SchemaFormGroup)),
       visibility: this.formBuilder.group(this.columns.reduce((acc, column) => {
         acc[column] = this.ddbview.visibility[column];
         return acc;
-      }, { }))
-    } as ViewAndSchemaFormGroup);
+      }, { } as ViewVisibilityFormGroup))
+    });
     // make sure at least one visibility
     this.viewAndSchemaForm.get('visibility').valueChanges
       .pipe(

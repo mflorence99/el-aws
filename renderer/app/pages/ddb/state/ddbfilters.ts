@@ -28,10 +28,6 @@ export interface FilterExpression {
   comparand2: string;
 }
 
-export type FilterExpressionFormGroup = {
-  [P in keyof FilterExpression]: any;
-};
-
 @State<DDBFiltersStateModel>({
   name: 'ddbfilters',
   defaults: { }

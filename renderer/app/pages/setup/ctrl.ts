@@ -21,7 +21,7 @@ export type SetupFormGroup = {
 };
 
 export interface SetupForm {
-  setup: SetupFormGroup;
+  setup: PrefsStateModel;
   submitted: boolean;
 }
 

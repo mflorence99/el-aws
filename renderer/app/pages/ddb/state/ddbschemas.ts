@@ -32,10 +32,6 @@ export interface Scheme {
   type: 'boolean' | 'number' | 'string' | any;
 }
 
-export type SchemeFormGroup = {
-  [P in keyof Scheme]: any;
-};
-
 @State<DDBSchemasStateModel>({
   name: 'ddbschemas',
   defaults: { }

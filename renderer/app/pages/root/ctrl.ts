@@ -50,7 +50,7 @@ export type PrefsFormGroup = {
 };
 
 export interface PrefsForm {
-  prefs: PrefsFormGroup;
+  prefs: PrefsStateModel;
   submitted: boolean;
 }
 

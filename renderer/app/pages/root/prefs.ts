@@ -66,7 +66,7 @@ export class PrefsComponent extends LifecycleComponent {
 
   @OnChange('prefs') newState() {
     if (this.prefs)
-      this.prefsForm.patchValue({ prefs: this.prefs }, { emitEvent: false });
+      this.prefsForm.patchValue({ prefs: this.prefs });
   }
 
 }

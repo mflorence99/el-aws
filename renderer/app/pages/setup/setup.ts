@@ -49,7 +49,7 @@ export class SetupComponent extends LifecycleComponent {
 
   @OnChange('prefs') newState() {
     if (this.prefs)
-      this.setupForm.patchValue({ setup: this.prefs }, { emitEvent: false });
+      this.setupForm.patchValue({ setup: this.prefs });
   }
 
 }

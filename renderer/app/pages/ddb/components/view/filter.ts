@@ -5,7 +5,7 @@ import { DDBStateModel } from '../../state/ddb';
 import { DictionaryService } from '../../services/dictionary';
 import { DrawerPanelComponent } from 'ellib';
 import { Filter } from '../../state/ddbfilters';
-import { FilterExpressionFormGroup } from '../../state/ddbfilters';
+import { FilterExpressionFormGroup } from '../../ctrl';
 import { FilterFormGroup } from '../../ctrl';
 import { FormBuilder } from '@angular/forms';
 import { FormGroup } from '@angular/forms';
@@ -18,10 +18,6 @@ import { config } from '../../../../config';
 import { debounce } from 'ellib';
 import { inOutAnimation } from 'ellib';
 import { nullSafe } from 'ellib';
-
-/**
- * Model combined filter form
- */
 
 /**
  * Filter component

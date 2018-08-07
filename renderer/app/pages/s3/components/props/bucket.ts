@@ -109,7 +109,7 @@ export class BucketPropsComponent extends LifecycleComponent {
       if (this.propsForm) { 
         this.propsForm.reset();
         if (this.metadata) 
-          this.propsForm.patchValue({ metadata: this.metadata, path: this.desc.path }, { emitEvent: false });
+          this.propsForm.patchValue({ metadata: this.metadata, path: this.desc.path });
       }
     }
   }

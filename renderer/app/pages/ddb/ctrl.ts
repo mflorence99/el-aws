@@ -16,6 +16,7 @@ import { DDBViewsState } from './state/ddbviews';
 import { DDBViewsStateModel } from './state/ddbviews';
 import { EventEmitter } from '@angular/core';
 import { Filter } from './state/ddbfilters';
+import { FilterExpression } from './state/ddbfilters';
 import { Input } from '@angular/core';
 import { LifecycleComponent } from 'ellib';
 import { LoadTable } from './state/ddb';
@@ -28,6 +29,7 @@ import { PrefsState } from '../../state/prefs';
 import { PrefsStateModel } from '../../state/prefs';
 import { ReloadTable } from './state/ddb';
 import { Schema } from './state/ddbschemas';
+import { Scheme } from './state/ddbschemas';
 import { Select } from '@ngxs/store';
 import { ShowPagePrefs } from '../../state/window';
 import { Store } from '@ngxs/store';
@@ -36,7 +38,6 @@ import { UpdateFilter } from './state/ddbfilters';
 import { UpdateSchema } from './state/ddbschemas';
 import { UpdateVisibility } from './state/ddbviews';
 import { View } from './state/ddbviews';
-import { ViewAndSchemaForm } from './components/view/schema';
 import { ViewVisibility } from './state/ddbviews';
 
 import { filter } from 'rxjs/operators';
@@ -49,14 +50,38 @@ import { switchMap } from 'rxjs/operators';
  * Model forms
  */
 
+export type FilterExpressionFormGroup = {
+  [P in keyof FilterExpression]: any;
+};
+
 export type FilterFormGroup = {
   [P in keyof Filter]: any;
 };
 
 export interface FilterForm {
-  filter: FilterFormGroup;
+  filter: Filter;
   submitted: boolean;
   tableName: string;
+}
+
+export type SchemaFormGroup = {
+  [P in keyof Schema]: any;
+};
+
+export type SchemeFormGroup = {
+  [P in keyof Scheme]: any;
+};
+
+export type ViewVisibilityFormGroup = {
+  [P in keyof ViewVisibility]: any;
+};
+
+export interface ViewAndSchemaForm {
+  atLeastOne: boolean;
+  submitted: boolean;
+  tableName: string;
+  schema: Schema;
+  visibility: ViewVisibility;
 }
 
 /**

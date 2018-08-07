@@ -67,7 +67,7 @@ export class BucketFilterComponent extends LifecycleComponent {
         this.filterForm.reset();
         if (!this.filter)
           this.filter = { bucket: this.desc.name, ...S3FilterState.filterDefaults() };
-        this.filterForm.patchValue({ filter: this.filter }, { emitEvent: false });
+        this.filterForm.patchValue({ filter: this.filter });
       }
     }
   }

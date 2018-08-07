@@ -76,7 +76,7 @@ export type BucketPropsFormGroup = {
 };
 
 export interface BucketPropsForm {
-  metadata: BucketPropsFormGroup;
+  metadata: BucketMetadata;
   path: string;
   submitted: boolean;
 }
@@ -86,7 +86,7 @@ export type FilePropsFormGroup = {
 };
 
 export interface FilePropsForm {
-  metadata: FilePropsFormGroup;
+  metadata: FileMetadata;
   path: string;
   submitted: boolean;
 }
@@ -97,7 +97,7 @@ export type ViewVisibilityFormGroup = {
 
 export interface ViewForm {
   atLeastOne: boolean;
-  visibility: ViewVisibilityFormGroup;
+  visibility: ViewVisibility;
   submitted: boolean;
 }
 
