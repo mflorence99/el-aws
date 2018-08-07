@@ -1,4 +1,5 @@
-<header>
+<nav
+  *ngIf="(ddb$ | async) as ddb; else noData">
 
   <fa-icon 
     [icon]="['fas', 'th']"
@@ -21,7 +22,7 @@
 
   <button 
     (click)="reloadTable()"
-    *ngIf="(ddb$ | async)?.table"
+    *ngIf="ddb.table"
     matTooltip="Reload table"
     mat-icon-button>
     <fa-icon 
@@ -30,11 +31,23 @@
     </fa-icon>
   </button>
 
+  <div
+    *ngIf="ddb.rows">
+    Rows {{ ddb.index + 1 }}&mdash;{{ ddb.index + ddb.rows.length }}
+  </div>
+
   <button 
     (click)="loadMoreRows()"
-    *ngIf="(ddb$ | async)?.lastEvaluatedKey"
-    mat-button>
-    More...
+    *ngIf="ddb.lastEvaluatedKey"
+    matTooltip="Show more rows"
+    mat-icon-button>
+    <fa-icon 
+      [icon]="['fas', 'forward']"
+      size="lg">
+    </fa-icon>
   </button>
 
-</header>
+</nav>
+
+<ng-template #noData>
+</ng-template>
