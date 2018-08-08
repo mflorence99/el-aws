@@ -18,13 +18,14 @@ export class DictionaryService {
           ddbschema: Schema,
           onlyFilterable = false): string[] {
     const attrs = ddb.table.AttributeDefinitions
+      .filter(def => !onlyFilterable || !ddb.table.KeySchema[def.AttributeName] || (ddb.table.KeySchema[def.AttributeName].KeyType !== 'HASH'))
       .map(def => def.AttributeName);
     const columns = Object.keys(ddbschema)
       .filter(column => !attrs.includes(column))
       .sort((a, b) => {
         return a.toLowerCase().localeCompare(b.toLowerCase());
       });
-    return onlyFilterable? columns: attrs.concat(columns);
+    return attrs.concat(columns);
   }
 
   /** Make an unique row ID */
