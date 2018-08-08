@@ -23,6 +23,12 @@ export class PeriodResolverService {
     let from: moment.Moment, to: moment.Moment;
     switch (period) {
 
+      // @see https://github.com/moment/moment/issues/2407
+      case 'ANYTIME':
+        from = moment.utc(-8640000000000000);
+        to = moment.utc(8640000000000000);
+        break;
+
       case 'TODAY':
         from = moment().startOf('day');
         to = moment().add(1, 'year');
@@ -86,11 +92,6 @@ export class PeriodResolverService {
       case 'LAST_YEAR':
         from = moment().startOf('year').subtract(1, 'year');
         to = moment().startOf('year');
-        break;
-
-      case 'ANYTIME':
-        from = moment.unix(0);
-        to = moment().add(1, 'year');
         break;
 
     }

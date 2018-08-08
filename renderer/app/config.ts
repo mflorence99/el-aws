@@ -10,6 +10,7 @@ export class Config {
   numParallelOps = 16;
 
   periods = {
+    'ANYTIME': 'Anytime',
     'TODAY': 'Today',
     'YESTERDAY': 'Yesterday',
     'LAST_2_DAYS': 'Last 2 days',
@@ -22,8 +23,7 @@ export class Config {
     'THIS_QUARTER': 'This quarter',
     'LAST_QUARTER': 'Last quarter',
     'THIS_YEAR': 'This year',
-    'LAST_YEAR': 'Last year',
-    'ANYTIME': 'Anytime'
+    'LAST_YEAR': 'Last year'
   };
 
   regions = {
