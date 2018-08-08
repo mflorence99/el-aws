@@ -6,6 +6,7 @@ import { Filter } from '../state/ddbfilters';
 import { Injectable } from '@angular/core';
 import { Message } from '../../../state/status';
 import { Observable } from 'rxjs';
+import { PeriodResolverService } from '../../../services/period-resolver';
 import { PrefsState } from '../../../state/prefs';
 import { PrefsStateModel } from '../../../state/prefs';
 import { Schema } from '../state/ddbschemas';
@@ -31,7 +32,8 @@ export class DDBService {
   private ddb: DDB;
 
   /** ctor */
-  constructor(private store: Store) {
+  constructor(private periodResolver: PeriodResolverService,
+              private store: Store) {
     this.prefs$.subscribe((prefs: PrefsStateModel) => {
       this.ddb = new DynamoDB({
         endpoint: prefs.endpoints.ddb,
@@ -124,8 +126,13 @@ export class DDBService {
       })
       .reduce((acc, column) => {
         const av = this.safeAttributeValue(column);
-        const comparand = ddbfilter[column].comparand;
-        const comparand2 = ddbfilter[column].comparand2;
+        let comparand = ddbfilter[column].comparand;
+        let comparand2 = ddbfilter[column].comparand2;
+        if (ddbschema[column].showAs === 'date') {
+          const range = this.periodResolver.resolve(comparand);
+          comparand = String(range.from.valueOf());
+          comparand2 = String(range.to.valueOf());
+        }
         switch (ddbschema[column].type) {
           case 'boolean':
             acc[':boolean_true'] = { 'BOOL': true };
@@ -162,7 +169,7 @@ export class DDBService {
             const expr = `(${an} = :boolean_true or ${an} = :number_true or ${an} = :string_true)`;
             return (comparand === 'true')? expr : `not ${expr}`;
           case 'number':
-            if (comparand2)
+            if (comparand2 || (ddbschema[column].showAs === 'date'))
               return `${an} between ${av}_lo and ${av}_hi`;
             else return `${an} >= ${av}_lo`;
           case 'string':

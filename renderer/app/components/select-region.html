@@ -3,6 +3,10 @@
 
   <mat-form-field>
 
+    <ng-container matPrefix>
+      <ng-content select="[prefix]"></ng-content>
+    </ng-container>
+
     <mat-select
       [libRxfDisabled]="disabled"
       [libRxfRequired]="required"
@@ -20,6 +24,10 @@
       </ng-container>
 
     </mat-select>
+
+    <ng-container matSuffix>
+      <ng-content select="[suffix]"></ng-content>
+    </ng-container>
 
   </mat-form-field>
 

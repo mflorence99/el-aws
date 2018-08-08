@@ -19,8 +19,8 @@ export class PeriodResolverService {
   }
 
   /** Convert relative period into a [from, to) range */
-  resolve(period: string): moment.FromTo {
-    let from: moment.MomentInput, to: moment.MomentInput;
+  resolve(period: string): { from: moment.Moment, to: moment.Moment } {
+    let from: moment.Moment, to: moment.Moment;
     switch (period) {
 
       case 'TODAY':

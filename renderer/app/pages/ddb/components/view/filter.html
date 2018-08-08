@@ -25,6 +25,8 @@
         [formGroupName]="column"
         [ngSwitch]="ddbschema[column].type">
 
+        <!-- BOOLEAN FILTER -->
+
         <mat-form-field
           *ngSwitchCase="'boolean'"
           style="grid-column-start: span 2">
@@ -61,54 +63,96 @@
           </a>
         </mat-form-field>
 
+        <!-- NUMBER FILTER -->
+
         <ng-container
           *ngSwitchCase="'number'">
 
-          <mat-form-field>
-            <fa-icon 
-              [icon]="['fas', 'filter']"
-              [ngClass]="{un: !comparand.value}"
-              class="filtered"
-              matPrefix>
-            </fa-icon>
-            <input
+          <ng-container
+            *ngIf="ddbschema[column].showAs === 'date'; then dateFilter else loHiFilter">
+          </ng-container>
+
+          <!-- DATE FILTER -->
+
+          <ng-template #dateFilter>
+
+            <elaws-select-period
+              [placeholder]="column"
               #comparand
               formControlName="comparand"
-              placeholder="Low {{ column }}"
-              matInput
-              pattern="[0-9]*"
-              type="text">
-            <a
-              (click)="clearComparand(column)"
-              mat-button
-              mat-icon-button
-              matSuffix>
+              style="grid-column-start: span 2">
               <fa-icon 
-                [icon]="['fas', 'times']">
+                [icon]="['fas', 'filter']"
+                [ngClass]="{un: !comparand.value}"
+                class="filtered"
+                prefix>
               </fa-icon>
-            </a>
-          </mat-form-field>
+              <a
+                (click)="clearComparand(column)"
+                mat-button
+                mat-icon-button
+                suffix>
+                <fa-icon 
+                  [icon]="['fas', 'times']">
+                </fa-icon>
+              </a>
+            </elaws-select-period>
 
-          <mat-form-field>
-            <input
-              [libRxfDisabled]="!comparand.value"
-              formControlName="comparand2"
-              placeholder="High"
-              matInput
-              pattern="[0-9]*"
-              type="text">
-            <a
-              (click)="clearComparand2(column)"
-              mat-button
-              mat-icon-button
-              matSuffix>
+          </ng-template>
+
+          <!-- LO/HI FILTER -->
+
+          <ng-template #loHiFilter>
+
+            <mat-form-field>
               <fa-icon 
-                [icon]="['fas', 'times']">
+                [icon]="['fas', 'filter']"
+                [ngClass]="{un: !comparand.value}"
+                class="filtered"
+                matPrefix>
               </fa-icon>
-            </a>
-          </mat-form-field>
+              <input
+                #comparand
+                formControlName="comparand"
+                placeholder="Low {{ column }}"
+                matInput
+                pattern="[0-9]*"
+                type="text">
+              <a
+                (click)="clearComparand(column)"
+                mat-button
+                mat-icon-button
+                matSuffix>
+                <fa-icon 
+                  [icon]="['fas', 'times']">
+                </fa-icon>
+              </a>
+            </mat-form-field>
+
+            <mat-form-field>
+              <input
+                [libRxfDisabled]="!comparand.value"
+                formControlName="comparand2"
+                placeholder="High"
+                matInput
+                pattern="[0-9]*"
+                type="text">
+              <a
+                (click)="clearComparand2(column)"
+                mat-button
+                mat-icon-button
+                matSuffix>
+                <fa-icon 
+                  [icon]="['fas', 'times']">
+                </fa-icon>
+              </a>
+            </mat-form-field>
+
+          </ng-template>
 
         </ng-container>
+
+        <!-- STRING FILTER -->
 
         <mat-form-field
           *ngSwitchCase="'string'"
