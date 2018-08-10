@@ -47,6 +47,17 @@
     </fa-icon>
   </button>
 
+  <button 
+    (click)="populateTestTable()"
+    *ngIf="false"
+    matTooltip="Populate test table"
+    mat-icon-button>
+    <fa-icon 
+      [icon]="['fas', 'plus-square']"
+      size="lg">
+    </fa-icon>
+  </button>
+
 </nav>
 
 <ng-template #noData>

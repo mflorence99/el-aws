@@ -58,6 +58,11 @@
   </div>
 
   <div
+    *ngSwitchCase="'img'">
+    <img [src]="asSrc()">
+  </div>
+
+  <div
     *ngSwitchCase="'nowrap'"
     class="nowrap">
     {{ asString() }}

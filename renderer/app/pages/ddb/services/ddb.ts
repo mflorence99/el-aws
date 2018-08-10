@@ -1,6 +1,8 @@
 import * as DDB from 'aws-sdk/clients/dynamodb';
+import * as Faker from 'faker';
 
 import { DynamoDB } from 'aws-sdk';
+import { ElectronService } from 'ngx-electron';
 import { FeatureState } from '../state/feature';
 import { Filter } from '../state/ddbfilters';
 import { Injectable } from '@angular/core';
@@ -30,10 +32,13 @@ export class DDBService {
   @Select(PrefsState) prefs$: Observable<PrefsStateModel>;
 
   private ddb: DDB;
+  private faker: typeof Faker;
 
   /** ctor */
-  constructor(private periodResolver: PeriodResolverService,
+  constructor(private electron: ElectronService,
+              private periodResolver: PeriodResolverService,
               private store: Store) {
+    this.faker = this.electron.remote.require('faker');
     this.prefs$.subscribe((prefs: PrefsStateModel) => {
       this.ddb = new DynamoDB({
         endpoint: prefs.endpoints.ddb,
@@ -68,6 +73,51 @@ export class DDBService {
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
       else cb(data.TableNames);
     });
+  }
+
+  /** Populate test table */
+  async populate() {
+    for (let ix = 0; ix < 1000; ix++) {
+      const values: DDB.ExpressionAttributeValueMap = {
+        'account': { S: this.faker.finance.account() },
+        'age': { N: String(this.faker.random.number({ min: 21, max: 65 })) },
+        'avatar': { S: this.faker.internet.avatar() },
+        'balance': { N: this.faker.finance.amount() },
+        'city': { S: this.faker.address.city() },
+        'companyName': { S: this.faker.company.companyName() },
+        'dateOfHire': { N: String(this.faker.date.recent().getTime()) },
+        'email': { S: this.faker.internet.email() },
+        'firstName': { S: this.faker.name.firstName() },
+        'jobTitle': { S: this.faker.name.jobTitle() },
+        'lastName': { S: this.faker.name.lastName() },
+        'notes': { S: this.faker.lorem.sentence() },
+        'password': { S: this.faker.internet.password() },
+        'permanent': { BOOL: this.faker.random.boolean() },
+        'phoneNumber': { S: this.faker.phone.phoneNumber() },
+        'state': { S: this.faker.address.state() },
+        'url': { S: this.faker.internet.url() },
+        'userName': { S: this.faker.internet.userName() },
+        'zipCode': { S: this.faker.address.zipCode() }
+      };
+      const nms = Object.keys(values);
+      const params: DDB.UpdateItemInput = {
+        ExpressionAttributeNames: nms.reduce((acc, nm) => {
+          acc[`#${nm}`] = nm;
+          return acc;
+        }, { } as DDB.ExpressionAttributeNameMap),
+        ExpressionAttributeValues: nms.reduce((acc, nm) => {
+          acc[`:${nm}`] = values[nm];
+          return acc;
+        }, { } as DDB.ExpressionAttributeValueMap),
+        Key: { 'id': { N: String(ix + 1) } },
+        TableName: 'DDBTestTable',
+        UpdateExpression: 'SET ' + nms.reduce((acc, nm) => {
+          acc.push(`#${nm} = :${nm}`);
+          return acc;
+        }, []).join(', ')
+      };
+      await this.ddb.updateItem(params).promise();
+    }
   }
 
   /** Read data from a table */

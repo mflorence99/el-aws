@@ -27,7 +27,7 @@ export interface Schema {
 
 export interface Scheme {
   column: string;
-  showAs: 'currency' | 'date' | 'nowrap' | 'url' | null;
+  showAs: 'currency' | 'date' | 'img' | 'nowrap' | 'url' | null;
   tag: string;
   type: 'boolean' | 'number' | 'string' | any;
 }

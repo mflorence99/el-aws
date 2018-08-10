@@ -47,6 +47,11 @@ export class CellComponent {
     return this.row[this.scheme.column]? Number(this.row[this.scheme.column]) : 0;
   }
 
+  /** Coerce value to an img src */
+  asSrc(): string {
+    return this.row[this.scheme.column]? String(this.row[this.scheme.column]) : null;
+  }
+
   /** Coerce value to string */
   asString(): string {
     return this.row[this.scheme.column]? String(this.row[this.scheme.column]) : '\u2014';

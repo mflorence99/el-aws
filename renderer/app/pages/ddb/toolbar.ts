@@ -45,6 +45,10 @@ export class ToolbarComponent implements OnInit {
     this.store.dispatch(new Navigate(['/ddb', tableName]));
   }
 
+  populateTestTable(): void {
+    this.ddbSvc.populate();
+  }
+
   reloadTable(): void {
     this.store.dispatch([new ClearSelection(), new ReloadTable()]);
   }
