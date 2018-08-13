@@ -122,6 +122,7 @@ export class DDBService {
 
   /** Read data from a table */
   scan(tableName: string,
+       reservoir: any[],
        lastEvaluatedKey: DDB.Key,
        cb: (rows: any[],
             lastEvaluatedKey: DDB.Key) => void): void {
@@ -146,7 +147,7 @@ export class DDBService {
         this.store.dispatch(new Message({ level: 'error', text: err.toString() }));
       else {
         const rows = this.makeRowsFromItems(data.Items);
-        cb(rows, data.LastEvaluatedKey);
+        cb((reservoir || []).concat(rows), data.LastEvaluatedKey);
       }
     });
   }

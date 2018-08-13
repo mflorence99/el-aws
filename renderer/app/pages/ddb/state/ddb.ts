@@ -9,8 +9,16 @@ import { NgZone } from '@angular/core';
 import { Selector } from '@ngxs/store';
 import { State } from '@ngxs/store';
 import { StateContext } from '@ngxs/store';
+import { UUID } from 'angular2-uuid';
+
+import { config } from '../../../config';
 
 /** NOTE: actions must come first because of AST */
+
+export class ExtendRows {
+  static readonly type = '[DDB] extend rows';
+  constructor(public readonly payload: { extensionNum: number }) { }
+}
 
 export class LoadRows {
   static readonly type = '[DDB] load rows';
@@ -29,27 +37,36 @@ export class ReloadTable {
 
 export class RowsLoaded {
   static readonly type = '[DDB] rows loaded';
-  constructor(public readonly payload: { tableName: string, rows: any[], lastEvaluatedKey: DDB.Key }) { }
+  constructor(public readonly payload: { tableName: string, rows: any[], lastEvaluatedKey: DDB.Key, extensionNum?: number }) { }
 }
 
 export interface DDBStateModel {
   index: number;
   lastEvaluatedKey: DDB.Key;
   loading: boolean;
+  reservoir: any[];
   rows: any[];
+  sanityCheck: string;
   table: DDB.TableDescription;
 }
 
 @State<DDBStateModel>({
   name: 'ddb',
-  defaults: { 
-    index: 0,
-    lastEvaluatedKey: null,
-    loading: false,
-    rows: null,
-    table: null
-  }
+  defaults: DDBState.defaultState()
 }) export class DDBState {
+
+  /** Default state */
+  static defaultState(): DDBStateModel {
+    return {
+      index: 0,
+      lastEvaluatedKey: null,
+      loading: false,
+      reservoir: null,
+      rows: null,
+      sanityCheck: null,
+      table: null
+    };
+  }
 
   @Selector() static getIndex(state: DDBStateModel): number {
     return state.index;
@@ -63,19 +80,55 @@ export interface DDBStateModel {
   constructor(private ddbSvc: DDBService,
               private zone: NgZone) { }
 
+  @Action(ExtendRows)
+  extendRows({ dispatch, getState, patchState }: StateContext<DDBStateModel>,
+             { payload }: ExtendRows) {
+    const { extensionNum } = payload;
+    let state = getState();
+    const tableName = state.table.TableName;
+    const sanityCheck = UUID.UUID();
+    patchState({ sanityCheck });
+    this.ddbSvc.scan(tableName,
+                     state.reservoir,
+                     state.lastEvaluatedKey,
+                     (rows: any[],
+                      lastEvaluatedKey: DDB.Key) => {
+        // NOTE the sanity check -- we want to make sure than another pre-emptive
+        // LoadRows action hasn't reset our state -- if it has, we just
+        // ignore the results of this ExtendRows
+        state = getState();
+        if (sanityCheck === state.sanityCheck) {
+          this.zone.run(() => {
+            const needed = config.ddb.maxRowsPerPage - state.rows.length;
+            patchState({ reservoir: rows.slice(needed) });
+            rows = state.rows.concat(rows.slice(0, needed));
+            dispatch(new RowsLoaded({ tableName, rows, lastEvaluatedKey, extensionNum }));
+            if (lastEvaluatedKey && (rows.length < config.ddb.maxRowsPerPage))
+              dispatch(new ExtendRows({ extensionNum: extensionNum + 1 }));
+          });
+        }
+      });
+  }
+
   @Action(LoadRows)
   loadRows({ dispatch, getState, patchState }: StateContext<DDBStateModel>,
            { payload }: LoadRows) {
     const state = getState();
     const tableName = state.table.TableName;
     dispatch(new Message({ text: `Loading ${tableName} rows ...` }));
-    patchState({ loading: true });
+    patchState({ loading: true, sanityCheck: null });
     this.ddbSvc.scan(tableName,
+                     state.reservoir,
                      state.lastEvaluatedKey,
                      (rows: any[], 
                       lastEvaluatedKey: DDB.Key) => {
       this.zone.run(() => {
+        const needed = config.ddb.maxRowsPerPage;
+        patchState({ reservoir: rows.slice(needed) });
+        rows = rows.slice(0, needed);
         dispatch(new RowsLoaded({ tableName, rows, lastEvaluatedKey }));
+        if (lastEvaluatedKey && (rows.length < config.ddb.maxRowsPerPage))
+          dispatch(new ExtendRows({ extensionNum: 1 }));
       });
     });
   }
@@ -87,7 +140,7 @@ export interface DDBStateModel {
     if (tableName) {
       dispatch(new Message({ text: `Loading table ${tableName} ...` }));
       this.ddbSvc.describeTable(tableName, (table: DDB.TableDescription) => {
-        patchState({ index: 0, lastEvaluatedKey: null, rows: null, table });
+        patchState({ ...DDBState.defaultState(), table });
         this.zone.run(() => {
           dispatch(new LoadRows());
           // initialize the filter as we load new tables
@@ -95,7 +148,7 @@ export interface DDBStateModel {
         });
       });
     }
-    else patchState({ index: 0, lastEvaluatedKey: null, rows: null, table: null });
+    else patchState(DDBState.defaultState());
   }
 
   @Action(ReloadTable)
@@ -109,10 +162,16 @@ export interface DDBStateModel {
   @Action(RowsLoaded)
   rowsLoaded({ dispatch, getState, patchState }: StateContext<DDBStateModel>,
              { payload }: RowsLoaded) {
-    const { tableName, rows, lastEvaluatedKey } = payload;
+    const { tableName, rows, lastEvaluatedKey, extensionNum } = payload;
     const state = getState();
-    const index = state.lastEvaluatedKey? state.index + state.rows.length : 0;
-    patchState({ index, lastEvaluatedKey, loading: false, rows });
+    const index = (state.lastEvaluatedKey && !extensionNum)? 
+      state.index + state.rows.length : state.index;
+    // NOTE: it is possible that DDB tells us via lastEvaluatedKey that there
+    // are more rows but in fact there are not -- so we must take care
+    // not to zero out the rows we are currently showing
+    if ((rows.length === 0) && !lastEvaluatedKey && state.lastEvaluatedKey)
+      patchState({ lastEvaluatedKey: null, loading: false });
+    else patchState({ index, lastEvaluatedKey, loading: false, rows });
     this.zone.run(() => {
       dispatch(new Message({ text: `Loaded ${tableName} rows ${index + 1} through ${index + rows.length}` }));
       // build up the schema as we see new data

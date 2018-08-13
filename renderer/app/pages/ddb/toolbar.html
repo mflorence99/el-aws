@@ -37,8 +37,19 @@
   </div>
 
   <button 
+    *ngIf="ddb.lastEvaluatedKey && (ddb.rows.length < maxRowsPerPage)"
+    matTooltip="Loading more rows"
+    mat-icon-button>
+    <fa-icon 
+      [icon]="['fas', 'spinner']"
+      [pulse]="true"
+      size="lg">
+    </fa-icon>
+  </button>
+
+  <button 
     (click)="loadMoreRows()"
-    *ngIf="ddb.lastEvaluatedKey"
+    *ngIf="ddb.lastEvaluatedKey && (ddb.rows.length >= maxRowsPerPage)"
     matTooltip="Show more rows"
     mat-icon-button>
     <fa-icon 

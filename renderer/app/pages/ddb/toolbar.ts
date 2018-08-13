@@ -13,6 +13,7 @@ import { ReloadTable } from './state/ddb';
 import { Select } from '@ngxs/store';
 import { Store } from '@ngxs/store';
 
+import { config } from '../../config';
 /**
  * Toolbar component
  */
@@ -28,6 +29,7 @@ export class ToolbarComponent implements OnInit {
 
   @Select(DDBState) ddb$: Observable<DDBStateModel>;
 
+  maxRowsPerPage = config.ddb.maxRowsPerPage;
   tableNames: string[][] = [];
 
   /** ctor */
