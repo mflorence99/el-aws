@@ -84,7 +84,7 @@ export interface DDBStateModel {
   extendRows({ dispatch, getState, patchState }: StateContext<DDBStateModel>,
              { payload }: ExtendRows) {
     const { extensionNum } = payload;
-    let state = getState();
+    const state = getState();
     const tableName = state.table.TableName;
     const sanityCheck = UUID.UUID();
     patchState({ sanityCheck });
@@ -96,8 +96,7 @@ export interface DDBStateModel {
         // NOTE the sanity check -- we want to make sure than another pre-emptive
         // LoadRows action hasn't reset our state -- if it has, we just
         // ignore the results of this ExtendRows
-        state = getState();
-        if (sanityCheck === state.sanityCheck) {
+        if (sanityCheck === getState().sanityCheck) {
           this.zone.run(() => {
             const needed = config.ddb.maxRowsPerPage - state.rows.length;
             patchState({ reservoir: rows.slice(needed) });
