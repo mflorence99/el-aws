@@ -1,12 +1,52 @@
 <lib-drawer-container>
 
   <elaws-pane
+    (createItem)="createDrawer.open()"
+    (deleteItems)="deleteDrawer.open()"
+    (updateItems)="updateDrawer.open()"
     [ddb]="ctrl.ddb$ | async"
     [ddbschema]="ctrl.ddbschema$ | async"
     [ddbselection]="ctrl.ddbselection$ | async"
     [ddbview]="ctrl.ddbview$ | async"
     [prefs]="ctrl.prefs$ | async">
   </elaws-pane>  
+
+  <lib-drawer-panel
+    #createDrawer
+    position="left"> 
+
+    <elaws-create
+      [ddb]="ctrl.ddb$ | async"
+      [ddbschema]="ctrl.ddbschema$ | async"
+      #create>
+    </elaws-create>  
+
+  </lib-drawer-panel>
+
+  <lib-drawer-panel
+    #deleteDrawer
+    position="left"> 
+
+    <elaws-delete
+      [ddb]="ctrl.ddb$ | async"
+      [ddbselection]="ctrl.ddbselection$ | async"
+      #delete>
+    </elaws-delete>  
+
+  </lib-drawer-panel>
+
+  <lib-drawer-panel
+    #updateDrawer
+    position="left"> 
+
+    <elaws-update
+      [ddb]="ctrl.ddb$ | async"
+      [ddbschema]="ctrl.ddbschema$ | async"
+      [ddbselection]="ctrl.ddbselection$ | async"
+      #update>
+    </elaws-update>  
+
+  </lib-drawer-panel>
 
   <lib-drawer-panel
     #viewDrawer

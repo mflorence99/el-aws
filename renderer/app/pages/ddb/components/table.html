@@ -1,11 +1,16 @@
 <lib-scroll-container
-  (onScroll)="newTable.emit()">
+  (onScroll)="newTable.emit()"
+  [contextMenu]="contextMenu"
+  [contextMenuSubject]="null">
 
   <table
     *ngIf="pane.isTablePopulated()">
 
     <tr
       (click)="onSelect($event, ix)"
+      (contextmenu)="onContextMenu($event, ix)"
+      [contextMenu]="contextMenu"
+      [contextMenuSubject]="row"
       [ngClass]="{selected: ddbselection.rows.includes(ix)}"
       *ngFor="let row of ddb.rows; let ix = index; trackBy: trackRows">
 
@@ -85,3 +90,27 @@
   </div>
 
 </lib-scroll-container>
+
+<context-menu>
+
+  <ng-template
+    contextMenuItem
+    (execute)="onExecute($event, 'create')">
+    <div>Create new item...</div>
+  </ng-template>
+
+  <ng-template
+    contextMenuItem
+    (execute)="onExecute($event, 'delete')"
+    [enabled]="isRow.bind(this)">
+    <div>Delete item(s)...</div>
+  </ng-template>
+
+  <ng-template
+    contextMenuItem
+    (execute)="onExecute($event, 'update')"
+    [enabled]="isRow.bind(this)">
+    <div>Update item(s)...</div>
+  </ng-template>
+
+</context-menu>

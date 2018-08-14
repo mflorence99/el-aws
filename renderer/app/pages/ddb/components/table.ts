@@ -2,6 +2,7 @@ import { AddRowToSelection } from '../state/ddbselection';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { ChangeDetectorRef } from '@angular/core';
 import { Component } from '@angular/core';
+import { ContextMenuComponent } from 'ngx-contextmenu';
 import { DDBSelectionStateModel } from '../state/ddbselection';
 import { DDBStateModel } from '../state/ddb';
 import { DictionaryService } from '../services/dictionary';
@@ -18,6 +19,7 @@ import { Scheme } from '../state/ddbschemas';
 import { Store } from '@ngxs/store';
 import { ToggleRowInSelection } from '../state/ddbselection';
 import { View } from '../state/ddbviews';
+import { ViewChild } from '@angular/core';
 
 import { config } from '../../../config';
 import { debounce } from 'ellib';
@@ -40,8 +42,9 @@ export class TableComponent extends LifecycleComponent {
   @Input() ddbselection = { } as DDBSelectionStateModel;
   @Input() ddbview = { } as View;
   @Input() prefs = { } as PrefsStateModel;
-
   @Output() newTable = new EventEmitter<void>();
+
+  @ViewChild(ContextMenuComponent) contextMenu: ContextMenuComponent;
 
   hoverColumn: string;
   numScrollSteps = config.ddb.scrollAnimSteps;
@@ -65,11 +68,49 @@ export class TableComponent extends LifecycleComponent {
     this.trackRows = this.trackRowsImpl.bind(this);
   }
 
+  /** Is this a real row? */
+  isRow(row: any): boolean {
+    return !!row;
+  }
+
   // event handlers
 
   onColumnHover(column: string) {
     this.hoverColumn = column;
     this.cdf.detectChanges();
+  }
+
+  onContextMenu(event: MouseEvent,
+                row: number): void {
+    // if the context isn't part of the selection,
+    // then it becomes the selection
+    if (!this.ddbselection.rows.includes(row)) 
+      this.store.dispatch(new AddRowToSelection({ row }));
+  }
+
+  onExecute(event: {event?: MouseEvent,
+                    row: any},
+            command: string): void {
+    switch (command) {
+
+      // these commands are singular
+
+      case 'create':
+        this.pane.createItem.emit();
+        break;
+
+      // these commands apply to to entire selection
+
+      case 'delete':
+        this.pane.deleteItems.emit();
+        break;
+
+      case 'update':
+        this.pane.updateItems.emit();
+        break;
+
+    }
+
   }
 
   onSelect(event: MouseEvent,
