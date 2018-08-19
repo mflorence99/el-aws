@@ -83,7 +83,7 @@ export class ViewFilterComponent extends LifecycleComponent {
 
   private _newStateImpl(): void {
     // all the columns
-    this.columns = this.dictSvc.columns(this.ddb, this.ddbschema, true /* onlyFilterable */);
+    this.columns = this.dictSvc.columns(this.ddb, this.ddbschema);
     // create view form controls
     this.filterForm = this.formBuilder.group({
       tableName: this.ddb.table.TableName,

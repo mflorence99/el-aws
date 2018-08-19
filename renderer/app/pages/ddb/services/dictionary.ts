@@ -15,13 +15,8 @@ export class DictionaryService {
 
   /** Get the schema columns in alpha order, but those definewd in table first */
   columns(ddb: DDBStateModel,
-          ddbschema: Schema,
-          onlyFilterable = false): string[] {
-    const hashes = ddb.table.KeySchema
-      .filter(def => def.KeyType === 'HASH')
-      .map(def => def.AttributeName);
+          ddbschema: Schema): string[] {
     const attrs = ddb.table.AttributeDefinitions
-      .filter(def => !onlyFilterable || !hashes.includes(def.AttributeName))
       .map(def => def.AttributeName);
     const columns = Object.keys(ddbschema)
       .filter(column => !attrs.includes(column))
