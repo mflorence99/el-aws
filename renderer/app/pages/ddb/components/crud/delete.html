@@ -10,7 +10,43 @@
   </div>
 
   <div class="title">
-    Delete Items
+    Delete Selected Items
   </div>
 
 </h3>
+
+<form
+  (submit)="close()"
+  [formGroup]="deleteForm"
+  [libRxfSubmit]="deleteForm"
+  *ngIf="deleteForm"
+  novalidate>
+
+  <input
+    formControlName="tableName"
+    type="hidden">
+
+  <div class="drawer-label">
+    All selected items will be deleted.
+    This action cannot be undone.
+  </div>
+
+  <div class="okAndCancel">
+
+    <a
+      (click)="close()"
+      mat-button>
+      Cancel
+    </a>
+
+    <button
+      [disabled]="deleteForm.invalid"
+      color="primary"
+      mat-raised-button
+      type="submit">
+      OK
+    </button>
+
+  </div>
+
+</form>

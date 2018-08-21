@@ -6,6 +6,7 @@ import { InitFilter } from './ddbfilters';
 import { InitSchema } from './ddbschemas';
 import { Message } from '../../../state/status';
 import { NgZone } from '@angular/core';
+import { Progress } from '../../../state/status';
 import { Selector } from '@ngxs/store';
 import { State } from '@ngxs/store';
 import { StateContext } from '@ngxs/store';
@@ -14,6 +15,11 @@ import { UUID } from 'angular2-uuid';
 import { config } from '../../../config';
 
 /** NOTE: actions must come first because of AST */
+
+export class DeleteSelected {
+  static readonly type = '[DDB] delete selected';
+  constructor(public readonly payload?: any) { }
+}
 
 export class ExtendRows {
   static readonly type = '[DDB] extend rows';
@@ -79,6 +85,21 @@ export interface DDBStateModel {
   /** ctor */
   constructor(private ddbSvc: DDBService,
               private zone: NgZone) { }
+
+  @Action(DeleteSelected)
+  deleteSelected({ dispatch, getState }: StateContext<DDBStateModel>,
+                 { payload }: DeleteSelected) {
+    const state = getState();
+    const tableName = state.table.TableName;
+    dispatch(new Message({ text: `Deleting items ...` }));
+    dispatch(new Progress({ state: 'running' }));
+    this.ddbSvc.deleteSelected(tableName, () => {
+      this.zone.run(() => {
+        dispatch(new ReloadTable());
+        dispatch(new Progress({ state: 'completed' }));
+      });
+    });
+  }
 
   @Action(ExtendRows)
   extendRows({ dispatch, getState, patchState }: StateContext<DDBStateModel>,

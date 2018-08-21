@@ -103,14 +103,14 @@
     contextMenuItem
     (execute)="onExecute($event, 'delete')"
     [enabled]="isRow.bind(this)">
-    <div>Delete item(s)...</div>
+    <div>Delete selected item(s)...</div>
   </ng-template>
 
   <ng-template
     contextMenuItem
     (execute)="onExecute($event, 'update')"
     [enabled]="isRow.bind(this)">
-    <div>Update item(s)...</div>
+    <div>Update selected item(s)...</div>
   </ng-template>
 
 </context-menu>

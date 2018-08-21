@@ -14,6 +14,7 @@ import { DDBState } from './state/ddb';
 import { DDBStateModel } from './state/ddb';
 import { DDBViewsState } from './state/ddbviews';
 import { DDBViewsStateModel } from './state/ddbviews';
+import { DeleteSelected } from './state/ddb';
 import { EventEmitter } from '@angular/core';
 import { Filter } from './state/ddbfilters';
 import { FilterExpression } from './state/ddbfilters';
@@ -49,6 +50,11 @@ import { switchMap } from 'rxjs/operators';
 /**
  * Model forms
  */
+
+export interface DeleteForm {
+  submitted: boolean;
+  tableName: string;
+}
 
 export type FilterExpressionFormGroup = {
   [P in keyof FilterExpression]: any;
@@ -98,6 +104,7 @@ export interface ViewAndSchemaForm {
 @AutoUnsubscribe()
 export class DDBCtrlComponent extends LifecycleComponent {
 
+  @Input() deleteForm = { } as DeleteForm;
   @Input() filterForm = { } as FilterForm;
   @Input() viewAndSchemaForm = { } as ViewAndSchemaForm;
 
@@ -150,6 +157,17 @@ export class DDBCtrlComponent extends LifecycleComponent {
   }    
 
   // bind OnChange handlers
+
+  @OnChange('deleteForm') deleteItems(): void {
+    if (this.deleteForm && this.deleteForm.submitted) {
+      // TODO: why do we need this in Electron? and only running live?
+      // at worst, running in NgZone should work -- but otherwise a DOM
+      // event is necessary to force change detection
+      nextTick(() => {
+        this.store.dispatch(new DeleteSelected());
+      });
+    }
+  }
 
   @OnChange('filterForm') saveFilter(): void {
     if (this.filterForm && this.filterForm.submitted) {

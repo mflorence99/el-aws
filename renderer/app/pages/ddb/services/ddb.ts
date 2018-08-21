@@ -1,6 +1,8 @@
 import * as DDB from 'aws-sdk/clients/dynamodb';
 import * as Faker from 'faker';
 
+import { DDBSelectionStateModel } from '../state/ddbselection';
+import { DDBStateModel } from '../state/ddb';
 import { DynamoDB } from 'aws-sdk';
 import { ElectronService } from 'ngx-electron';
 import { FeatureState } from '../state/feature';
@@ -18,6 +20,8 @@ import { View } from '../state/ddbviews';
 
 import { config } from '../../../config';
 import { isObjectEmpty } from 'ellib';
+
+import async from 'async-es';
 
 /**
  * DynamoDB service
@@ -46,6 +50,25 @@ export class DDBService {
         region: prefs.region
       });
     });
+  }
+
+  /** Delete selected items */
+  deleteSelected(tableName: string,
+                 cb: Function): void {
+    // take a state snapshot
+    const ddb: DDBStateModel = this.store.selectSnapshot((state: FeatureState) => state.ddb);
+    const ddbschema: Schema = this.store.selectSnapshot((state: FeatureState) => state.ddbschemas)[tableName] || {};
+    const ddbselection: DDBSelectionStateModel = this.store.selectSnapshot((state: FeatureState) => state.ddbselection);
+    // build a list of delete functions
+    const funcs = async.reflectAll(ddbselection.rows.map(index => {
+      const params = {
+        Key: this.makeKey(ddb.rows[index], ddb.table.KeySchema, ddbschema),
+        TableName: tableName
+      };
+      return async.apply(this.deleteItem.bind(this), params);
+    }));
+    // now delete them, one at a time
+    async.series(funcs, (err, data) => cb());
   }
 
   /** Describe a table */
@@ -127,7 +150,7 @@ export class DDBService {
        cb: (rows: any[],
             lastEvaluatedKey: DDB.Key) => void): void {
     // take a state snapshot
-    const ddbfilter: Filter = this.store.selectSnapshot((state: FeatureState) => state.ddbfilters)[tableName] || {};
+    const ddbfilter: Filter = this.store.selectSnapshot((state: FeatureState) => state.ddbfilters)[tableName] || { };
     const ddbschema: Schema = this.store.selectSnapshot((state: FeatureState) => state.ddbschemas)[tableName] || { };
     const ddbview: View = this.store.selectSnapshot((state: FeatureState) => state.ddbviews)[tableName] || { sortColumn: null, sortDir: 1, visibility: { } };
     // use state to build scan parameters
@@ -153,6 +176,14 @@ export class DDBService {
   }
 
   // private methods
+
+  private deleteItem(params: any,
+                     cb: (err, data) => void): void {
+    this.ddb.deleteItem(params, (err, data) => {
+      this.trace('deleteItem', params, err, data);
+      cb(err, data);
+    });
+  }
 
   private makeExpressionAttributeNames(ddbfilter: Filter,
                                        ddbschema: Schema,
@@ -228,6 +259,26 @@ export class DDBService {
         }
       }); 
     return (filterExpression.length === 0) ? null : filterExpression.join(' and ');
+  }
+
+  private makeKey(row: any,
+                  keySchema: DDB.KeySchema,
+                  ddbschema: Schema): DDB.Key {
+    return keySchema.reduce((acc, element) => {
+      const column = element.AttributeName;
+      switch (ddbschema[column].type) {
+        case 'boolean':
+          acc[column] = { 'BOOL': Boolean(row[column]) };
+          break;
+        case 'number':
+          acc[column] = { 'N': String(row[column]) };
+          break;
+        case 'string':
+          acc[column] = { 'S': String(row[column]) };
+          break;
+      }
+      return acc;
+    }, { } as DDB.Key);
   }
 
   private makeProjectionExpression(ddbview: View): string {
