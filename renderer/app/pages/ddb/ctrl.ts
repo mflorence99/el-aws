@@ -53,7 +53,6 @@ import { switchMap } from 'rxjs/operators';
 
 export interface DeleteForm {
   submitted: boolean;
-  tableName: string;
 }
 
 export type FilterExpressionFormGroup = {

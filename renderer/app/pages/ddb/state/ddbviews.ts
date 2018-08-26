@@ -46,6 +46,11 @@ export interface ViewVisibility {
   defaults: { }
 }) export class DDBViewsState {
 
+  /** Default state */
+  static emptyView(): View {
+    return { sortColumn: null, sortDir: 1, visibility: { } };
+  }
+
   @Action(InitView)
   initView({ getState, patchState }: StateContext<DDBViewsStateModel>,
            { payload }: InitView) {

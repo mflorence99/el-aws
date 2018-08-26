@@ -1,16 +1,23 @@
 import * as DDB from 'aws-sdk/clients/dynamodb';
 
 import { Action } from '@ngxs/store';
+import { DDBSelectionStateModel } from '../state/ddbselection';
 import { DDBService } from '../services/ddb';
+import { DDBViewsState } from '../state/ddbviews';
+import { FeatureState } from '../state/feature';
+import { Filter } from '../state/ddbfilters';
 import { InitFilter } from './ddbfilters';
 import { InitSchema } from './ddbschemas';
 import { Message } from '../../../state/status';
 import { NgZone } from '@angular/core';
 import { Progress } from '../../../state/status';
+import { Schema } from '../state/ddbschemas';
 import { Selector } from '@ngxs/store';
 import { State } from '@ngxs/store';
 import { StateContext } from '@ngxs/store';
+import { Store } from '@ngxs/store';
 import { UUID } from 'angular2-uuid';
+import { View } from '../state/ddbviews';
 
 import { config } from '../../../config';
 
@@ -84,6 +91,7 @@ export interface DDBStateModel {
 
   /** ctor */
   constructor(private ddbSvc: DDBService,
+              private store: Store,
               private zone: NgZone) { }
 
   @Action(DeleteSelected)
@@ -91,9 +99,17 @@ export interface DDBStateModel {
                  { payload }: DeleteSelected) {
     const state = getState();
     const tableName = state.table.TableName;
+    // we need a state snapshot
+    const ddbschema: Schema = this.store.selectSnapshot((state: FeatureState) => state.ddbschemas)[tableName] || {};
+    const ddbselection: DDBSelectionStateModel = this.store.selectSnapshot((state: FeatureState) => state.ddbselection);
+    // what items to delete?
+    const keys = ddbselection.rows.map(index => {
+      return DDBService.makeKey(state.rows[index], state.table.KeySchema, ddbschema);
+    });
+    // now perform delete
     dispatch(new Message({ text: `Deleting items ...` }));
     dispatch(new Progress({ state: 'running' }));
-    this.ddbSvc.deleteSelected(tableName, () => {
+    this.ddbSvc.deleteItems(tableName, keys, () => {
       this.zone.run(() => {
         dispatch(new ReloadTable());
         dispatch(new Progress({ state: 'completed' }));
@@ -107,27 +123,36 @@ export interface DDBStateModel {
     const { extensionNum } = payload;
     const state = getState();
     const tableName = state.table.TableName;
+    // we need a state snapshot
+    const ddbfilter: Filter = this.store.selectSnapshot((state: FeatureState) => state.ddbfilters)[tableName] || {};
+    const ddbschema: Schema = this.store.selectSnapshot((state: FeatureState) => state.ddbschemas)[tableName] || {};
+    const ddbview: View = this.store.selectSnapshot((state: FeatureState) => state.ddbviews)[tableName] || DDBViewsState.emptyView();
+    // NOTE: see usage of sanity check below
     const sanityCheck = UUID.UUID();
     patchState({ sanityCheck });
+    // now perform scan
     this.ddbSvc.scan(tableName,
+                     ddbfilter,
+                     ddbschema,
+                     ddbview,
                      state.reservoir,
                      state.lastEvaluatedKey,
                      (rows: any[],
                       lastEvaluatedKey: DDB.Key) => {
-        // NOTE the sanity check -- we want to make sure than another pre-emptive
-        // LoadRows action hasn't reset our state -- if it has, we just
-        // ignore the results of this ExtendRows
-        if (sanityCheck === getState().sanityCheck) {
-          this.zone.run(() => {
-            const needed = config.ddb.maxRowsPerPage - state.rows.length;
-            patchState({ reservoir: rows.slice(needed) });
-            rows = state.rows.concat(rows.slice(0, needed));
-            dispatch(new RowsLoaded({ tableName, rows, lastEvaluatedKey, extensionNum }));
-            if (lastEvaluatedKey && (rows.length < config.ddb.maxRowsPerPage))
-              dispatch(new ExtendRows({ extensionNum: extensionNum + 1 }));
-          });
-        }
-      });
+      // NOTE the sanity check -- we want to make sure than another pre-emptive
+      // LoadRows action hasn't reset our state -- if it has, we just
+      // ignore the results of this ExtendRows
+      if (sanityCheck === getState().sanityCheck) {
+        this.zone.run(() => {
+          const needed = config.ddb.maxRowsPerPage - state.rows.length;
+          patchState({ reservoir: rows.slice(needed) });
+          rows = state.rows.concat(rows.slice(0, needed));
+          dispatch(new RowsLoaded({ tableName, rows, lastEvaluatedKey, extensionNum }));
+          if (lastEvaluatedKey && (rows.length < config.ddb.maxRowsPerPage))
+            dispatch(new ExtendRows({ extensionNum: extensionNum + 1 }));
+        });
+      }
+    });
   }
 
   @Action(LoadRows)
@@ -135,9 +160,17 @@ export interface DDBStateModel {
            { payload }: LoadRows) {
     const state = getState();
     const tableName = state.table.TableName;
+    // we need a state snapshot
+    const ddbfilter: Filter = this.store.selectSnapshot((state: FeatureState) => state.ddbfilters)[tableName] || {};
+    const ddbschema: Schema = this.store.selectSnapshot((state: FeatureState) => state.ddbschemas)[tableName] || {};
+    const ddbview: View = this.store.selectSnapshot((state: FeatureState) => state.ddbviews)[tableName] || DDBViewsState.emptyView();
+    // now perform scan
     dispatch(new Message({ text: `Loading ${tableName} rows ...` }));
     patchState({ loading: true, sanityCheck: null });
     this.ddbSvc.scan(tableName,
+                     ddbfilter,
+                     ddbschema,
+                     ddbview,
                      state.reservoir,
                      state.lastEvaluatedKey,
                      (rows: any[], 

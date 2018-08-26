@@ -1,6 +1,7 @@
 import * as S3 from 'aws-sdk/clients/s3';
 
 import { Action } from '@ngxs/store';
+import { FeatureState } from '../state/feature';
 import { Message } from '../../../state/status';
 import { NgxsOnInit } from '@ngxs/store';
 import { NgZone } from '@angular/core';
@@ -9,6 +10,7 @@ import { PathService } from '../services/path';
 import { Progress } from '../../../state/status';
 import { S3ColorState } from '../state/s3color';
 import { S3ColorStateModel } from '../state/s3color';
+import { S3FilterState } from '../state/s3filter';
 import { S3Service } from '../services/s3';
 import { Select } from '@ngxs/store';
 import { Selector } from '@ngxs/store';
@@ -187,7 +189,12 @@ export interface S3StateModel {
   extendDirectory({ dispatch, getState }: StateContext<S3StateModel>,
                   { payload }: ExtendDirectory) {
     const { path, token, versioning, extensionNum } = payload;
-    this.s3Svc.extendDirectory(path, token, versioning, extensionNum,
+    const { bucket } = this.path.analyze(path);
+    // we need to take a state snapshot
+    const model = this.store.selectSnapshot((state: FeatureState) => state.s3filter);
+    const s3filter = S3FilterState.filterDefaults(model[bucket]);
+    // now we can load directory contents
+    this.s3Svc.extendDirectory(path, token, versioning, extensionNum, s3filter,
                                 (bucket: S3.BucketName,
                                  prefixes: S3.CommonPrefixList,
                                  contents: S3.ObjectList,
@@ -264,8 +271,13 @@ export interface S3StateModel {
       if (!force && descs)
         dispatch(new DirectoryLoaded({ path, descs }));
       else {
+        const { bucket } = this.path.analyze(path);
+        // we need to take a state snapshot
+        const model = this.store.selectSnapshot((state: FeatureState) => state.s3filter);
+        const s3filter = S3FilterState.filterDefaults(model[bucket]);
+      // now we can load directory contents
         dispatch(new Message({ text: `Loading ${path} ...` }));
-        this.s3Svc.loadDirectory(path, 
+        this.s3Svc.loadDirectory(path, s3filter,
                                   (bucket: S3.BucketName,
                                    prefixes: S3.CommonPrefixList,
                                    contents: S3.ObjectList,

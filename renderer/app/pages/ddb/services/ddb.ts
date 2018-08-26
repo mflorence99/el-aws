@@ -1,11 +1,8 @@
 import * as DDB from 'aws-sdk/clients/dynamodb';
 import * as Faker from 'faker';
 
-import { DDBSelectionStateModel } from '../state/ddbselection';
-import { DDBStateModel } from '../state/ddb';
 import { DynamoDB } from 'aws-sdk';
 import { ElectronService } from 'ngx-electron';
-import { FeatureState } from '../state/feature';
 import { Filter } from '../state/ddbfilters';
 import { Injectable } from '@angular/core';
 import { Message } from '../../../state/status';
@@ -38,6 +35,126 @@ export class DDBService {
   private ddb: DDB;
   private faker: typeof Faker;
 
+  /** Expression helper */
+  static makeExpressionAttributeNames(ddbfilter: Filter,
+                                      ddbschema: Schema,
+                                      ddbview: View): DDB.ExpressionAttributeNameMap {
+    const attributeNames: DDB.ExpressionAttributeNameMap = Object.keys(ddbschema)
+      .filter(column => {
+        return (ddbfilter[column] && ddbfilter[column].comparand)
+          || (ddbview.visibility && ddbview.visibility[column]);
+      })
+      .reduce((acc, column) => {
+        acc[DDBService.safeAttributeName(column)] = column;
+        return acc;
+      }, {});
+    return isObjectEmpty(attributeNames) ? null : attributeNames;
+  }
+
+  /** Expression helper */
+  static makeExpressionAttributeValues(periodResolver: PeriodResolverService,
+                                       ddbfilter: Filter,
+                                       ddbschema: Schema): DDB.ExpressionAttributeValueMap {
+    const attributeValues = Object.keys(ddbfilter)
+      .filter(column => {
+        return (ddbfilter[column] && ddbfilter[column].comparand);
+      })
+      .reduce((acc, column) => {
+        const av = DDBService.safeAttributeValue(column);
+        let comparand = ddbfilter[column].comparand;
+        let comparand2 = ddbfilter[column].comparand2;
+        if (ddbschema[column].showAs === 'date') {
+          const range = periodResolver.resolve(comparand);
+          comparand = String(range.from.valueOf());
+          comparand2 = String(range.to.valueOf());
+        }
+        switch (ddbschema[column].type) {
+          case 'boolean':
+            acc[':boolean_true'] = { 'BOOL': true };
+            acc[':number_true'] = { 'N': '1' };
+            acc[':string_true'] = { 'S': 'true' };
+            break;
+          case 'number':
+            acc[`${av}_lo`] = { 'N': comparand };
+            if (comparand2)
+              acc[`${av}_hi`] = { 'N': comparand2 };
+            break;
+          case 'string':
+            acc[av] = { 'S': comparand };
+            break;
+        }
+        return acc;
+      }, {});
+    return isObjectEmpty(attributeValues) ? null : attributeValues;
+  }
+
+  /** Filter helper */
+  static makeFilterExpression(ddbfilter: Filter,
+                              ddbschema: Schema): string {
+    const filterExpression = Object.keys(ddbfilter)
+      .filter(column => {
+        return (ddbfilter[column] && ddbfilter[column].comparand);
+      })
+      .map(column => {
+        const an = DDBService.safeAttributeName(column);
+        const av = DDBService.safeAttributeValue(column);
+        const comparand = ddbfilter[column].comparand;
+        const comparand2 = ddbfilter[column].comparand2;
+        switch (ddbschema[column].type) {
+          case 'boolean':
+            const expr = `(${an} = :boolean_true or ${an} = :number_true or ${an} = :string_true)`;
+            return (comparand === 'true') ? expr : `not ${expr}`;
+          case 'number':
+            if (comparand2 || (ddbschema[column].showAs === 'date'))
+              return `${an} between ${av}_lo and ${av}_hi`;
+            else return `${an} >= ${av}_lo`;
+          case 'string':
+            return `contains(${an}, ${av})`;
+        }
+      });
+    return (filterExpression.length === 0) ? null : filterExpression.join(' and ');
+  }
+
+  /** Expression helper */
+  static makeProjectionExpression(ddbview: View): string {
+    const projectionExpression = Object.keys(ddbview.visibility)
+      .filter(column => ddbview.visibility && ddbview.visibility[column])
+      .reduce((acc, column) => {
+        acc.push(DDBService.safeAttributeName(column));
+        return acc;
+      }, []).join(', ');
+    return projectionExpression || null;
+  }
+
+  /** Develop a key to a given row */
+  static makeKey(row: any,
+                 keySchema: DDB.KeySchema,
+                 ddbschema: Schema): DDB.Key {
+    return keySchema.reduce((acc, element) => {
+      const column = element.AttributeName;
+      switch (ddbschema[column].type) {
+        case 'boolean':
+          acc[column] = { 'BOOL': Boolean(row[column]) };
+          break;
+        case 'number':
+          acc[column] = { 'N': String(row[column]) };
+          break;
+        case 'string':
+          acc[column] = { 'S': String(row[column]) };
+          break;
+      }
+      return acc;
+    }, {} as DDB.Key);
+  }
+
+  private static safeAttributeName(column: string): string {
+    return `#${column.toUpperCase()}`;
+  }
+
+  private static safeAttributeValue(column: string): string {
+    return `:val_${column.toLowerCase()}`;
+  }
+
   /** ctor */
   constructor(private electron: ElectronService,
               private periodResolver: PeriodResolverService,
@@ -53,16 +170,13 @@ export class DDBService {
   }
 
   /** Delete selected items */
-  deleteSelected(tableName: string,
-                 cb: Function): void {
-    // take a state snapshot
-    const ddb: DDBStateModel = this.store.selectSnapshot((state: FeatureState) => state.ddb);
-    const ddbschema: Schema = this.store.selectSnapshot((state: FeatureState) => state.ddbschemas)[tableName] || {};
-    const ddbselection: DDBSelectionStateModel = this.store.selectSnapshot((state: FeatureState) => state.ddbselection);
+  deleteItems(tableName: string,
+              keys: DDB.Key[],
+              cb: Function): void {
     // build a list of delete functions
-    const funcs = async.reflectAll(ddbselection.rows.map(index => {
+    const funcs = async.reflectAll(keys.map(key => {
       const params = {
-        Key: this.makeKey(ddb.rows[index], ddb.table.KeySchema, ddbschema),
+        Key: key,
         TableName: tableName
       };
       return async.apply(this.deleteItem.bind(this), params);
@@ -145,22 +259,21 @@ export class DDBService {
 
   /** Read data from a table */
   scan(tableName: string,
+       ddbfilter: Filter,
+       ddbschema: Schema,
+       ddbview: View,
        reservoir: any[],
        lastEvaluatedKey: DDB.Key,
        cb: (rows: any[],
             lastEvaluatedKey: DDB.Key) => void): void {
-    // take a state snapshot
-    const ddbfilter: Filter = this.store.selectSnapshot((state: FeatureState) => state.ddbfilters)[tableName] || { };
-    const ddbschema: Schema = this.store.selectSnapshot((state: FeatureState) => state.ddbschemas)[tableName] || { };
-    const ddbview: View = this.store.selectSnapshot((state: FeatureState) => state.ddbviews)[tableName] || { sortColumn: null, sortDir: 1, visibility: { } };
     // use state to build scan parameters
     const params = {
       ExclusiveStartKey: lastEvaluatedKey,
-      ExpressionAttributeNames: this.makeExpressionAttributeNames(ddbfilter, ddbschema, ddbview),
-      ExpressionAttributeValues: this.makeExpressionAttributeValues(ddbfilter, ddbschema),
-      FilterExpression: this.makeFilterExpression(ddbfilter, ddbschema),
+      ExpressionAttributeNames: DDBService.makeExpressionAttributeNames(ddbfilter, ddbschema, ddbview),
+      ExpressionAttributeValues: DDBService.makeExpressionAttributeValues(this.periodResolver, ddbfilter, ddbschema),
+      FilterExpression: DDBService.makeFilterExpression(ddbfilter, ddbschema),
       Limit: config.ddb.maxRowsPerPage,
-      ProjectionExpression: this.makeProjectionExpression(ddbview),
+      ProjectionExpression: DDBService.makeProjectionExpression(ddbview),
       TableName: tableName
     };
     // now read data
@@ -185,112 +298,6 @@ export class DDBService {
     });
   }
 
-  private makeExpressionAttributeNames(ddbfilter: Filter,
-                                       ddbschema: Schema,
-                                       ddbview: View): DDB.ExpressionAttributeNameMap {
-    const attributeNames: DDB.ExpressionAttributeNameMap = Object.keys(ddbschema)
-      .filter(column => {
-        return (ddbfilter[column] && ddbfilter[column].comparand)
-          || (ddbview.visibility && ddbview.visibility[column]);
-      })
-      .reduce((acc, column) => {
-        acc[this.safeAttributeName(column)] = column;
-        return acc;
-      }, { });
-    return isObjectEmpty(attributeNames) ? null : attributeNames;
-  }
-
-  private makeExpressionAttributeValues(ddbfilter: Filter,
-                                        ddbschema: Schema): DDB.ExpressionAttributeValueMap {
-    const attributeValues = Object.keys(ddbfilter)
-      .filter(column => {
-        return (ddbfilter[column] && ddbfilter[column].comparand);
-      })
-      .reduce((acc, column) => {
-        const av = this.safeAttributeValue(column);
-        let comparand = ddbfilter[column].comparand;
-        let comparand2 = ddbfilter[column].comparand2;
-        if (ddbschema[column].showAs === 'date') {
-          const range = this.periodResolver.resolve(comparand);
-          comparand = String(range.from.valueOf());
-          comparand2 = String(range.to.valueOf());
-        }
-        switch (ddbschema[column].type) {
-          case 'boolean':
-            acc[':boolean_true'] = { 'BOOL': true };
-            acc[':number_true'] = { 'N': '1' };
-            acc[':string_true'] = { 'S': 'true' };
-            break;
-          case 'number':
-            acc[`${av}_lo`] = { 'N': comparand };
-            if (comparand2)
-              acc[`${av}_hi`] = { 'N': comparand2 };
-            break;
-          case 'string':
-            acc[av] = { 'S': comparand };
-            break;
-        }
-        return acc;
-      }, { });
-    return isObjectEmpty(attributeValues) ? null : attributeValues;
-  }
-
-  private makeFilterExpression(ddbfilter: Filter,
-                               ddbschema: Schema): string {
-    const filterExpression = Object.keys(ddbfilter)
-      .filter(column => {
-        return (ddbfilter[column] && ddbfilter[column].comparand);
-      })
-      .map(column => {
-        const an = this.safeAttributeName(column);
-        const av = this.safeAttributeValue(column);
-        const comparand = ddbfilter[column].comparand;
-        const comparand2 = ddbfilter[column].comparand2;
-        switch (ddbschema[column].type) {
-          case 'boolean':
-            const expr = `(${an} = :boolean_true or ${an} = :number_true or ${an} = :string_true)`;
-            return (comparand === 'true')? expr : `not ${expr}`;
-          case 'number':
-            if (comparand2 || (ddbschema[column].showAs === 'date'))
-              return `${an} between ${av}_lo and ${av}_hi`;
-            else return `${an} >= ${av}_lo`;
-          case 'string':
-            return `contains(${an}, ${av})`;
-        }
-      }); 
-    return (filterExpression.length === 0) ? null : filterExpression.join(' and ');
-  }
-
-  private makeKey(row: any,
-                  keySchema: DDB.KeySchema,
-                  ddbschema: Schema): DDB.Key {
-    return keySchema.reduce((acc, element) => {
-      const column = element.AttributeName;
-      switch (ddbschema[column].type) {
-        case 'boolean':
-          acc[column] = { 'BOOL': Boolean(row[column]) };
-          break;
-        case 'number':
-          acc[column] = { 'N': String(row[column]) };
-          break;
-        case 'string':
-          acc[column] = { 'S': String(row[column]) };
-          break;
-      }
-      return acc;
-    }, { } as DDB.Key);
-  }
-
-  private makeProjectionExpression(ddbview: View): string {
-    const projectionExpression = Object.keys(ddbview.visibility)
-      .filter(column => ddbview.visibility && ddbview.visibility[column])
-      .reduce((acc, column) => {
-        acc.push(this.safeAttributeName(column));
-        return acc;
-      }, []).join(', ');
-    return projectionExpression || null;
-  }
-
   private makeRowsFromItems(Items: DDB.ItemList): any[] {
     return Items.map((Item: DDB.AttributeMap) => this.makeRowFromItem(Item));
   }
@@ -309,14 +316,6 @@ export class DDBService {
         acc[column] = value.S;
       return acc;
     }, { });
-  }
-
-  private safeAttributeName(column: string): string {
-    return `#${column.toUpperCase()}`;
-  }
-
-  private safeAttributeValue(column: string): string {
-    return `:val_${column.toLowerCase()}`;
   }
 
   private trace(op: string,

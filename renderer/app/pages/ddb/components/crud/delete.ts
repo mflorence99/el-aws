@@ -6,8 +6,6 @@ import { DrawerPanelComponent } from 'ellib';
 import { FormBuilder } from '@angular/forms';
 import { FormGroup } from '@angular/forms';
 import { Input } from '@angular/core';
-import { LifecycleComponent } from 'ellib';
-import { OnChange } from 'ellib';
 
 /**
  * CRUD delete component
@@ -20,7 +18,7 @@ import { OnChange } from 'ellib';
   styleUrls: ['crud.scss']
 })
 
-export class DeleteComponent extends LifecycleComponent {
+export class DeleteComponent {
 
   @Input() ddb = { } as DDBStateModel;
   @Input() ddbselection = { } as DDBSelectionStateModel;
@@ -30,22 +28,12 @@ export class DeleteComponent extends LifecycleComponent {
   /** ctor */
   constructor(private drawerPanel: DrawerPanelComponent,
               private formBuilder: FormBuilder) {
-    super();
+    this.deleteForm = this.formBuilder.group({ });
   }
 
   /** Close drawer */
   close(): void {
     this.drawerPanel.close();
-  }
-
-  // bind OnChange handlers
-
-  @OnChange('ddb') newState(): void {
-    if (this.ddb) {
-      this.deleteForm = this.formBuilder.group({
-        tableName: this.ddb.table.TableName
-      });
-    }
   }
 
 }
