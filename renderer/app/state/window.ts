@@ -89,7 +89,7 @@ export interface WindowStateModel {
   }
 
   @Action(SetRoute)
-  setTitle({ patchState }: StateContext<WindowStateModel>,
+  setRoute({ patchState }: StateContext<WindowStateModel>,
            { payload }: SetRoute) {
     patchState({ route: payload });
   }
