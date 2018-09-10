@@ -144,7 +144,7 @@ export class DDBService {
           break;
       }
       return acc;
-    }, {} as DDB.Key);
+    }, { } as DDB.Key);
   }
 
   private static safeAttributeName(column: string): string {
