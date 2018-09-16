@@ -100,7 +100,7 @@ export interface DDBStateModel {
     const state = getState();
     const tableName = state.table.TableName;
     // we need a state snapshot
-    const ddbschema: Schema = this.store.selectSnapshot((state: FeatureState) => state.ddbschemas)[tableName] || {};
+    const ddbschema: Schema = this.store.selectSnapshot((state: FeatureState) => state.ddbschemas)[tableName] || { };
     const ddbselection: DDBSelectionStateModel = this.store.selectSnapshot((state: FeatureState) => state.ddbselection);
     // what items to delete?
     const keys = ddbselection.rows.map(index => {
@@ -124,8 +124,8 @@ export interface DDBStateModel {
     const state = getState();
     const tableName = state.table.TableName;
     // we need a state snapshot
-    const ddbfilter: Filter = this.store.selectSnapshot((state: FeatureState) => state.ddbfilters)[tableName] || {};
-    const ddbschema: Schema = this.store.selectSnapshot((state: FeatureState) => state.ddbschemas)[tableName] || {};
+    const ddbfilter: Filter = this.store.selectSnapshot((state: FeatureState) => state.ddbfilters)[tableName] || { };
+    const ddbschema: Schema = this.store.selectSnapshot((state: FeatureState) => state.ddbschemas)[tableName] || { };
     const ddbview: View = this.store.selectSnapshot((state: FeatureState) => state.ddbviews)[tableName] || DDBViewsState.emptyView();
     // NOTE: see usage of sanity check below
     const sanityCheck = UUID.UUID();
@@ -161,8 +161,8 @@ export interface DDBStateModel {
     const state = getState();
     const tableName = state.table.TableName;
     // we need a state snapshot
-    const ddbfilter: Filter = this.store.selectSnapshot((state: FeatureState) => state.ddbfilters)[tableName] || {};
-    const ddbschema: Schema = this.store.selectSnapshot((state: FeatureState) => state.ddbschemas)[tableName] || {};
+    const ddbfilter: Filter = this.store.selectSnapshot((state: FeatureState) => state.ddbfilters)[tableName] || { };
+    const ddbschema: Schema = this.store.selectSnapshot((state: FeatureState) => state.ddbschemas)[tableName] || { };
     const ddbview: View = this.store.selectSnapshot((state: FeatureState) => state.ddbviews)[tableName] || DDBViewsState.emptyView();
     // now perform scan
     dispatch(new Message({ text: `Loading ${tableName} rows ...` }));

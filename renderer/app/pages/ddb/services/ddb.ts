@@ -47,7 +47,7 @@ export class DDBService {
       .reduce((acc, column) => {
         acc[DDBService.safeAttributeName(column)] = column;
         return acc;
-      }, {});
+      }, { });
     return isObjectEmpty(attributeNames) ? null : attributeNames;
   }
 
@@ -84,7 +84,7 @@ export class DDBService {
             break;
         }
         return acc;
-      }, {});
+      }, { });
     return isObjectEmpty(attributeValues) ? null : attributeValues;
   }
 
