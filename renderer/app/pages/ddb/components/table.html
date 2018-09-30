@@ -1,7 +1,9 @@
 <lib-scroll-container
   (onScroll)="newTable.emit()"
   [contextMenu]="contextMenu"
-  [contextMenuSubject]="null">
+  [contextMenuSubject]="null"
+  [showScrollLeft]="true"
+  [showScrollRight]="true">
 
   <table
     *ngIf="pane.isTablePopulated()">
