@@ -3,8 +3,6 @@ import { Schema } from './ddbschemas';
 import { State } from '@ngxs/store';
 import { StateContext } from '@ngxs/store';
 
-import { isObjectEqual } from 'ellib'; 
-
 /** NOTE: actions must come first because of AST */
 
 export class InitView {
@@ -89,10 +87,7 @@ export interface ViewVisibility {
                    { payload }: UpdateVisibility) {
     const { tableName, visibility } = payload;
     const view = getState()[tableName];
-    // NOTE: if the visibility flags haven't changed, then we don't need
-    // to zero out the widths
-    const updated = isObjectEqual(visibility, view.visibility) ?
-      { ...view, visibility } : { ...view, visibility, widths: { } };
+    const updated = { ...view, visibility };
     patchState({ [tableName]: updated });
   }
 

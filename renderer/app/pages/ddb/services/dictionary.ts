@@ -13,7 +13,7 @@ import { View } from '../state/ddbviews';
 @Injectable()
 export class DictionaryService {
 
-  /** Get the schema columns in alpha order, but those definewd in table first */
+  /** Get the schema columns in alpha order, but those defined in table first */
   columns(ddb: DDBStateModel,
           ddbschema: Schema): string[] {
     const attrs = ddb.table.AttributeDefinitions
@@ -26,7 +26,7 @@ export class DictionaryService {
     return attrs.concat(columns);
   }
 
-  /** Make an unique row ID */
+  /** Make a unique row ID */
   makeRowID(ddb: DDBStateModel,
             row: any): string {
     return ddb.table.KeySchema.reduce((acc, element: DDB.KeySchemaElement) => {
