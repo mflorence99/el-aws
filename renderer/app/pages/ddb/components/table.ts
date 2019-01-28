@@ -42,6 +42,7 @@ export class TableComponent extends LifecycleComponent {
   @Input() ddbselection = { } as DDBSelectionStateModel;
   @Input() ddbview = { } as View;
   @Input() prefs = { } as PrefsStateModel;
+  
   @Output() newTable = new EventEmitter<void>();
 
   @ViewChild(ContextMenuComponent) contextMenu: ContextMenuComponent;
