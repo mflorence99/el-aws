@@ -43,6 +43,7 @@
     "@ngxs/storage-plugin": "3",
     "@ngxs/store": "3",
     "angular-split": "1",
+    "angular2-uuid": "1",
     "async-es": "2",
     "aws-sdk": "2",
     "core-js": "2",
