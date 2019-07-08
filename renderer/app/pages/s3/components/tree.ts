@@ -58,7 +58,7 @@ export class TreeComponent extends LifecycleComponent {
   @Output() editBucketProps = new EventEmitter<Descriptor>();
   @Output() editFileProps = new EventEmitter<Descriptor>();
 
-  @ViewChild(ContextMenuComponent) contextMenu: ContextMenuComponent;
+  @ViewChild(ContextMenuComponent, { static: true }) contextMenu: ContextMenuComponent;
 
   descriptorsByPath: { [path: string]: Descriptor[] } = { };
   dictionary: Dictionary[] = [];

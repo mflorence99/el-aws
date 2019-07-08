@@ -25,30 +25,13 @@ export class AWSService {
     const process = this.electron.process;
     config.update({
       accessKeyId: process.env['AWS_ACCESS_KEY_ID'],
-      secretAccessKey: process.env['AWS_SECRET_KEY'] || process.env['AWS_SECRET_ACCESS_KEY'],
-      logger: this
+      secretAccessKey: process.env['AWS_SECRET_KEY'] || process.env['AWS_SECRET_ACCESS_KEY']
     });
     // now set credentials for Node.js
     this.electron.remote.require('aws-sdk').config.update({
       accessKeyId: process.env['AWS_ACCESS_KEY_ID'],
-      secretAccessKey: process.env['AWS_SECRET_KEY'] || process.env['AWS_SECRET_ACCESS_KEY'],
-      logger: this
+      secretAccessKey: process.env['AWS_SECRET_KEY'] || process.env['AWS_SECRET_ACCESS_KEY']
     });
-
-  }
-
-  /** Colorize logging */
-  log(msg: string): void {
-    try {
-      const ix = msg.indexOf(']');
-      const hdr = msg.substring(0, ix + 1);
-      const color = hdr.includes(' 200 ') ? '#3367d6' : '#c53929';
-      const txt = msg.substring(ix + 2);
-      console.log(`%c${hdr} %c${txt}`, `color: ${color}; font-weight: bold`, 'color: grey');
-    }
-    catch (err) {
-      console.log(msg);
-    }
   }
 
 }

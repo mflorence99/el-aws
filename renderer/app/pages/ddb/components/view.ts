@@ -27,7 +27,7 @@ export class ViewComponent {
   @Input() ddbschema = { } as Schema;
   @Input() ddbview = { } as View;
 
-  @ViewChild(ViewFilterComponent) filter;
-  @ViewChild(ViewSchemaComponent) schema;
+  @ViewChild(ViewFilterComponent, { static: false }) filter;
+  @ViewChild(ViewSchemaComponent, { static: false }) schema;
 
 }

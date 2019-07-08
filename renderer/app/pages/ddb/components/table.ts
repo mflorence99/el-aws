@@ -45,7 +45,7 @@ export class TableComponent extends LifecycleComponent {
   
   @Output() newTable = new EventEmitter<void>();
 
-  @ViewChild(ContextMenuComponent) contextMenu: ContextMenuComponent;
+  @ViewChild(ContextMenuComponent, { static: true }) contextMenu: ContextMenuComponent;
 
   hoverColumn: string;
   numScrollSteps = config.ddb.scrollAnimSteps;

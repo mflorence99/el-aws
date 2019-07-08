@@ -46,6 +46,20 @@ export type KeyValueTuple = [string, string];
 export type KeyValueType = KeyValueArray | KeyValueArrayOfHashes | KeyValueHash | null;
 
 /**
+ * Custom error state matcher
+ */
+
+export class KeyValueErrorStateMatcher implements ErrorStateMatcher {
+
+  // @see ErrorStateMatcher
+  isErrorState(control: FormControl | null,
+    form: FormGroupDirective | NgForm | null): boolean {
+    return !!(control && control.invalid);
+  }
+
+}
+
+/**
  * <key-value> component
  * 
  * NOTE: quite complicated to follow Angular Material custom control spec
@@ -69,8 +83,8 @@ export class KeyValueComponent implements ControlValueAccessor,
 
   static nextID = 0;
 
-  @ContentChild('keyIcon') keyIcon: TemplateRef<any>;
-  @ContentChild('valueIcon') valueIcon: TemplateRef<any>;
+  @ContentChild('keyIcon', { static: true }) keyIcon: TemplateRef<any>;
+  @ContentChild('valueIcon', { static: true }) valueIcon: TemplateRef<any>;
 
   @HostBinding('attr.aria-describedby') describedBy = '';
   @HostBinding() id = `elaws-key-value-${KeyValueComponent.nextID++}`;
@@ -81,7 +95,7 @@ export class KeyValueComponent implements ControlValueAccessor,
   @Input() duplicateKeyMessage: string;
   @Input() keyConstraints: string[];
 
-  @ViewChild('newKey') newKey: any;
+  @ViewChild('newKey', { static: false }) newKey: any;
 
   // @see MatFormFieldControl
   controlType = 'elaws-key-value';
@@ -306,20 +320,6 @@ export class KeyValueComponent implements ControlValueAccessor,
     }
     else if (this.asHash)
       return { ...this.keyValues };
-  }
-
-}
-
-/**
- * Custom error state matcher
- */
-
-export class KeyValueErrorStateMatcher implements ErrorStateMatcher {
-
-  // @see ErrorStateMatcher
-  isErrorState(control: FormControl | null,
-               form: FormGroupDirective | NgForm | null): boolean {
-    return !!(control && control.invalid);
   }
 
 }

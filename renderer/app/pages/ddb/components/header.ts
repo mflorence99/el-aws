@@ -45,7 +45,7 @@ export class HeaderComponent extends LifecycleComponent {
 
   @Output() columnHover = new EventEmitter<string>();
 
-  @ViewChild('canvas') _canvas: ElementRef;
+  @ViewChild('canvas', { static: false }) _canvas: ElementRef;
 
   schemes: Scheme[] = [];
 

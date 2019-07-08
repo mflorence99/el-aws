@@ -1,3 +1,4 @@
+import { AfterViewInit } from '@angular/core';
 import { ChangeDetectionStrategy } from '@angular/core';
 import { Component } from '@angular/core';
 import { Dictionary } from '../services/dictionary';
@@ -11,6 +12,7 @@ import { OnInit } from '@angular/core';
 import { PrefsStateModel } from '../../../state/prefs';
 import { S3PageComponent } from '../page';
 import { S3ViewStateModel } from '../state/s3view';
+import { SplitComponent } from 'angular-split';
 import { Store } from '@ngxs/store';
 import { UpdateWidths } from '../state/s3view';
 import { ViewChild } from '@angular/core';
@@ -28,12 +30,13 @@ import { ViewWidths } from '../state/s3view';
 })
 
 export class HeaderComponent extends LifecycleComponent
-                             implements OnDestroy, OnInit {
+                             implements AfterViewInit, OnDestroy, OnInit {
 
   @Input() prefs = { } as PrefsStateModel;
   @Input() s3view = { } as S3ViewStateModel;
 
-  @ViewChild('outliner') outliner: ElementRef;
+  @ViewChild('outliner', { static: true }) outliner: ElementRef;
+  @ViewChild(SplitComponent, { static: true }) split: SplitComponent;
 
   dictionary: Dictionary[] = [];
 
@@ -83,6 +86,10 @@ export class HeaderComponent extends LifecycleComponent
   }
 
   // lifecycle methods
+
+  ngAfterViewInit(): void {
+    this.split.dragProgress$.subscribe((event: any) => this.onOutlinerShow(event));
+  }
 
   ngOnDestroy(): void {
     document.body.removeChild(this.outliner.nativeElement);

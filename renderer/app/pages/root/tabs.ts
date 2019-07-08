@@ -28,7 +28,7 @@ export class TabsComponent extends LifecycleComponent {
   @Input() router: any = { };
   @Input() tabs: Navigator[] = [];
 
-  @ViewChild(MatTabGroup) tabGroup: MatTabGroup;
+  @ViewChild(MatTabGroup, { static: true }) tabGroup: MatTabGroup;
 
   /** ctor */
   constructor(private store: Store) { 
